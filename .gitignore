@@ -1,0 +1,37 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# -----------------------------
+# Signing keys & local secret files
+# Keep local keystores and secret property files out of source control
+# Keystore files (common locations and extensions)
+/keystore/release.keystore
+app/keystore/release.keystore
+*.jks
+*.keystore
+*.p12
+
+# Properties/files that hold passwords, aliases or keystore paths
+keystore.properties
+app/keystore.properties
+secrets.properties
+
+# Local environment files (do not commit)
+.env
+.env.local
+
+# Android Studio / IntelliJ local key artifacts
+.idea/**/keystore*
