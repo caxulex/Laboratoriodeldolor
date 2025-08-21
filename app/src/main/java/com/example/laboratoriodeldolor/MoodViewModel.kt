@@ -22,9 +22,16 @@ import kotlin.math.abs
 class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: ExerciseDao, private val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository? = null) : ViewModel() {
     // State is still here
     private val tag = "MoodApp"
-    // Use a valid emoji as the default instead of mojibake
-    var selectedEmoji by mutableStateOf("😊")
-    var noteText by mutableStateOf("")
+    // Use explicit MutableState backing fields instead of delegated properties to avoid compiler delegation issues in ViewModel
+    private val _selectedEmoji = mutableStateOf("😊")
+    var selectedEmoji: String
+        get() = _selectedEmoji.value
+        set(value) { _selectedEmoji.value = value }
+
+    private val _noteText = mutableStateOf("")
+    var noteText: String
+        get() = _noteText.value
+        set(value) { _noteText.value = value }
 
     val moodEntries: StateFlow<List<MoodEntry>> = moodDao.getAllEntries()
         .stateIn(
