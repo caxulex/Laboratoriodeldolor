@@ -35,3 +35,8 @@ secrets.properties
 
 # Android Studio / IntelliJ local key artifacts
 .idea/**/keystore*
+
+# Ignore backup folders created by automated edits
+app/src/main/res/drawable/backup_xml/
+app/src/main/res/font/backup_*/
+app/src/main/res/font/fonts_placeholder_readme.txt
