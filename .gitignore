@@ -35,6 +35,3 @@ secrets.properties
 
 # Android Studio / IntelliJ local key artifacts
 .idea/**/keystore*
-
-# Backup placeholder drawables (local only)
-app/src/main/res/drawable/backup_xml/
