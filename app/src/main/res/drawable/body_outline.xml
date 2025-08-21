@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simple scalable vector silhouette used as body outline for the pain tracker.
+     This replaces the previous <shape/> drawable so Compose's painterResource can load it safely. -->
+<!-- Viewport coordinates are arbitrary and the vector will scale to the Image size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="280dp"
+    android:viewportWidth="100"
+    android:viewportHeight="140">
+
+    <!-- Head -->
+    <path
+        android:fillColor="@color/medium_gray"
+        android:pathData="M50,12
+            C59,12 67,20 67,29
+            C67,38 59,46 50,46
+            C41,46 33,38 33,29
+            C33,20 41,12 50,12 Z" />
+
+    <!-- Torso -->
+    <path
+        android:fillColor="@color/medium_gray"
+        android:pathData="M30,52
+            C30,52 26,86 34,100
+            C38,108 46,116 50,116
+            C54,116 62,108 66,100
+            C74,86 70,52 70,52
+            Z" />
+
+    <!-- Legs (simple) -->
+    <path
+        android:fillColor="@color/medium_gray"
+        android:pathData="M36,116 L44,136 L50,136 L50,116 Z M56,116 L56,136 L62,136 L70,116 Z" />
+
+</vector>

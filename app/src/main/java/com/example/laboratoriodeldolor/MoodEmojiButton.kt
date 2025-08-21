@@ -1,0 +1,60 @@
+package com.example.laboratoriodeldolor
+
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@Composable
+fun MoodEmojiButton(
+    emoji: String,
+    selected: Boolean,
+    size: Dp = 64.dp,
+    onClick: () -> Unit
+) {
+    var pressedScale by remember { mutableStateOf(1f) }
+    val scaleAnim by animateFloatAsState(targetValue = pressedScale)
+
+    val modifier = Modifier
+        .size(size)
+        .scale(scaleAnim)
+
+    if (selected) {
+        Button(
+            onClick = {
+                pressedScale = 1.12f
+                onClick()
+                pressedScale = 1f
+            },
+            modifier = modifier.shadow(elevation = 6.dp, shape = CircleShape),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3DDC84)),
+            shape = CircleShape,
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+        ) {
+            Text(text = emoji, fontSize = 26.sp)
+        }
+    } else {
+        OutlinedButton(onClick = {
+            pressedScale = 1.08f
+            onClick()
+            pressedScale = 1f
+        }, modifier = modifier, shape = CircleShape) {
+            Text(text = emoji, fontSize = 26.sp)
+        }
+    }
+}

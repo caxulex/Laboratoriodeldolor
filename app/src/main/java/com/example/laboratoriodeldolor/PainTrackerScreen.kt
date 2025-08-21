@@ -1,0 +1,294 @@
+﻿package com.example.laboratoriodeldolor
+
+
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.Canvas
+// ...existing code...
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+
+/**
+ * Pain tracker screen with a vector silhouette background and an overlay Canvas
+ * that captures taps and draws red circles for each recorded pain point.
+ */
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun PainTrackerScreen(
+    viewModel: PainTrackerViewModel,
+    onNavigateToUpper: () -> Unit = {},
+    onNavigateToMiddle: () -> Unit = {},
+    onNavigateToLower: () -> Unit = {}
+) {
+    val painPoints by viewModel.painPoints.collectAsState()
+    val selectedAreas by viewModel.selectedAreas.collectAsState()
+    val scope = rememberCoroutineScope()
+    // Track the current canvas size so we can normalize/de-normalize points
+    var canvasSize = IntSize(0, 0)
+
+    Scaffold { innerPadding ->
+        Card(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
+            Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = stringResource(id = R.string.pain_tracker_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                // Selection controls: Gender and View (selected = filled primary, unselected = outlined)
+                val genderState by viewModel.selectedGender.collectAsState()
+                val viewState by viewModel.selectedView.collectAsState()
+
+                Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.Center) {
+                    // Gender segmented buttons (tighter)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (genderState == "male") {
+                            Button(onClick = { viewModel.selectGender("male") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.gender_male), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        } else {
+                            OutlinedButton(onClick = { viewModel.selectGender("male") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.gender_male), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+
+                        if (genderState == "female") {
+                            Button(onClick = { viewModel.selectGender("female") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.gender_female), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        } else {
+                            OutlinedButton(onClick = { viewModel.selectGender("female") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.gender_female), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // View segmented buttons (tighter)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (viewState == "front") {
+                            Button(onClick = { viewModel.selectView("front") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.view_front), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        } else {
+                            OutlinedButton(onClick = { viewModel.selectView("front") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.view_front), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+
+                        if (viewState == "back") {
+                            Button(onClick = { viewModel.selectView("back") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.view_back), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        } else {
+                            OutlinedButton(onClick = { viewModel.selectView("back") }, modifier = Modifier.height(32.dp)) {
+                                Text(text = stringResource(id = R.string.view_back), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                }
+
+                // Box to stack the background Image and an overlay Canvas for taps/drawing
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp), contentAlignment = Alignment.TopCenter
+                ) {
+                    // Dynamic silhouette selection
+                    val gender by viewModel.selectedGender.collectAsState()
+                    val viewSel by viewModel.selectedView.collectAsState()
+                    val drawableId = when (gender to viewSel) {
+                        Pair("male", "front") -> R.drawable.boy_front
+                        Pair("male", "back") -> R.drawable.boy_back
+                        Pair("female", "front") -> R.drawable.girl_front
+                        Pair("female", "back") -> R.drawable.girl_back
+                        else -> R.drawable.body_outline
+                    }
+
+                    Image(
+                        painter = painterResource(id = drawableId),
+                        contentDescription = stringResource(id = R.string.body_outline_desc),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(100f / 140f)
+                    )
+
+                    // Overlay Canvas capturing taps and drawing points
+                    Canvas(modifier = Modifier
+                        .fillMaxSize()
+                        .onSizeChanged { canvasSize = it }
+                        .pointerInput(Unit) {
+                            detectTapGestures { tap: Offset ->
+                                // Normalize tap relative to current canvas size and store normalized
+                                if (canvasSize.width > 0 && canvasSize.height > 0) {
+                                    val nx = tap.x / canvasSize.width.toFloat()
+                                    val ny = tap.y / canvasSize.height.toFloat()
+                                    viewModel.addPainPointNormalized(Offset(nx, ny))
+                                }
+                            }
+                        }
+                    ) {
+                        val radius = size.minDimension * 0.03f
+
+                        // Highlight selected body areas with translucent overlay
+                        val bandHeight = size.height / 3f
+                        if (selectedAreas.contains(BodyArea.UPPER)) {
+                            drawRect(color = Color(0x5544CCFF), topLeft = Offset(0f, 0f), size = Size(size.width, bandHeight))
+                        }
+                        if (selectedAreas.contains(BodyArea.MIDDLE)) {
+                            drawRect(color = Color(0x55AAFF88), topLeft = Offset(0f, bandHeight), size = Size(size.width, bandHeight))
+                        }
+                        if (selectedAreas.contains(BodyArea.LOWER)) {
+                            drawRect(color = Color(0x55FF8888), topLeft = Offset(0f, bandHeight * 2f), size = Size(size.width, bandHeight))
+                        }
+
+                        // De-normalize stored points back to pixel coordinates and draw red dots
+                        painPoints.forEach { normalizedPt ->
+                            val px = normalizedPt.x * size.width
+                            val py = normalizedPt.y * size.height
+                            drawCircle(color = Color.Red, radius = radius, center = Offset(px, py))
+                        }
+                    }
+                }
+
+                var toDeleteId by remember { mutableStateOf<Long?>(null) }
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    val hasPoints = painPoints.isNotEmpty()
+                    AnimatedVisibility(
+                        visible = hasPoints,
+                        enter = fadeIn(animationSpec = tween(250)) + slideInVertically(animationSpec = tween(250), initialOffsetY = { it / 4 }),
+                        exit = fadeOut(animationSpec = tween(180)) + slideOutVertically(animationSpec = tween(180), targetOffsetY = { it / 4 })
+                    ) {
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            // Primary: Save (filled amber, 48dp)
+                            LottieSaveButton(enabled = hasPoints, onSave = { scope.launch { viewModel.savePainPoints() } })
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            // Secondary: Clear (outlined)
+                            OutlinedButton(onClick = { viewModel.clearPainPoints() }, modifier = Modifier.height(48.dp)) {
+                                Text(text = stringResource(id = R.string.clear_button))
+                            }
+                        }
+                    }
+
+                    // Persisted points list (if DAO provided)
+                    val persistedFlow = viewModel.painPointsFromDb
+                    if (persistedFlow != null) {
+                        val persisted by persistedFlow.collectAsState(initial = emptyList())
+                        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                            items(persisted) { pp ->
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = "#${pp.id}: (x=${String.format("%.2f", pp.x)}, y=${String.format("%.2f", pp.y)})")
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    OutlinedButton(onClick = { toDeleteId = pp.id }, modifier = Modifier.height(40.dp)) {
+                                        Text(text = stringResource(id = R.string.delete_button))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // Area-based exercise buttons (dynamic)
+                if (selectedAreas.isNotEmpty()) {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp), horizontalArrangement = Arrangement.Center) {
+                        if (selectedAreas.contains(BodyArea.UPPER)) {
+                            Button(onClick = onNavigateToUpper, modifier = Modifier.height(48.dp)) {
+                                Text(text = stringResource(id = R.string.upper_body_exercises_button), color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        }
+                        if (selectedAreas.contains(BodyArea.MIDDLE)) {
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Button(onClick = onNavigateToMiddle, modifier = Modifier.height(48.dp)) {
+                                Text(text = stringResource(id = R.string.middle_body_exercises_button), color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        }
+                        if (selectedAreas.contains(BodyArea.LOWER)) {
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Button(onClick = onNavigateToLower, modifier = Modifier.height(48.dp)) {
+                                Text(text = stringResource(id = R.string.lower_body_exercises_button), color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        }
+                    }
+                }
+                // Confirmation dialog
+                if (toDeleteId != null) {
+                    AlertDialog(
+                        onDismissRequest = { toDeleteId = null },
+                        title = { Text(text = stringResource(id = R.string.delete_confirm_title)) },
+                        text = { Text(text = stringResource(id = R.string.delete_confirm_message)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.deletePersistedById(toDeleteId!!)
+                                toDeleteId = null
+                            }) {
+                                Text(text = stringResource(id = R.string.delete_confirm_yes))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { toDeleteId = null }) {
+                                Text(text = stringResource(id = R.string.delete_confirm_no))
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
