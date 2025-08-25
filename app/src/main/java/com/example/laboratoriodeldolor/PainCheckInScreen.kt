@@ -39,21 +39,17 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
 
             // Show a miniature preview of the body map by reusing the PainTrackerScreen composable but without navigation
             Box(modifier = Modifier.fillMaxWidth().height(420.dp)) {
-                PainTrackerScreen(viewModel = painViewModel)
+                PainTrackerScreen(viewModel = painViewModel, onNavigateToExercise = { /* no-op in preview */ })
             }
 
             Spacer(modifier = Modifier.height(16.dp))
             Row {
-                Button(onClick = {
+                com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.checkin_finish), onClick = {
                     scope.launch { painViewModel.savePainPoints() }
                     onFinish()
-                }, modifier = Modifier.height(48.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
-                    Text(text = stringResource(id = R.string.checkin_finish), color = MaterialTheme.colorScheme.onPrimary)
-                }
+                }, modifier = Modifier.height(48.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(onClick = { onSkip() }, modifier = Modifier.height(48.dp)) {
-                    Text(text = stringResource(id = R.string.checkin_skip))
-                }
+                com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.checkin_skip), onClick = { onSkip() }, modifier = Modifier.height(48.dp))
             }
         }
     }

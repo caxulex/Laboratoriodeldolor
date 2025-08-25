@@ -4,12 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
@@ -41,12 +43,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LaboratorioDelDolorTheme {
+            // Observe persisted theme preference and pass it to the app theme so changes apply instantly
+            val settingsViewModel: SettingsViewModel = viewModel()
+            val isDark by settingsViewModel.isDarkMode.collectAsState()
+
+            LaboratorioDelDolorTheme(isDark = isDark) {
                 val navController = rememberNavController()
 
                 val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
-                val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao()))
-                val settingsViewModel: SettingsViewModel = viewModel()
+                val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+                // reuse the settingsViewModel we already observed above
                 val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
 
                 val recommendationViewModel: RecommendationViewModel = viewModel(factory = RecommendationViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.painPointDao()))
@@ -112,6 +118,7 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToUpper = { navController.navigate(Screen.UpperBody.route) },
                                 onNavigateToMiddle = { navController.navigate(Screen.MiddleBody.route) },
                                 onNavigateToLower = { navController.navigate(Screen.LowerBody.route) }
+                                , onNavigateToExercise = { route -> navController.navigate(route) }
                             )
                         }
                         composable(Screen.Ajustes.route) {
@@ -125,29 +132,30 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Screen.Exercises.route) {
                             ExerciseHubScreen(
-                                onNavigateToUpper = { navController.navigate(Screen.UpperBody.route) },
-                                onNavigateToMiddle = { navController.navigate(Screen.MiddleBody.route) },
-                                onNavigateToLower = { navController.navigate(Screen.LowerBody.route) }
+                                onNavigateToFrontUpper = { navController.navigate(Screen.FrontUpperBody.route) },
+                                onNavigateToBackUpper = { navController.navigate(Screen.BackUpperBody.route) },
+                                onNavigateToFrontMiddle = { navController.navigate(Screen.FrontMiddleBody.route) },
+                                onNavigateToBackMiddle = { navController.navigate(Screen.BackMiddleBody.route) },
+                                onNavigateToFrontLower = { navController.navigate(Screen.FrontLowerBody.route) },
+                                onNavigateToBackLower = { navController.navigate(Screen.BackLowerBody.route) }
                             )
                         }
                             composable(Screen.Recomendacion.route) {
                                 RecommendationScreen(viewModel = recommendationViewModel)
                             }
                             composable(Screen.Respiracion.route) {
-                                BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { id -> /* TODO: navigate to instructions */ })
+                                BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { _ -> /* TODO: navigate to instructions */ })
                             }
                         composable("history") {
                             MoodHistoryScreen(viewModel = moodHistoryViewModel)
                         }
-                            composable(Screen.UpperBody.route) {
-                                UpperBodyExerciseScreen(onBack = { navController.popBackStack() })
-                            }
-                            composable(Screen.MiddleBody.route) {
-                                MiddleBodyExerciseScreen(onBack = { navController.popBackStack() })
-                            }
-                            composable(Screen.LowerBody.route) {
-                                LowerBodyExerciseScreen(onBack = { navController.popBackStack() })
-                            }
+                            // New specific front/back exercise screens
+                            composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                            composable(Screen.BackUpperBody.route) { BackUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                            composable(Screen.FrontMiddleBody.route) { FrontMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                            composable(Screen.BackMiddleBody.route) { BackMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                            composable(Screen.FrontLowerBody.route) { FrontLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                            composable(Screen.BackLowerBody.route) { BackLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
                         
                     }
                 }
@@ -166,6 +174,12 @@ sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector)
     object UpperBody : Screen("upper_body", R.string.upper_body_exercises_title, Icons.Filled.Home)
     object MiddleBody : Screen("middle_body", R.string.middle_body_exercises_title, Icons.Filled.Home)
     object LowerBody : Screen("lower_body", R.string.lower_body_exercises_title, Icons.Filled.Home)
+    object FrontUpperBody : Screen("front_upper_body", R.string.front_upper_body_title, Icons.Filled.Home)
+    object BackUpperBody : Screen("back_upper_body", R.string.back_upper_body_title, Icons.Filled.Home)
+    object FrontMiddleBody : Screen("front_middle_body", R.string.front_middle_body_title, Icons.Filled.Home)
+    object BackMiddleBody : Screen("back_middle_body", R.string.back_middle_body_title, Icons.Filled.Home)
+    object FrontLowerBody : Screen("front_lower_body", R.string.front_lower_body_title, Icons.Filled.Home)
+    object BackLowerBody : Screen("back_lower_body", R.string.back_lower_body_title, Icons.Filled.Home)
     object CheckinMood : Screen("checkin_mood", R.string.checkin_mood_title, Icons.Filled.Home)
     object CheckinPain : Screen("checkin_pain", R.string.checkin_pain_title, Icons.Filled.Home)
     object Recomendacion : Screen("recomendacion", R.string.recommendation_title, Icons.Filled.Home)
@@ -189,23 +203,23 @@ fun BottomBar(navController: NavHostController, items: List<Screen>) {
 
     if (screenWidthDp >= 600) {
         NavigationRail {
-            items.forEach { screen ->
+            for (screen in items) {
                 NavigationRailItem(
                     selected = currentRoute == screen.route,
                     onClick = { if (currentRoute != screen.route) navController.navigate(screen.route) },
-                    icon = { Icon(screen.icon, contentDescription = null, modifier = Modifier.size(iconSizeDp)) },
+                    icon = { Icon(screen.icon, contentDescription = stringResource(id = screen.labelRes), modifier = Modifier.size(iconSizeDp)) },
                     label = { MText(text = stringResource(id = screen.labelRes)) },
                     modifier = Modifier.height(navItemHeight)
                 )
             }
         }
     } else {
-        NavigationBar {
-            items.forEach { screen ->
+        NavigationBar(modifier = Modifier.navigationBarsPadding()) {
+            for (screen in items) {
                 NavigationBarItem(
                     selected = currentRoute == screen.route,
                     onClick = { if (currentRoute != screen.route) navController.navigate(screen.route) },
-                    icon = { Icon(screen.icon, contentDescription = null, modifier = Modifier.size(iconSizeDp)) },
+                    icon = { Icon(screen.icon, contentDescription = stringResource(id = screen.labelRes), modifier = Modifier.size(iconSizeDp)) },
                     label = { MText(text = stringResource(id = screen.labelRes)) },
                     modifier = Modifier.height(navItemHeight)
                 )
@@ -248,9 +262,7 @@ fun DebugDataScreen(
                 MText(text = "- id=${e.id} t=${e.timestamp}")
             }
 
-            Button(onClick = onBack, modifier = Modifier.padding(top = 12.dp)) {
-                MText(text = stringResource(id = R.string.back_button))
-            }
+            com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.back_button), onClick = onBack, modifier = Modifier.padding(top = 12.dp))
         }
     }
 }

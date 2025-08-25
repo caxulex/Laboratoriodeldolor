@@ -5,9 +5,6 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 /**
  * RecommendationViewModel
@@ -40,35 +37,116 @@ class RecommendationViewModel(
     private suspend fun computeRecommendation(moods: List<MoodEntry>, pains: List<PainPoint>): Recommendation? {
         if (moods.isEmpty() && pains.isEmpty()) return null
 
-        // Mood-based recommendations remain as before
-        val recentMoodScores = moods.takeLast(7).mapNotNull { it.moodScore }
-        if (recentMoodScores.isNotEmpty()) {
-            val sadStreak = longestConsecutiveStreakScores(recentMoodScores, threshold = 2)
-            if (sadStreak >= 3) {
-                return Recommendation(
+        // Prepare context useful for rules
+        val context = RecommendationContext(moods = moods, pains = pains)
+
+        // Define data-driven rules (order matters: first matching rule wins)
+        val rules: List<RecommendationRule> = listOf(
+            // Emotional workshop if 3+ low scores in recent 7 entries
+            RecommendationRule(
+                id = "workshop_a",
+                matches = { ctx ->
+                    val recentMoodScores = ctx.moods.takeLast(7).mapNotNull { it.moodScore }
+                    recentMoodScores.isNotEmpty() && longestConsecutiveStreakScores(recentMoodScores, threshold = 2) >= 3
+                },
+                build = { Recommendation(
                     id = "workshop_a",
                     title = "Taller: Manejo Emocional",
                     description = "Has mostrado estados tristes consecutivos. Este taller corto ofrece técnicas de regulación emocional y prácticas diarias.",
                     iconResName = null
-                )
-            }
+                ) }
+            ),
+            // Upper-front or upper-back pain (use descriptive mapped locations)
+            RecommendationRule(
+                id = "upper_front_or_back",
+                matches = { ctx ->
+                    ctx.pains.any { pp ->
+                        val k = mapPainPointToLocationKey(pp)
+                        k == PainLocationKey.FRONT_UPPER || k == PainLocationKey.BACK_UPPER
+                    }
+                },
+                build = { Recommendation(
+                    id = "upper_front_or_back",
+                    title = "Rutina - Parte Superior",
+                    description = "Dolor en la zona superior detectado. Se recomiendan ejercicios para cuello, hombros y pectorales/espalda según corresponda.",
+                    iconResName = null
+                ) }
+            ),
+            // Middle band
+            RecommendationRule(
+                id = "middle",
+                matches = { ctx -> ctx.pains.any { pp ->
+                    val k = mapPainPointToLocationKey(pp)
+                    k == PainLocationKey.FRONT_MIDDLE || k == PainLocationKey.BACK_MIDDLE || k == PainLocationKey.FRONT_MIDDLE
+                } },
+                build = { Recommendation(
+                    id = "middle",
+                    title = "Rutina - Zona Media",
+                    description = "Dolor en la zona media detectado. Ejercicios para movilidad del tronco y columna.",
+                    iconResName = null
+                ) }
+            ),
+            // Lower band
+            RecommendationRule(
+                id = "lower",
+                matches = { ctx -> ctx.pains.any { pp ->
+                    val k = mapPainPointToLocationKey(pp)
+                    k == PainLocationKey.FRONT_LOWER || k == PainLocationKey.BACK_LOWER
+                } },
+                build = { Recommendation(
+                    id = "lower",
+                    title = "Rutina - Parte Inferior",
+                    description = "Dolor en la parte inferior detectado. Ejercicios para piernas y glúteos.",
+                    iconResName = null
+                ) }
+            ),
+            // Breathing if avg mood low
+            RecommendationRule(
+                id = "breathing",
+                matches = { ctx ->
+                    val moodScoresForAvg = ctx.moods.mapNotNull { it.moodScore }
+                    moodScoresForAvg.isNotEmpty() && moodScoresForAvg.average() <= 2.5
+                },
+                build = { Recommendation(
+                    id = "breathing",
+                    title = "Ejercicio de respiración",
+                    description = "Prueba 5 minutos de respiración consciente para calmar el sistema nervioso.",
+                    iconResName = null
+                ) }
+            )
+        )
+
+        // Evaluate rules in order
+        for (r in rules) {
+            if (r.matches(context)) return r.build()
         }
 
-        // Analyze pain points by view and y-coordinate to determine affected body regions and side
-        if (pains.isNotEmpty()) {
-            // Group by view (front/back)
-            val byView = pains.groupBy { it.view }
+        // Default fallback
+        return Recommendation(
+            id = "general",
+            title = "Sugerencia general",
+            description = "Mantén tu hábito: pequeñas sesiones de autocuidado pueden marcar la diferencia.",
+            iconResName = null
+        )
+    }
 
-            // Simple heuristics:
-            // - y in [0, 0.33) => upper, [0.33,0.66) => middle, [0.66,1] => lower
-            // - x < 0.5 => left, x > 0.5 => right, x approx 0.5 => center
+    // --- Data-driven rule helpers ---
+    private data class RecommendationRule(
+        val id: String,
+        val matches: (RecommendationContext) -> Boolean,
+        val build: () -> Recommendation
+    )
 
-            data class AreaKey(val view: String, val band: String, val side: String)
-
-            val affectedAreas = mutableSetOf<AreaKey>()
-
-            for ((viewName, pts) in byView) {
-                for (p in pts) {
+    private data class RecommendationContext(
+        val moods: List<MoodEntry>,
+        val pains: List<PainPoint>
+    ) {
+        fun affectedAreas(): Set<AreaKey> {
+            val pts = pains
+            val byView = pts.groupBy { it.view }
+            val affected = mutableSetOf<AreaKey>()
+            for ((viewName, list) in byView) {
+                for (p in list) {
                     val band = when {
                         p.y < 0.33f -> "upper"
                         p.y < 0.66f -> "middle"
@@ -79,72 +157,14 @@ class RecommendationViewModel(
                         p.x > 0.55f -> "right"
                         else -> "center"
                     }
-                    affectedAreas.add(AreaKey(viewName, band, side))
+                    affected.add(AreaKey(viewName, band, side))
                 }
             }
-
-            // Prioritize areas: if upper-front pain -> UpperBodyExercise
-            if (affectedAreas.any { it.band == "upper" && it.view == "front" }) {
-                return Recommendation(
-                    id = "upper_front",
-                    title = "Rutina - Parte Superior (Frente)",
-                    description = "Dolor en la zona superior frontal detectado. Se recomiendan ejercicios para cuello, hombros y pectorales.",
-                    iconResName = null
-                )
-            }
-
-            // If upper-back pain
-            if (affectedAreas.any { it.band == "upper" && it.view == "back" }) {
-                return Recommendation(
-                    id = "upper_back",
-                    title = "Rutina - Parte Superior (Espalda)",
-                    description = "Dolor en la parte superior de la espalda detectado. Se recomiendan estiramientos para trapecio y dorsal.",
-                    iconResName = null
-                )
-            }
-
-            // Middle-band recommendations
-            if (affectedAreas.any { it.band == "middle" }) {
-                return Recommendation(
-                    id = "middle",
-                    title = "Rutina - Zona Media",
-                    description = "Dolor en la zona media detectado. Ejercicios para movilidad del tronco y columna.",
-                    iconResName = null
-                )
-            }
-
-            // Lower-band recommendations
-            if (affectedAreas.any { it.band == "lower" }) {
-                return Recommendation(
-                    id = "lower",
-                    title = "Rutina - Parte Inferior",
-                    description = "Dolor en la parte inferior detectado. Ejercicios para piernas y glúteos.",
-                    iconResName = null
-                )
-            }
+            return affected
         }
-
-        // Fallback: breathing if mood low
-        val moodScoresForAvg = moods.mapNotNull { it.moodScore }
-        if (moodScoresForAvg.isNotEmpty()) {
-            val avg = moodScoresForAvg.average()
-            if (avg <= 2.5) {
-                return Recommendation(
-                    id = "breathing",
-                    title = "Ejercicio de respiración",
-                    description = "Prueba 5 minutos de respiración consciente para calmar el sistema nervioso.",
-                    iconResName = null
-                )
-            }
-        }
-
-        return Recommendation(
-            id = "general",
-            title = "Sugerencia general",
-            description = "Mantén tu hábito: pequeñas sesiones de autocuidado pueden marcar la diferencia.",
-            iconResName = null
-        )
     }
+
+    private data class AreaKey(val view: String, val band: String, val side: String)
 
     private fun longestConsecutiveStreak(emojis: List<String>, target: Set<String>): Int {
         var best = 0

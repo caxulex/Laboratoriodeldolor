@@ -5,8 +5,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
-import android.content.pm.PackageManager
 
 @Composable
 fun AboutScreen(onBack: () -> Unit = {}) {
@@ -35,16 +37,25 @@ fun AboutScreen(onBack: () -> Unit = {}) {
 
                 Card(modifier = Modifier.padding(top = 16.dp)) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text(text = stringResource(id = R.string.about_privacy))
+                        val ctx = LocalContext.current
+                        val privacyUrl = stringResource(id = R.string.about_privacy_url)
+                        com.example.laboratoriodeldolor.ui.components.SecondaryButton(
+                            text = stringResource(id = R.string.about_privacy),
+                            onClick = {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl))
+                                    ctx.startActivity(intent)
+                                } catch (_: Exception) { /* ignore */ }
+                            },
+                            modifier = Modifier.padding(top = 0.dp)
+                        )
                         Text(text = stringResource(id = R.string.about_terms), modifier = Modifier.padding(top = 8.dp))
                     }
                 }
 
                 Text(text = stringResource(id = R.string.about_acknowledgments), modifier = Modifier.padding(top = 16.dp))
 
-                Button(onClick = onBack, modifier = Modifier.padding(top = 24.dp)) {
-                    Text(text = stringResource(id = R.string.about_close))
-                }
+                com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.about_close), onClick = onBack, modifier = Modifier.padding(top = 24.dp))
             }
         }
     }

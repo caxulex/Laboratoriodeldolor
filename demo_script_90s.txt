@@ -1,0 +1,28 @@
+Demo de 90s - Laboratorio del Dolor
+
+0-10s: Intro breve
+- Pantalla de inicio de la app con logo.
+- Voz en off (o subtítulo): "Laboratorio del Dolor: registra tu estado y recibe recomendaciones personalizadas".
+
+10-30s: Registrar ánimo
+- Mostrar selección de ánimo (escala de 5) y escribir una nota breve.
+- Pulsar guardar; resaltar que la entrada queda registrada y aparece en el historial.
+
+30-55s: Registrar dolor
+- Ir al Rastreador de Dolor.
+- Seleccionar "Espalda" y marcar un punto en la zona superior.
+- Pulsar "Guardar"; mostrar animación de Lottie confirmando el guardado.
+
+55-70s: Ver recomendación
+- Ir a la pantalla de Recomendaciones.
+- Mostrar la recomendación sugerida (p.ej. "Rutina - Parte Superior (Espalda)").
+- Mencionar que las reglas son data-driven y extensibles.
+
+70-85s: Registrar ejercicios y Deshacer
+- Volver a la pantalla principal y marcar ejercicios completados.
+- Mostrar snackbar "Ejercicios marcados como completos" con botón "Deshacer".
+- Pulsar "Deshacer" y mostrar que el último registro se elimina.
+
+85-90s: Cierre
+- Mostrar el logo y cómo acceder al repositorio en GitHub.
+- Texto final: "Laboratorio del Dolor — demo rápido".

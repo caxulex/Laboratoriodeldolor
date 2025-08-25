@@ -1,0 +1,4 @@
+Feature Graphic (1024x500)
+
+Create a flat illustration showing a user silhouette and the app name 'Laboratorio del Dolor'. Keep text minimal and legible when scaled.
+Format: PNG, 1024x500 (RGB, sRGB color profile recommended).

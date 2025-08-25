@@ -32,6 +32,7 @@
     <!-- Button label on main screen that opens reminder settings -->
     <string name="reminder_settings_button">Recordatorios de ejercicios</string>
     <string name="recurring_label">Activar recordatorios diarios</string>
+    <string name="dark_mode_label">Modo Oscuro</string>
     <string name="exercise_complete_button">He completado mis ejercicios de hoy</string>
     <string name="streak_display">Racha de Ejercicios: %1$d días</string>
     <string name="streak_subtitle">Sigue así: los pequeños pasos crean hábitos</string>
@@ -85,6 +86,14 @@
     <string name="checkin_skip">Omitir</string>
     <string name="checkin_finish">Finalizar</string>
     <string name="checkin_pain_instruction">Toca el mapa corporal para marcar puntos de dolor</string>
+    <!-- Pain location descriptive strings -->
+    <string name="dolor_frontal_superior">Dolor frontal superior</string>
+    <string name="dolor_frontal_medio">Dolor frontal medio</string>
+    <string name="dolor_frontal_inferior">Dolor frontal inferior</string>
+    <string name="dolor_espalda_superior">Dolor de espalda superior</string>
+    <string name="dolor_espalda_medio">Dolor de espalda medio</string>
+    <string name="dolor_espalda_inferior">Dolor de espalda inferior</string>
+    <string name="dolor_ubicacion_desconocida">Ubicación de dolor desconocida</string>
     <string name="diary_title">Diario</string>
     <string name="diary_entry_hint">Escribe tu entrada de diario aquí...</string>
     <string name="save_diary_entry_button">Guardar Entrada</string>
@@ -126,12 +135,32 @@
     <string name="reps_12">12 rep.</string>
     <string name="reps_30s">30 s</string>
     <string name="saved_label">Guardado</string>
+
+    <!-- Specific front/back routine titles -->
+    <string name="front_upper_body_title">Rutina - Parte Frontal Superior</string>
+    <string name="back_upper_body_title">Rutina - Parte de Espalda Superior</string>
+    <string name="front_middle_body_title">Rutina - Parte Frontal Media</string>
+    <string name="back_middle_body_title">Rutina - Parte de Espalda Media</string>
+    <string name="front_lower_body_title">Rutina - Parte Frontal Inferior</string>
+    <string name="back_lower_body_title">Rutina - Parte de Espalda Inferior</string>
+
+    <string name="view_exercises">Ver Ejercicios</string>
     <string name="about_title">Acerca de la aplicación</string>
     <string name="about_version">Versión: %1$s</string>
-    <string name="about_privacy">Política de privacidad (próximamente)</string>
+    <string name="about_privacy">Política de privacidad</string>
+    <!-- Replace with your publicly hosted privacy policy URL before publishing -->
+    <string name="about_privacy_url">https://example.com/politica-de-privacidad</string>
     <string name="about_terms">Términos de servicio (próximamente)</string>
     <string name="about_acknowledgments">Agradecimientos y créditos</string>
     <string name="about_close">Cerrar</string>
     <string name="error_load_data">No se pudieron cargar los datos. Por favor, inténtalo de nuevo.</string>
     <string name="marker_text">%1$s  %2$s</string>
+    <string name="exercise_marked_snackbar">Ejercicios marcados como completos</string>
+    <string name="undo_action">Deshacer</string>
+    <!-- Emoji accessibility descriptions (very bad -> very good) -->
+    <string name="emoji_desc_very_bad">Muy enojado</string>
+    <string name="emoji_desc_bad">Triste</string>
+    <string name="emoji_desc_neutral">Neutral</string>
+    <string name="emoji_desc_good">Contento</string>
+    <string name="emoji_desc_very_good">Muy contento</string>
 </resources>

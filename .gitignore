@@ -28,6 +28,7 @@ app/keystore/release.keystore
 keystore.properties
 app/keystore.properties
 secrets.properties
+key.properties
 
 # Local environment files (do not commit)
 .env

@@ -7,10 +7,11 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
+
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,17 +33,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.delay
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.ExperimentalMaterial3Api
 import kotlinx.coroutines.launch
-import androidx.compose.ui.draw.scale
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,14 +54,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.laboratoriodeldolor.ui.theme.AccentDark
-import com.example.laboratoriodeldolor.ui.theme.AccentLight
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+// use colors from MaterialTheme.colorScheme instead of hard-coded palette tokens
+import com.example.laboratoriodeldolor.ui.components.MoodEmojiButton
+import com.example.laboratoriodeldolor.ui.theme.Dimens
 
-@OptIn(ExperimentalAnimationApi::class)
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun DailyMoodScreen(
     viewModel: MoodViewModel,
@@ -69,14 +70,12 @@ fun DailyMoodScreen(
     onNavigateToBreath: () -> Unit = {},
     onNavigateToDiary: () -> Unit = {}
 ) {
-    val moodEmojis = listOf("😊", "😐", "😢", "😠", "😍")
-    // reference unused navigation lambdas so the compiler doesn't warn — they're provided for symmetry
-    @Suppress("UNUSED_VARIABLE", "LocalVariableName")
-    val useSettingsRef = onNavigateToSettings
-    @Suppress("UNUSED_VARIABLE", "LocalVariableName")
-    val useHistoryRef = onNavigateToHistory
+    // remember a coroutine scope for UI actions (used for snackbars and async DB ops)
+    val coroutineScope = rememberCoroutineScope()
 
-    Scaffold { innerPadding ->
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
         // Animated gradient background that shifts slowly; palette varies with local hour
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
         val baseColors = when (hour) {
@@ -93,7 +92,6 @@ fun DailyMoodScreen(
             animationSpec = infiniteRepeatable(tween(durationMillis = 20000, easing = LinearEasing), RepeatMode.Restart)
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val startX = shift % size.width
                 val endX = (shift + size.width) % size.width
@@ -105,13 +103,12 @@ fun DailyMoodScreen(
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
                     .padding(innerPadding)
                     .padding(top = 32.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(stringResource(id = R.string.mood_question), style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(Dimens.spaceLarge))
 
                 // Exercise streak display
                 val streakCount by viewModel.streak.collectAsState()
@@ -124,7 +121,7 @@ fun DailyMoodScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    val gradient = Brush.horizontalGradient(listOf(AccentLight, AccentDark))
+                    val gradient = Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.primary))
                     Box(modifier = Modifier.background(gradient)) {
                         Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -133,9 +130,28 @@ fun DailyMoodScreen(
                                 }
 
                                 // Allow the user to re-log/update today's exercise even if already logged
-                                androidx.compose.material3.OutlinedButton(onClick = { viewModel.logExerciseCompleted() }) {
-                                    Text(text = if (loggedToday) stringResource(id = R.string.streak_update_button) else stringResource(id = R.string.streak_mark_button))
-                                }
+                                // Capture the strings once in a composable context so they can be used
+                                // from the coroutine without invoking Compose APIs inside the onClick lambda.
+                                val exerciseMarkedMsg = stringResource(id = R.string.exercise_marked_snackbar)
+                                val undoLabel = stringResource(id = R.string.undo_action)
+
+                                com.example.laboratoriodeldolor.ui.components.SecondaryButton(
+                                    text = if (loggedToday) stringResource(id = R.string.streak_update_button) else stringResource(id = R.string.streak_mark_button),
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            viewModel.logExerciseCompleted()
+                                            val result = snackbarHostState.showSnackbar(
+                                                message = exerciseMarkedMsg,
+                                                actionLabel = undoLabel,
+                                                duration = androidx.compose.material3.SnackbarDuration.Short
+                                            )
+
+                                            if (result == SnackbarResult.ActionPerformed) {
+                                                viewModel.undoLastExercise()
+                                            }
+                                        }
+                                    }
+                                )
                             }
 
                             Text(text = stringResource(id = R.string.streak_subtitle), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp))
@@ -143,26 +159,32 @@ fun DailyMoodScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
                 // Emoji selector (compact, evenly spaced)
                 val localSelectedEmoji = remember { mutableStateOf(viewModel.selectedEmoji) }
                 val haptic = LocalHapticFeedback.current
-                val scope = rememberCoroutineScope()
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp), horizontalArrangement = Arrangement.Center) {
-                    val options = MoodOptions.FIVE_LEVEL
-                    options.forEachIndexed { idx, mood ->
-                        val selected = localSelectedEmoji.value == mood
-                        MoodEmojiButton(emoji = mood, selected = selected, size = 64.dp) {
-                            localSelectedEmoji.value = mood
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceMedium, vertical = Dimens.spaceMedium), horizontalArrangement = Arrangement.Center) {
+                        val options = MoodOptions.FIVE_LEVEL
+                        for ((idx, mood) in options.withIndex()) {
+                            val selected = localSelectedEmoji.value == mood
+                            val desc = when (idx) {
+                                0 -> stringResource(id = R.string.emoji_desc_very_bad)
+                                1 -> stringResource(id = R.string.emoji_desc_bad)
+                                2 -> stringResource(id = R.string.emoji_desc_neutral)
+                                3 -> stringResource(id = R.string.emoji_desc_good)
+                                else -> stringResource(id = R.string.emoji_desc_very_good)
+                            }
+                            MoodEmojiButton(emoji = mood, selected = selected, size = 64.dp, contentDesc = desc) {
+                                localSelectedEmoji.value = mood
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
 
-                        if (idx < options.size - 1) Spacer(modifier = Modifier.width(14.dp))
-                    }
+                            if (idx < options.size - 1) Spacer(modifier = Modifier.width(14.dp))
+                        }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
                 // Prioritized module cards
                 val priority by viewModel.dashboardPriority.collectAsState()
@@ -173,7 +195,7 @@ fun DailyMoodScreen(
                 }
 
 
-                modules.forEach { m ->
+                for (m in modules) {
                     when (m) {
                         "pain" -> Card(modifier = Modifier
                             .fillMaxWidth()
@@ -193,63 +215,29 @@ fun DailyMoodScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(Dimens.spaceLarge))
 
                 // Action row
-                // Action row: primary = Registrar Dolor (filled), secondary = Diario (outlined)
+                // Action row: primary = Registrar Dolor (filled), secondary = Diary (outlined)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Button(
-                        onClick = { onNavigateToPainTracker() },
-                        modifier = Modifier.weight(1f).height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(text = stringResource(id = R.string.pain_tracker_button), color = MaterialTheme.colorScheme.onPrimary)
-                    }
+                    com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.pain_tracker_button), onClick = { onNavigateToPainTracker() }, modifier = Modifier.weight(1f).height(Dimens.buttonHeight))
 
-                    androidx.compose.material3.OutlinedButton(
-                        onClick = { onNavigateToDiary() },
-                        modifier = Modifier.weight(1f).height(48.dp)
-                    ) {
-                        Text(text = stringResource(id = R.string.diary_title))
-                    }
+                    com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.diary_title), onClick = { onNavigateToDiary() }, modifier = Modifier.weight(1f).height(Dimens.buttonHeight))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Respiration guided button (secondary filled if prioritized elsewhere)
-                Button(
+                com.example.laboratoriodeldolor.ui.components.PrimaryButton(
+                    text = stringResource(id = R.string.breath_nav_button),
                     onClick = onNavigateToBreath,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = MaterialTheme.shapes.large,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(text = stringResource(id = R.string.breath_nav_button), color = MaterialTheme.colorScheme.onPrimary)
-                }
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }
-}
 
-@Composable
-fun MoodEntryItem(entry: MoodEntry) {
-    val formattedDate = remember(entry.timestamp) {
-        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        sdf.format(Date(entry.timestamp))
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = entry.emoji, style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(text = entry.note, style = MaterialTheme.typography.bodyLarge)
-            Text(text = formattedDate, style = MaterialTheme.typography.bodySmall)
-        }
-    }
-}
+// MoodEntryItem removed (unused). See DailyMoodScreen.kt.bak1 for the original implementation.
 

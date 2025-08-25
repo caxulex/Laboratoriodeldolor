@@ -29,3 +29,20 @@
 -keepclassmembers class androidx.lifecycle.** { *; }
 # Keep app model/data classes
 -keep class com.example.laboratoriodeldolor.** { *; }
+
+# Keep Lottie model objects (reflection-based JSON -> model mapping)
+-keep class com.airbnb.lottie.** { *; }
+
+# Keep Google Fonts runtime reflection classes
+-keep class androidx.compose.ui.text.googlefonts.** { *; }
+
+# Keep Gson/JSON model classes if present (conservative)
+-keep class com.google.gson.** { *; }
+
+# Keep resources referenced by reflection
+-keepclassmembers class * {
+	@com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Keep annotations (Room, Parcelable, etc.)
+-keepattributes *Annotation*

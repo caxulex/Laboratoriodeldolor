@@ -8,6 +8,17 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.Calendar
@@ -19,7 +30,14 @@ import android.os.Build
  * reads from the BroadcastReceiver.
  */
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+    // Keep the legacy SharedPreferences for reminder/alarm settings
     private val prefs = application.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+    // DataStore for modern preference (theme)
+    companion object {
+        private val Context.dataStore by preferencesDataStore(name = "app_prefs")
+        private val KEY_DARK_MODE = booleanPreferencesKey("pref_dark_mode")
+    }
     private val PREF_HOUR = "reminder_hour"
     private val PREF_MINUTE = "reminder_minute"
     private val PREF_RECURRING = "reminder_recurring"
@@ -28,6 +46,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val reminderTime: StateFlow<Pair<Int, Int>> = _reminderTime
     private val _recurring = MutableStateFlow(getRecurringEnabled())
     val recurring: StateFlow<Boolean> = _recurring
+
+    // Expose a Flow-backed boolean for dark mode (default = false => Light mode)
+    val isDarkMode = application.dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { prefs -> prefs[KEY_DARK_MODE] ?: false }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
     // Do not schedule alarms from the ViewModel constructor - scheduling can throw
@@ -61,9 +85,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // Toggle and persist dark mode preference using DataStore
+    fun setDarkModeEnabled(enabled: Boolean) {
+        // launch a coroutine to write to DataStore
+        viewModelScope.launch(Dispatchers.IO) {
+            getApplication<Application>().dataStore.edit { prefs ->
+                prefs[KEY_DARK_MODE] = enabled
+            }
+        }
+    }
+
     private fun scheduleAlarmIfNeeded(context: Context) {
         // If no explicit preference saved, schedule default 9:00
-        val stored = getStoredTime()
         // Only schedule if recurring enabled by user
         if (getRecurringEnabled()) scheduleAlarm(context)
     }

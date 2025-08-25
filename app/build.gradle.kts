@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.googleKsp)
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
 android {
     namespace = "com.example.laboratoriodeldolor"
     compileSdk = 36
@@ -21,13 +24,27 @@ android {
         }
     }
 
+    // Load signing properties from key.properties at the project root (do NOT commit your real file).
+    val keystorePropsFile = rootProject.file("key.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropsFile.exists()) {
+        keystoreProperties.load(FileInputStream(keystorePropsFile))
+    } else {
+        // No key.properties found locally. The build will still work with the placeholder keystore
+        // file path, but you must create a local key.properties for real signing.
+    }
+
     signingConfigs {
         create("release") {
-            // These are placeholders. Replace with your release keystore and secure credentials.
-            storeFile = file("keystore/release.keystore")
-            storePassword = "changeit"
-            keyAlias = "release_key"
-            keyPassword = "changeit"
+            val storeFileProp = keystoreProperties.getProperty("storeFile")
+            val storePasswordProp = keystoreProperties.getProperty("storePassword")
+            val keyAliasProp = keystoreProperties.getProperty("keyAlias")
+            val keyPasswordProp = keystoreProperties.getProperty("keyPassword")
+
+            storeFile = if (storeFileProp != null) file(storeFileProp) else file("keystore/release.keystore")
+            storePassword = storePasswordProp ?: "changeit"
+            keyAlias = keyAliasProp ?: "release_key"
+            keyPassword = keyPasswordProp ?: "changeit"
         }
     }
 
@@ -45,6 +62,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    // Enable core library desugaring to support java.time APIs on older Android versions
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -82,6 +103,8 @@ dependencies {
 
     // Lottie for Compose
     implementation("com.airbnb.android:lottie-compose:6.1.0")
+    // Image loading (Coil) for efficient bitmap handling in Compose
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     // (Removed accompanist shared-element due to resolution issues.)
 
@@ -103,6 +126,9 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.8.1")
     // MPAndroidChart for mood history line chart (JitPack tag-style coordinate)
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // Core library desugaring to support java.time on minSdk < 26
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

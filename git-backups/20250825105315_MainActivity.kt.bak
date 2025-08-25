@@ -1,0 +1,259 @@
+﻿// Backup placeholder for MainActivity.kt prior to automated forEach -> for-loop change
+// Original file is stored in git history; this placeholder notes an automated edit was applied.
+package com.example.laboratoriodeldolor
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text as MText
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavHostController
+import androidx.compose.ui.res.stringResource
+import com.example.laboratoriodeldolor.ui.theme.LaboratorioDelDolorTheme
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            LaboratorioDelDolorTheme {
+                val navController = rememberNavController()
+
+                val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
+                val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+                val settingsViewModel: SettingsViewModel = viewModel()
+                val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
+
+                val recommendationViewModel: RecommendationViewModel = viewModel(factory = RecommendationViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.painPointDao()))
+                val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
+
+                val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).database.moodDao()))
+                val items = listOf(Screen.Diario, Screen.Diary, Screen.Exercises, Screen.Dolor, Screen.Recomendacion, Screen.Respiracion, Screen.Ajustes)
+
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                // Hide the BottomBar during the check-in flow
+                val showBottomBar = currentRoute != Screen.CheckinMood.route && currentRoute != Screen.CheckinPain.route
+
+                Scaffold(
+                    bottomBar = { if (showBottomBar) BottomBar(navController = navController, items = items) }
+                ) { innerPadding ->
+                    // Ambient animated background behind everything
+                    com.example.laboratoriodeldolor.ui.AmbientBackground()
+
+                    NavHost(navController = navController, startDestination = Screen.CheckinMood.route, modifier = Modifier.padding(innerPadding)) {
+                        // Check-in flow
+                        composable(Screen.CheckinMood.route) {
+                            MoodCheckInScreen(moodViewModel,
+                                onNext = { navController.navigate(Screen.CheckinPain.route) },
+                                onSkip = { navController.navigate(Screen.CheckinPain.route) },
+                                onSaved = { emoji ->
+                                    if (emoji == "😞") {
+                                        moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.BREATH)
+                                    } else {
+                                        moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.DIARY)
+                                    }
+                                }
+                            )
+                        }
+                        composable(Screen.CheckinPain.route) {
+                            PainCheckInScreen(painTrackerViewModel, onFinish = {
+                                // user saved pain -> prioritize PAIN module
+                                moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.PAIN)
+                                navController.navigate(Screen.Diario.route) {
+                                    popUpTo(Screen.CheckinMood.route) { inclusive = true }
+                                }
+                            }, onSkip = {
+                                // didn't save pain: fallback to DIARY by default (or mood-based prioritization handled in mood save)
+                                navController.navigate(Screen.Diario.route) {
+                                    popUpTo(Screen.CheckinMood.route) { inclusive = true }
+                                }
+                            })
+                        }
+                        composable(Screen.Diario.route) {
+                            DailyMoodScreen(
+                                viewModel = moodViewModel,
+                                onNavigateToPainTracker = { navController.navigate(Screen.Dolor.route) },
+                                onNavigateToSettings = { navController.navigate(Screen.Ajustes.route) },
+                                onNavigateToHistory = { navController.navigate("history") },
+                                onNavigateToBreath = { navController.navigate(Screen.Respiracion.route) },
+                                onNavigateToDiary = { navController.navigate(Screen.Diary.route) }
+                            )
+                        }
+                        composable(Screen.Dolor.route) {
+                            PainTrackerScreen(
+                                viewModel = painTrackerViewModel,
+                                onNavigateToUpper = { navController.navigate(Screen.UpperBody.route) },
+                                onNavigateToMiddle = { navController.navigate(Screen.MiddleBody.route) },
+                                onNavigateToLower = { navController.navigate(Screen.LowerBody.route) }
+                            )
+                        }
+                        composable(Screen.Ajustes.route) {
+                            SettingsScreen(viewModel = settingsViewModel, onNavigateToAbout = { navController.navigate("about") })
+                        }
+                        composable(Screen.Diary.route) {
+                            DiaryScreen(diaryViewModel = diaryViewModel, onBack = { navController.popBackStack() })
+                        }
+                        composable("about") {
+                            AboutScreen(onBack = { navController.popBackStack() })
+                        }
+                        composable(Screen.Exercises.route) {
+                            ExerciseHubScreen(
+                                onNavigateToUpper = { navController.navigate(Screen.UpperBody.route) },
+                                onNavigateToMiddle = { navController.navigate(Screen.MiddleBody.route) },
+                                onNavigateToLower = { navController.navigate(Screen.LowerBody.route) }
+                            )
+                        }
+                            composable(Screen.Recomendacion.route) {
+                                RecommendationScreen(viewModel = recommendationViewModel)
+                            }
+                            composable(Screen.Respiracion.route) {
+                                BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { id -> /* TODO: navigate to instructions */ })
+                            }
+                        composable("history") {
+                            MoodHistoryScreen(viewModel = moodHistoryViewModel)
+                        }
+                            composable(Screen.UpperBody.route) {
+                                UpperBodyExerciseScreen(onBack = { navController.popBackStack() })
+                            }
+                            composable(Screen.MiddleBody.route) {
+                                MiddleBodyExerciseScreen(onBack = { navController.popBackStack() })
+                            }
+                            composable(Screen.LowerBody.route) {
+                                LowerBodyExerciseScreen(onBack = { navController.popBackStack() })
+                            }
+                        
+                    }
+                }
+            }
+        }
+    }
+}
+
+sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector) {
+    object Diario : Screen("diario", R.string.mood_tracker_title, Icons.Filled.Home)
+    object Diary : Screen("diary", R.string.diary_title, Icons.Filled.Home)
+    // LocalHospital comes from the extended material icons pack; to avoid adding a new dependency here
+    // we use a built-in icon (Home) as a placeholder. Replace with a different icon if you add
+    // the material-icons-extended dependency in build.gradle.
+    object Dolor : Screen("dolor", R.string.pain_tracker_title, Icons.Filled.Home)
+    object UpperBody : Screen("upper_body", R.string.upper_body_exercises_title, Icons.Filled.Home)
+    object MiddleBody : Screen("middle_body", R.string.middle_body_exercises_title, Icons.Filled.Home)
+    object LowerBody : Screen("lower_body", R.string.lower_body_exercises_title, Icons.Filled.Home)
+    object CheckinMood : Screen("checkin_mood", R.string.checkin_mood_title, Icons.Filled.Home)
+    object CheckinPain : Screen("checkin_pain", R.string.checkin_pain_title, Icons.Filled.Home)
+    object Recomendacion : Screen("recomendacion", R.string.recommendation_title, Icons.Filled.Home)
+    object Respiracion : Screen("respiracion", R.string.breath_title, Icons.Filled.Home)
+    object Ajustes : Screen("ajustes", R.string.settings_title, Icons.Filled.Settings)
+    object Exercises : Screen("exercises", R.string.exercises_label, Icons.Filled.Home)
+}
+
+@Composable
+fun BottomBar(navController: NavHostController, items: List<Screen>) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+
+    // Simple responsive switch: use NavigationRail for wide screens (>= 600dp), NavigationBar otherwise
+    // Use slightly larger icons for better visibility (24-28dp range)
+    val iconSizeDp = 28.dp
+    val navItemHeight = 56.dp // ensures 48dp touch target + padding
+
+    if (screenWidthDp >= 600) {
+        NavigationRail {
+            items.forEach { screen ->
+                NavigationRailItem(
+                    selected = currentRoute == screen.route,
+                    onClick = { if (currentRoute != screen.route) navController.navigate(screen.route) },
+                    icon = { Icon(screen.icon, contentDescription = null, modifier = Modifier.size(iconSizeDp)) },
+                    label = { MText(text = stringResource(id = screen.labelRes)) },
+                    modifier = Modifier.height(navItemHeight)
+                )
+            }
+        }
+    } else {
+        NavigationBar {
+            items.forEach { screen ->
+                NavigationBarItem(
+                    selected = currentRoute == screen.route,
+                    onClick = { if (currentRoute != screen.route) navController.navigate(screen.route) },
+                    icon = { Icon(screen.icon, contentDescription = null, modifier = Modifier.size(iconSizeDp)) },
+                    label = { MText(text = stringResource(id = screen.labelRes)) },
+                    modifier = Modifier.height(navItemHeight)
+                )
+            }
+        }
+    }
+}
+
+// Temporary debug composable - quick list counts and recent rows
+@Composable
+fun DebugDataScreen(
+    moodDao: MoodDao,
+    painDao: PainPointDao,
+    exerciseDao: ExerciseDao,
+    onBack: () -> Unit
+) {
+    val moods by moodDao.getAllEntries().collectAsState(initial = emptyList())
+    val pains by painDao.getAll().collectAsState(initial = emptyList())
+    val exercises by exerciseDao.getAll().collectAsState(initial = emptyList())
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MText(text = "Debug: stored rows", style = MaterialTheme.typography.titleLarge)
+            MText(text = "Mood entries: ${moods.size}")
+            MText(text = "Pain points: ${pains.size}")
+            MText(text = "Exercise logs: ${exercises.size}")
+
+            MText(text = "\nRecent mood entries:")
+            for (m in moods.take(5)) {
+                MText(text = "- ${m.emoji} @ ${m.timestamp}")
+            }
+
+            MText(text = "\nRecent pain points (first 5):")
+            for (p in pains.take(5)) {
+                MText(text = "- id=${p.id} x=${p.x} y=${p.y} t=${p.timestamp}")
+            }
+
+            MText(text = "\nRecent exercises:")
+            for (e in exercises.take(5)) {
+                MText(text = "- id=${e.id} t=${e.timestamp}")
+            }
+
+            Button(onClick = onBack, modifier = Modifier.padding(top = 12.dp)) {
+                MText(text = stringResource(id = R.string.back_button))
+            }
+        }
+    }
+}
+

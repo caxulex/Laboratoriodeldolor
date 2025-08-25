@@ -1,0 +1,9 @@
+{
+  "packageName": "com.example.laboratoriodeldolor",
+  "defaultLanguage": "es-ES",
+  "title": "Laboratorio del Dolor",
+  "shortDescription": "Registra tu estado de ánimo y recibe ejercicios guiados.",
+  "fullDescription": "Laboratorio del Dolor ayuda a registrar ánimo y puntos de dolor, y ofrece recomendaciones y ejercicios personalizados.",
+  "contactEmail": "support@example.com",
+  "privacyPolicy": "https://example.com/politica-de-privacidad"
+}

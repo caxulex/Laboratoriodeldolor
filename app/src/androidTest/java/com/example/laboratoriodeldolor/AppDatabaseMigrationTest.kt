@@ -34,6 +34,17 @@ class AppDatabaseMigrationTest {
         }
     }
 
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE mood_entries ADD COLUMN moodScore INTEGER NOT NULL DEFAULT 3")
+            database.execSQL("UPDATE mood_entries SET moodScore = 5 WHERE emoji IN ('😄','😀','😊','😍')")
+            database.execSQL("UPDATE mood_entries SET moodScore = 4 WHERE emoji IN ('🙂')")
+            database.execSQL("UPDATE mood_entries SET moodScore = 3 WHERE emoji IN ('😐')")
+            database.execSQL("UPDATE mood_entries SET moodScore = 2 WHERE emoji IN ('😟')")
+            database.execSQL("UPDATE mood_entries SET moodScore = 1 WHERE emoji IN ('😡','😢','😞','😠')")
+        }
+    }
+
     @Test
     @Throws(IOException::class)
     fun migrate6To7_addsColumnsAndTable_preservesData() {
@@ -53,10 +64,45 @@ class AppDatabaseMigrationTest {
             close()
         }
 
-        // Run migration
-        helper.runMigrationsAndValidate(TEST_DB, 7, true, MIGRATION_6_7)
+        // Run migration and validate schema
+        val db = helper.runMigrationsAndValidate(TEST_DB, 7, true, MIGRATION_6_7)
 
-        // If we reach here, migration applied without throwing; basic assertion
-        assertTrue(true)
+        // verify pain_points has view and logId columns
+        val cursor = db.query("PRAGMA table_info('pain_points')")
+        var hasView = false
+        var hasLogId = false
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(cursor.getColumnIndex("name"))
+            if (name == "view") hasView = true
+            if (name == "logId") hasLogId = true
+        }
+        cursor.close()
+        db.close()
+
+        assertTrue(hasView && hasLogId)
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate5To6_addsMoodScoreAndMapsValues() {
+        val db = helper.createDatabase(TEST_DB, 5).apply {
+            execSQL("CREATE TABLE IF NOT EXISTS mood_entries (id INTEGER PRIMARY KEY NOT NULL, emoji TEXT NOT NULL, note TEXT, timestamp INTEGER NOT NULL)")
+            execSQL("INSERT INTO mood_entries (id, emoji, note, timestamp) VALUES (1, '😊', 'legacy', 1609459200000)")
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate(TEST_DB, 6, true, MIGRATION_5_6)
+        val cursor = migrated.query("SELECT moodScore FROM mood_entries WHERE id = 1")
+        try {
+            if (cursor.moveToFirst()) {
+                val score = cursor.getInt(0)
+                assertTrue(score in 1..5)
+            } else {
+                throw AssertionError("No mood entry found after migration")
+            }
+        } finally {
+            cursor.close()
+            migrated.close()
+        }
     }
 }

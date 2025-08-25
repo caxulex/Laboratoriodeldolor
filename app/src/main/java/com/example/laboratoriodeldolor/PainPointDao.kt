@@ -21,11 +21,7 @@ interface PainPointDao {
 
     @Query("DELETE FROM pain_points WHERE id = :id")
     suspend fun deleteById(id: Long)
-
-    // New PainLog management
-    @Insert
-    suspend fun insertLog(log: PainLog): Long
-
+    
     @Query("SELECT * FROM pain_points WHERE logId = :logId ORDER BY timestamp DESC")
     suspend fun getByLogId(logId: Long): List<PainPoint>
 }

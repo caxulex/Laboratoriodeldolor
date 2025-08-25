@@ -10,6 +10,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun moodDao(): MoodDao
     abstract fun painPointDao(): PainPointDao
+    abstract fun painLogDao(): PainLogDao
     abstract fun exerciseDao(): ExerciseDao
 
     companion object {

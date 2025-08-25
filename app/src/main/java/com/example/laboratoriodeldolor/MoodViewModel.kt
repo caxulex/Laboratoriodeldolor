@@ -2,8 +2,6 @@
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.laboratoriodeldolor.data.StoredPriority
@@ -17,7 +15,6 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import kotlin.math.abs
 
 class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: ExerciseDao, private val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository? = null) : ViewModel() {
     // State is still here
@@ -122,6 +119,20 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
                 Log.d(tag, "Logged exercise at ${'$'}now")
             } catch (e: Exception) {
                 Log.e(tag, "logExerciseCompleted failed", e)
+            }
+        }
+    }
+
+    /**
+     * Undo: delete the most recent exercise log.
+     */
+    fun undoLastExercise() {
+        viewModelScope.launch {
+            try {
+                exerciseDao.deleteMostRecent()
+                Log.d(tag, "Deleted most recent exercise log (undo)")
+            } catch (e: Exception) {
+                Log.e(tag, "undoLastExercise failed", e)
             }
         }
     }

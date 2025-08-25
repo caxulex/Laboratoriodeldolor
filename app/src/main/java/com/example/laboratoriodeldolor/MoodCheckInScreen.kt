@@ -10,20 +10,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.laboratoriodeldolor.ui.components.MoodEmojiButton
+import com.example.laboratoriodeldolor.ui.components.LottieSaveButton
+import com.example.laboratoriodeldolor.ui.theme.Dimens
 import androidx.compose.ui.res.stringResource
 
 @Composable
@@ -34,14 +34,21 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
             Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
             // Five-level emoji selector: 😡 😟 😐 🙂 😄 (very bad -> very good)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 val options = MoodOptions.FIVE_LEVEL
                 options.forEachIndexed { idx, e ->
                     val selected = emojiState.value == e
-                    MoodEmojiButton(emoji = e, selected = selected, size = 64.dp) {
+                    val desc = when (idx) {
+                        0 -> stringResource(id = R.string.emoji_desc_very_bad)
+                        1 -> stringResource(id = R.string.emoji_desc_bad)
+                        2 -> stringResource(id = R.string.emoji_desc_neutral)
+                        3 -> stringResource(id = R.string.emoji_desc_good)
+                        else -> stringResource(id = R.string.emoji_desc_very_good)
+                    }
+                    MoodEmojiButton(emoji = e, selected = selected, size = 64.dp, contentDesc = desc) {
                         emojiState.value = e
                     }
 
@@ -63,10 +70,8 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
                     onSaved(emojiState.value)
                     onNext()
                 })
-                Spacer(modifier = Modifier.width(8.dp))
-                androidx.compose.material3.OutlinedButton(onClick = { onSkip() }, modifier = Modifier.height(48.dp)) {
-                    Text(text = stringResource(id = R.string.checkin_skip))
-                }
+                Spacer(modifier = Modifier.width(Dimens.spaceSmall))
+                com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.checkin_skip), onClick = { onSkip() }, modifier = Modifier.height(Dimens.buttonHeight))
             }
         }
     }

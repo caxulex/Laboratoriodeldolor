@@ -1,7 +1,6 @@
 package com.example.laboratoriodeldolor
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -9,7 +8,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 
 /**
  * Top-level enum describing body areas used by detection and UI.
@@ -41,10 +39,17 @@ fun detectBodyAreas(points: List<Offset>): Set<BodyArea> {
  * All coordinates are stored as normalized offsets (0f..1f) relative to the image/canvas
  * so they remain correctly positioned when the image scales.
  */
-class PainTrackerViewModel(private val painPointDao: PainPointDao? = null) : ViewModel() {
+class PainTrackerViewModel(
+    private val painPointDao: PainPointDao? = null,
+    private val painLogDao: PainLogDao? = null
+) : ViewModel() {
     // Stored coordinates are normalized (x = 0..1, y = 0..1)
-    private val _painPoints = MutableStateFlow<List<Offset>>(emptyList())
-    val painPoints: StateFlow<List<Offset>> = _painPoints
+    // Separate lists for front and back views so users can mark independently.
+    private val _frontPainPoints = MutableStateFlow<List<Offset>>(emptyList())
+    val frontPainPoints: StateFlow<List<Offset>> = _frontPainPoints
+
+    private val _backPainPoints = MutableStateFlow<List<Offset>>(emptyList())
+    val backPainPoints: StateFlow<List<Offset>> = _backPainPoints
 
     // Expose stored DB points as Flow if DAO provided (optional)
     val painPointsFromDb: Flow<List<PainPoint>>? = painPointDao?.getAll()
@@ -60,9 +65,10 @@ class PainTrackerViewModel(private val painPointDao: PainPointDao? = null) : Vie
     private val _selectedView = MutableStateFlow<String>("front") // "front" or "back"
     val selectedView: StateFlow<String> = _selectedView
 
-    // Recompute selected areas based on normalized painPoints list using the pure helper.
-    private fun computeSelectedAreasFromPoints(points: List<Offset>) {
-        _selectedAreas.value = detectBodyAreas(points)
+    // Recompute selected areas based on normalized painPoints lists (combine front+back)
+    private fun computeSelectedAreasFromPoints() {
+        val combined = _frontPainPoints.value + _backPainPoints.value
+        _selectedAreas.value = detectBodyAreas(combined)
     }
 
     /**
@@ -93,17 +99,27 @@ class PainTrackerViewModel(private val painPointDao: PainPointDao? = null) : Vie
         // Clamp to [0,1] to be safe
         val nx = normalizedPoint.x.coerceIn(0f, 1f)
         val ny = normalizedPoint.y.coerceIn(0f, 1f)
-    _painPoints.value = _painPoints.value + Offset(nx, ny)
-    // Update detected areas
-    computeSelectedAreasFromPoints(_painPoints.value)
+        val pt = Offset(nx, ny)
+        when (_selectedView.value) {
+            "front" -> _frontPainPoints.value = _frontPainPoints.value + pt
+            "back" -> _backPainPoints.value = _backPainPoints.value + pt
+            else -> _frontPainPoints.value = _frontPainPoints.value + pt
+        }
+        // Update detected areas across both lists
+        computeSelectedAreasFromPoints()
     }
 
     /**
      * Clear all recorded pain points.
      */
     fun clearPainPoints() {
-    _painPoints.value = emptyList()
-    computeSelectedAreasFromPoints(_painPoints.value)
+        // Clear only the currently selected view's in-memory points
+        when (_selectedView.value) {
+            "front" -> _frontPainPoints.value = emptyList()
+            "back" -> _backPainPoints.value = emptyList()
+            else -> { _frontPainPoints.value = emptyList(); _backPainPoints.value = emptyList() }
+        }
+        computeSelectedAreasFromPoints()
     }
 
     /**
@@ -112,24 +128,24 @@ class PainTrackerViewModel(private val painPointDao: PainPointDao? = null) : Vie
      */
     fun savePainPoints(): Boolean {
         val dao = painPointDao ?: return false
-        val currentView = _selectedView.value
-        val toSave = _painPoints.value.map { off ->
-            PainPoint(x = off.x, y = off.y, view = currentView)
-        }
+    // Save points from both front and back lists with correct view tags
+    val frontToSave = _frontPainPoints.value.map { off -> PainPoint(x = off.x, y = off.y, view = "front") }
+    val backToSave = _backPainPoints.value.map { off -> PainPoint(x = off.x, y = off.y, view = "back") }
+    val toSave = frontToSave + backToSave
         viewModelScope.launch {
             try {
-                // Create a PainLog session and get the id
+                // Create a PainLog session and get the id via the dedicated PainLogDao
                 val logId = try {
-                    dao.insertLog(PainLog())
+                    painLogDao?.insertLog(PainLog()) ?: 0L
                 } catch (e: Exception) {
                     0L
                 }
 
-                // Attach the logId to each PainPoint
+                // Attach the logId to each PainPoint and persist via PainPointDao
                 val toSaveWithLog = toSave.map { it.copy(logId = logId) }
                 dao.insertAll(toSaveWithLog)
-                // After persisting, recompute areas from the in-memory list
-                computeSelectedAreasFromPoints(_painPoints.value)
+                // After persisting, recompute areas from the in-memory lists
+                computeSelectedAreasFromPoints()
             } catch (e: Exception) {
                 // Log or handle
                 println("PainTrackerViewModel: savePainPoints failed: ${'$'}e")

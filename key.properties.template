@@ -1,0 +1,12 @@
+# Copy this file to key.properties and fill in with your real signing credentials (DO NOT COMMIT key.properties).
+# Example:
+# storeFile=keystore/release.keystore
+# storePassword=your_store_password
+# keyAlias=release_key
+# keyPassword=your_key_password
+
+# Uncomment and customize below:
+#storeFile=keystore/release.keystore
+#storePassword=changeit
+#keyAlias=release_key
+#keyPassword=changeit

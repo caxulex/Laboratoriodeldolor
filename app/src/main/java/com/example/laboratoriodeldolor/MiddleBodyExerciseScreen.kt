@@ -1,6 +1,7 @@
 package com.example.laboratoriodeldolor
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
@@ -9,7 +10,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +35,10 @@ fun MiddleBodyExerciseScreen(onBack: () -> Unit = {}) {
                 }
             }
 
-            androidx.compose.material3.OutlinedButton(onClick = onBack, modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally).height(48.dp)) {
-                Text(text = stringResource(id = R.string.back_button))
-            }
+            // push action to bottom when list is short
+            Spacer(modifier = Modifier.weight(1f))
+
+            com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.back_button), onClick = onBack, modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally).height(48.dp))
         }
     }
 }

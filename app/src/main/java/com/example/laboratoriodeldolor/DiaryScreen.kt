@@ -3,6 +3,8 @@ package com.example.laboratoriodeldolor
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,27 +15,26 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.laboratoriodeldolor.ui.components.MoodEmojiButton
+import com.example.laboratoriodeldolor.ui.components.LottieSaveButton
+import com.example.laboratoriodeldolor.ui.theme.Dimens
 
 @Suppress("UNUSED_PARAMETER")
 @Composable
@@ -46,32 +47,39 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
             Text(text = stringResource(id = R.string.diary_title), style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
             // Five-level emoji selector
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     val options = MoodOptions.FIVE_LEVEL
                     options.forEachIndexed { idx, e ->
                     val isSelected = selectedEmoji == e
-                    MoodEmojiButton(emoji = e, selected = isSelected, size = 64.dp) {
+                    val desc = when (idx) {
+                        0 -> stringResource(id = R.string.emoji_desc_very_bad)
+                        1 -> stringResource(id = R.string.emoji_desc_bad)
+                        2 -> stringResource(id = R.string.emoji_desc_neutral)
+                        3 -> stringResource(id = R.string.emoji_desc_good)
+                        else -> stringResource(id = R.string.emoji_desc_very_good)
+                    }
+                    MoodEmojiButton(emoji = e, selected = isSelected, size = 64.dp, contentDesc = desc) {
                         selectedEmoji = e
                     }
                     if (idx < options.size - 1) Spacer(modifier = Modifier.width(14.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.spaceSmall))
 
-            OutlinedTextField(
+        OutlinedTextField(
                 value = note,
                 onValueChange = { note = it },
                 label = { Text(text = stringResource(id = R.string.diary_entry_hint)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+            .height(200.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
             // Replace primary save Button with LottieSaveButton which plays success animation
             LottieSaveButton(enabled = note.isNotBlank(), onSave = {
@@ -83,6 +91,9 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
             })
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Allow content to grow and push actions to bottom when sparse
+            Spacer(modifier = Modifier.weight(1f))
 
             // Past entries (showing MoodEntry records)
             LazyColumn(modifier = Modifier.fillMaxWidth()) {

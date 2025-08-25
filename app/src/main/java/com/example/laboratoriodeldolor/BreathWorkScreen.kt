@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -40,7 +41,7 @@ fun BreathWorkScreen(viewModel: BreathWorkViewModel, onInstruction: (String) -> 
         Text(text = stringResource(id = R.string.breath_title), style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
-        exercises.forEach { (id, title) ->
+        for ((id, title) in exercises) {
             val isRecommended = id == recommended
             Card(
                 modifier = Modifier
@@ -59,7 +60,7 @@ fun BreathWorkScreen(viewModel: BreathWorkViewModel, onInstruction: (String) -> 
                         }
                     }
                     IconButton(onClick = { onInstruction(id) }) {
-                        Icon(imageVector = Icons.Filled.Home, contentDescription = null, tint = if (isRecommended) MaterialTheme.colorScheme.primary else Color.Gray)
+                        Icon(imageVector = Icons.Filled.Home, contentDescription = stringResource(id = R.string.back_button), tint = if (isRecommended) MaterialTheme.colorScheme.primary else Color.Gray)
                     }
                 }
             }

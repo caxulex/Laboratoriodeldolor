@@ -12,4 +12,7 @@ interface ExerciseDao {
 
     @Query("SELECT * FROM exercise_logs ORDER BY timestamp DESC")
     fun getAll(): Flow<List<ExerciseLog>>
+
+    @Query("DELETE FROM exercise_logs WHERE id = (SELECT id FROM exercise_logs ORDER BY timestamp DESC LIMIT 1)")
+    suspend fun deleteMostRecent()
 }
