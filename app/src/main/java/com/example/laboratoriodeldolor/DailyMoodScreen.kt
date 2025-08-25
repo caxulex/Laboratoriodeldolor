@@ -78,11 +78,17 @@ fun DailyMoodScreen(
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
         // Animated gradient background that shifts slowly; palette varies with local hour
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        // Use theme colors for time-of-day gradients to centralize styling
+        val morningColors = listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.primary)
+        val afternoonColors = listOf(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.secondary)
+        val eveningColors = listOf(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.tertiary)
+        val nightColors = listOf(MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.surface)
+
         val baseColors = when (hour) {
-            in 6..11 -> listOf(Color(0xFFFFF3E0), Color(0xFFFFE0B2)) // morning warm
-            in 12..17 -> listOf(Color(0xFFE3F2FD), Color(0xFFBBDEFB)) // afternoon cool
-            in 18..20 -> listOf(Color(0xFFF3E5F5), Color(0xFFE1BEE7)) // evening soft
-            else -> listOf(Color(0xFF0B1630), Color(0xFF071028)) // night deep navy
+            in 6..11 -> morningColors
+            in 12..17 -> afternoonColors
+            in 18..20 -> eveningColors
+            else -> nightColors
         }
 
         val infinite = rememberInfiniteTransition()
