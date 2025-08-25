@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
 
 /**
  * Subtle ambient background: slow-moving, time-aware multi-color gradient.
@@ -24,11 +25,24 @@ import androidx.compose.ui.graphics.Color
 fun AmbientBackground(modifier: Modifier = Modifier) {
     // compute palette based on hour
     val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+    // read theme colors in composable scope (safe for DrawScope use later)
+    val morningA = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
+    val morningB = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+
+    val afternoonA = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f)
+    val afternoonB = MaterialTheme.colorScheme.secondary.copy(alpha = 0.08f)
+
+    val eveningA = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.12f)
+    val eveningB = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.08f)
+
+    val nightA = MaterialTheme.colorScheme.background.copy(alpha = 0.14f)
+    val nightB = MaterialTheme.colorScheme.surface.copy(alpha = 0.18f)
+
     val baseColors = when (hour) {
-        in 6..11 -> listOf(Color(0xFFFFF3E0).copy(alpha = 0.18f), Color(0xFFFFE0B2).copy(alpha = 0.12f))
-        in 12..17 -> listOf(Color(0xFFE3F2FD).copy(alpha = 0.12f), Color(0xFFBBDEFB).copy(alpha = 0.08f))
-        in 18..20 -> listOf(Color(0xFFF3E5F5).copy(alpha = 0.12f), Color(0xFFE1BEE7).copy(alpha = 0.08f))
-        else -> listOf(Color(0xFF071028).copy(alpha = 0.14f), Color(0xFF0B1630).copy(alpha = 0.18f))
+        in 6..11 -> listOf(morningA, morningB)
+        in 12..17 -> listOf(afternoonA, afternoonB)
+        in 18..20 -> listOf(eveningA, eveningB)
+        else -> listOf(nightA, nightB)
     }
 
     val infinite = rememberInfiniteTransition()

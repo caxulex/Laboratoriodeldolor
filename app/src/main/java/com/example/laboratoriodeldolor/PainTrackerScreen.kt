@@ -156,6 +156,8 @@ fun PainTrackerScreen(
 				val upperOverlayColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.33f)
 				val middleOverlayColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.33f)
 				val lowerOverlayColor = androidx.compose.material3.MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.33f)
+				// color for pain points (use theme's error red)
+				val painPointColor = androidx.compose.material3.MaterialTheme.colorScheme.error
 
 				Box(
 					modifier = Modifier
@@ -223,7 +225,7 @@ fun PainTrackerScreen(
 						pointsToDraw.forEach { normalizedPt ->
 							val px = normalizedPt.x * size.width
 							val py = normalizedPt.y * size.height
-							drawCircle(color = Color.Red, radius = radius, center = Offset(px, py))
+							drawCircle(color = painPointColor, radius = radius, center = Offset(px, py))
 						}
 					}
 				}
