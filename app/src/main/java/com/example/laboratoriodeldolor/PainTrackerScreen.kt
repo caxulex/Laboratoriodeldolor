@@ -152,6 +152,11 @@ fun PainTrackerScreen(
 
 				Spacer(modifier = Modifier.height(Dimens.spaceLarge))
 
+				// Precompute overlay colors in the composable scope so they aren't accessed from DrawScope
+				val upperOverlayColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.33f)
+				val middleOverlayColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.33f)
+				val lowerOverlayColor = androidx.compose.material3.MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.33f)
+
 				Box(
 					modifier = Modifier
 						.fillMaxWidth()
@@ -192,13 +197,25 @@ fun PainTrackerScreen(
 
 						val bandHeight = size.height / 3f
 						if (selectedAreas.contains(BodyArea.UPPER)) {
-							drawRect(color = Color(0x5544CCFF), topLeft = Offset(0f, 0f), size = Size(size.width, bandHeight))
+							drawRect(
+								color = upperOverlayColor,
+								topLeft = Offset(0f, 0f),
+								size = Size(size.width, bandHeight)
+							)
 						}
 						if (selectedAreas.contains(BodyArea.MIDDLE)) {
-							drawRect(color = Color(0x55AAFF88), topLeft = Offset(0f, bandHeight), size = Size(size.width, bandHeight))
+							drawRect(
+								color = middleOverlayColor,
+								topLeft = Offset(0f, bandHeight),
+								size = Size(size.width, bandHeight)
+							)
 						}
 						if (selectedAreas.contains(BodyArea.LOWER)) {
-							drawRect(color = Color(0x55FF8888), topLeft = Offset(0f, bandHeight * 2f), size = Size(size.width, bandHeight))
+							drawRect(
+								color = lowerOverlayColor,
+								topLeft = Offset(0f, bandHeight * 2f),
+								size = Size(size.width, bandHeight)
+							)
 						}
 
 						// Draw only the points for the currently selected view
