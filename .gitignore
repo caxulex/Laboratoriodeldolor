@@ -41,3 +41,17 @@ key.properties
 app/src/main/res/drawable/backup_xml/
 app/src/main/res/font/backup_*/
 app/src/main/res/font/fonts_placeholder_readme.txt
+
+.vscode/
+
+*.log
+
+color_scan_*.txt
+
+color_scan_hash.txt
+
+*.bak
+
+/build/
+
+git-backups/
