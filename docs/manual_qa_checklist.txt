@@ -1,0 +1,42 @@
+Manual QA Checklist - El Laboratorio del Dolor
+
+1) Theme & Visuals
+- Launch app in Light theme and inspect primary screens (Check-in, Diario, Dolor, Ejercicios, Ajustes).
+- Launch app in Dark theme and compare the same screens.
+- Verify color contrast for primary buttons and text (AA accessibility at minimum).
+- Verify icons and images render crisply on xxhdpi device.
+
+2) Animations
+- Start app and confirm Lottie animations (if present) play without freezes on first run.
+- Open screens with animated transitions and check for dropped frames.
+- Inspect splash animation: ensure it fades in/out smoothly.
+
+3) Localization
+- Navigate through app and confirm all text is Spanish.
+- Validate long strings do not overflow or clip in UI (especially in narrow screens).
+
+4) Notifications & WorkManager
+- To trigger the daily reminder manually via adb (example):
+  adb shell cmd jobscheduler run -f com.example.laboratoriodeldolor 999
+  (Replace 999 with the WorkManager job id if known; alternatively, open app and use Settings to trigger a test reminder.)
+- Verify notification appears and tapping it opens the app to the expected screen.
+
+5) Pain Tracker
+- Switch gender and front/back views and verify points persist per-view.
+- Tap several points across the body image and confirm the anatomical label shown in the list matches expected location.
+
+6) Data Integrity
+- Create mood entries, exercises, and pain logs, then force-stop and relaunch the app to verify persistence.
+- Run migration paths by installing old APK and then new APK (if available) and verify no data loss.
+
+7) Performance
+- Measure cold start time and compare against baseline.
+- Interact with heavy screens (charts) and verify UI remains responsive.
+
+8) Edge Cases (Manual)
+- Try adding more than 20 pain points and observe list/truncation behavior.
+- Toggle airplane mode and verify network-dependent features degrade gracefully.
+
+Notes:
+- If any issue is discovered, capture logcat (adb logcat -d > issue-log.txt) and a short repro video.
+- For flaky UI tests, increase ComposeTestRule waiting time or convert assertions to use retry loops.
