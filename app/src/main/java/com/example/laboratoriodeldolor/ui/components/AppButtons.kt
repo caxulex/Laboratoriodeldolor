@@ -11,9 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.TextStyle
+// using fully-qualified OutlinedButtonDefaults to avoid ambiguous imports
 
 @Composable
 fun PrimaryButton(
@@ -21,8 +21,8 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 48.dp,
-    containerColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+    contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onPrimary,
     textStyle: TextStyle? = null
 ) {
     val shape = RoundedCornerShape(12.dp)
@@ -41,7 +41,8 @@ fun SecondaryButton(
     textStyle: TextStyle? = null
 ) {
     val shape = RoundedCornerShape(12.dp)
+    // Use default outlined button from Material3 so the color scheme is applied automatically
     OutlinedButton(onClick = onClick, modifier = modifier.height(height), shape = shape) {
-        Text(text = text, style = textStyle ?: MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = text, style = textStyle ?: MaterialTheme.typography.labelLarge)
     }
 }

@@ -27,10 +27,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.example.laboratoriodeldolor.ui.GradientBackground
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
@@ -68,15 +70,18 @@ fun PainTrackerScreen(
 	var toDeleteId by remember { mutableStateOf<Long?>(null) }
 
 	androidx.compose.material3.Scaffold { innerPadding ->
-		androidx.compose.material3.Card(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+		// Full-screen gradient background, content layered above
+		Box(modifier = Modifier.fillMaxSize()) {
+			GradientBackground()
 			Column(modifier = Modifier
 				.fillMaxSize()
+				.padding(innerPadding)
 				.padding(16.dp)) {
 
 				androidx.compose.material3.Text(
 					text = stringResource(id = R.string.pain_tracker_title),
 					style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
-					modifier = Modifier.padding(bottom = 16.dp)
+					modifier = Modifier.padding(bottom = 16.dp).testTag("screen_title")
 				)
 
 				Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -85,14 +90,14 @@ fun PainTrackerScreen(
 						com.example.laboratoriodeldolor.ui.components.PrimaryButton(
 							text = stringResource(id = R.string.gender_male),
 							onClick = { viewModel.selectGender("male") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("gender_male"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					} else {
 						com.example.laboratoriodeldolor.ui.components.SecondaryButton(
 							text = stringResource(id = R.string.gender_male),
 							onClick = { viewModel.selectGender("male") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("gender_male"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					}
@@ -101,14 +106,14 @@ fun PainTrackerScreen(
 						com.example.laboratoriodeldolor.ui.components.PrimaryButton(
 							text = stringResource(id = R.string.gender_female),
 							onClick = { viewModel.selectGender("female") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("gender_female"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					} else {
 						com.example.laboratoriodeldolor.ui.components.SecondaryButton(
 							text = stringResource(id = R.string.gender_female),
 							onClick = { viewModel.selectGender("female") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("gender_female"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					}
@@ -121,14 +126,14 @@ fun PainTrackerScreen(
 						com.example.laboratoriodeldolor.ui.components.PrimaryButton(
 							text = stringResource(id = R.string.view_front),
 							onClick = { viewModel.selectView("front") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("view_front"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					} else {
 						com.example.laboratoriodeldolor.ui.components.SecondaryButton(
 							text = stringResource(id = R.string.view_front),
 							onClick = { viewModel.selectView("front") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("view_front"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					}
@@ -137,14 +142,14 @@ fun PainTrackerScreen(
 						com.example.laboratoriodeldolor.ui.components.PrimaryButton(
 							text = stringResource(id = R.string.view_back),
 							onClick = { viewModel.selectView("back") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("view_back"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					} else {
 						com.example.laboratoriodeldolor.ui.components.SecondaryButton(
 							text = stringResource(id = R.string.view_back),
 							onClick = { viewModel.selectView("back") },
-							modifier = Modifier.height(32.dp),
+							modifier = Modifier.height(32.dp).testTag("view_back"),
 							textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
 						)
 					}
@@ -185,6 +190,7 @@ fun PainTrackerScreen(
 					Canvas(modifier = Modifier
 						.fillMaxSize()
 						.onSizeChanged { canvasSize = it }
+						.testTag("bodyCanvas")
 						.pointerInput(Unit) {
 							detectTapGestures { tap: Offset ->
 								if (canvasSize.width > 0 && canvasSize.height > 0) {
@@ -248,13 +254,13 @@ fun PainTrackerScreen(
 				}
 
 				val persistedFlow = viewModel.painPointsFromDb
-				if (persistedFlow != null) {
+					if (persistedFlow != null) {
 					val persisted by persistedFlow.collectAsState(initial = emptyList())
 					LazyColumn(modifier = Modifier.fillMaxWidth()) {
 						items(persisted) { pp ->
 							Row(modifier = Modifier
 								.fillMaxWidth()
-								.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+									.padding(8.dp).testTag("persisted_row_${'$'}{pp.id}"), verticalAlignment = Alignment.CenterVertically) {
 								// Map persisted point to descriptive location
 								val key = mapPainPointToLocationKey(pp)
 								val labelRes = painLocationKeyToStringRes(key)

@@ -17,9 +17,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.laboratoriodeldolor.ui.components.MoodEmojiButton
 import com.example.laboratoriodeldolor.ui.components.LottieSaveButton
@@ -27,13 +38,20 @@ import com.example.laboratoriodeldolor.ui.theme.Dimens
 import androidx.compose.ui.res.stringResource
 
 @Composable
+@OptIn(ExperimentalAnimationApi::class)
 fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: () -> Unit, onSaved: (String) -> Unit = {}) {
     val emojiState = remember { mutableStateOf(moodViewModel.selectedEmoji) }
     var note by remember { mutableStateOf(moodViewModel.noteText) }
+    val haptic = LocalHapticFeedback.current
+    var visible by remember { mutableStateOf(true) }
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
-            Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.headlineSmall)
+    val coroutineScope = rememberCoroutineScope()
+
+    Surface(modifier = Modifier.fillMaxSize(), color = androidx.compose.material3.MaterialTheme.colorScheme.background) {
+        com.example.laboratoriodeldolor.ui.GradientBackground()
+        AnimatedVisibility(visible = visible, enter = fadeIn(animationSpec = tween(260)), exit = fadeOut(animationSpec = tween(260))) {
+            Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
+                Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
             Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
             // Five-level emoji selector: 😡 😟 😐 🙂 😄 (very bad -> very good)
@@ -48,7 +66,9 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
                         3 -> stringResource(id = R.string.emoji_desc_good)
                         else -> stringResource(id = R.string.emoji_desc_very_good)
                     }
-                    MoodEmojiButton(emoji = e, selected = selected, size = 64.dp, contentDesc = desc) {
+                    MoodEmojiButton(emoji = e, selected = selected, size = 64.dp, contentDesc = desc, modifier = Modifier.testTag("moodEmoji_$idx")) {
+                        // give lightweight haptic feedback and update selection
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         emojiState.value = e
                     }
 
@@ -62,17 +82,31 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
             Spacer(modifier = Modifier.height(16.dp))
             Row {
                 LottieSaveButton(enabled = true, onSave = {
-                    // save
+                    // save and animate transition before moving to next screen
                     moodViewModel.selectedEmoji = emojiState.value
                     moodViewModel.noteText = note
                     moodViewModel.onMoodSave()
                     // notify caller of saved emoji so it can adjust dashboard priority
                     onSaved(emojiState.value)
-                    onNext()
+                    // trigger exit animation then navigate
+                    visible = false
+                    // wait for the exit animation to complete before calling onNext
+                    coroutineScope.launch {
+                        // slightly longer than fade duration to allow Lottie to play a bit
+                        delay(360)
+                        onNext()
+                    }
                 })
                 Spacer(modifier = Modifier.width(Dimens.spaceSmall))
-                com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.checkin_skip), onClick = { onSkip() }, modifier = Modifier.height(Dimens.buttonHeight))
+                com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.checkin_skip), onClick = {
+                    visible = false
+                    coroutineScope.launch {
+                        delay(260)
+                        onSkip()
+                    }
+                }, modifier = Modifier.height(Dimens.buttonHeight).testTag("checkin_skip"))
             }
         }
+    }
     }
 }

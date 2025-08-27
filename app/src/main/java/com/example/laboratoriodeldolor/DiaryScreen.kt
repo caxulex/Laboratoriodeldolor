@@ -2,6 +2,7 @@ package com.example.laboratoriodeldolor
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -19,6 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import com.example.laboratoriodeldolor.ui.GradientBackground
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,9 +47,11 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
 
     val entries by diaryViewModel.entries.collectAsState(initial = emptyList())
 
-    Surface(modifier = Modifier.fillMaxSize()) {
+    // Layer the app-wide gradient background behind diary content
+    Box(modifier = Modifier.fillMaxSize()) {
+        GradientBackground()
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
-            Text(text = stringResource(id = R.string.diary_title), style = MaterialTheme.typography.headlineSmall)
+            Text(text = stringResource(id = R.string.diary_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
             Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
             // Five-level emoji selector
@@ -92,9 +97,6 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Allow content to grow and push actions to bottom when sparse
-            Spacer(modifier = Modifier.weight(1f))
-
             // Past entries (showing MoodEntry records)
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(entries) { entry ->
@@ -108,7 +110,7 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
 
 @Composable
 fun DiaryEntryCard(entry: MoodEntry) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth(), colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(12.dp)) {
             val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
             Text(text = sdf.format(Date(entry.timestamp)), style = MaterialTheme.typography.bodySmall)

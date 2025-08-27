@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
@@ -38,7 +39,7 @@ fun BreathWorkScreen(viewModel: BreathWorkViewModel, onInstruction: (String) -> 
     )
 
     Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), verticalArrangement = Arrangement.Top) {
-        Text(text = stringResource(id = R.string.breath_title), style = MaterialTheme.typography.titleLarge)
+    Text(text = stringResource(id = R.string.breath_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("screen_title"))
         Spacer(modifier = Modifier.height(16.dp))
 
         for ((id, title) in exercises) {

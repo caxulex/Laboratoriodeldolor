@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateToAbout: () -> Unit =
     Scaffold { innerPadding ->
         Card(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
             Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
-                Text(text = stringResource(id = R.string.settings_title), style = MaterialTheme.typography.headlineSmall)
+                Text(text = stringResource(id = R.string.settings_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
 
                 // primary action button
                 com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.reminder_time_label) + ": ${reminder.first.toString().padStart(2,'0')}:${reminder.second.toString().padStart(2,'0')}", onClick = {

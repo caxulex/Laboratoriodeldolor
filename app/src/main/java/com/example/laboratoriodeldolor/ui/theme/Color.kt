@@ -2,44 +2,42 @@ package com.example.laboratoriodeldolor.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ----- Light theme palette (calming, high-contrast, accessible) -----
-val LightBackground = Color(0xFFF4F7FB)    // very light cool background
-val LightSurface = Color(0xFFFFFFFF)       // cards / surfaces
-val LightOnBackground = Color(0xFF0B1A2B)  // deep navy text on light bg
-val LightOnSurface = Color(0xFF0B1A2B)
+// DESIGN PALETTE (based on dashboard screenshot)
+// Gradient: top light pink → deep purple
+val GradientStart = Color(0xFFFFD6E8)     // pale pink (top)
+val GradientEnd = Color(0xFF8A2BE2)       // deep violet (bottom)
 
-val LightPrimary = Color(0xFF1E88E5)       // calm blue (accessible)
-val LightOnPrimary = Color(0xFFFFFFFF)
-val LightPrimaryContainer = Color(0xFFDCEEFB)
+// Light blue info cards
+val CardLightBlue = Color(0xFFBEE9FF)
 
-val LightSecondary = Color(0xFF00796B)     // teal for secondary accents
-val LightOnSecondary = Color(0xFFFFFFFF)
-val LightSecondaryContainer = Color(0xFFB2DFDB)
+// Primary CTA (vibrant blue)
+val PrimaryBlue = Color(0xFF0D6EFF)
+val OnPrimaryBlue = Color(0xFFFFFFFF)
+val PrimaryContainerLight = Color(0xFFD7EDFF)
 
-val LightTertiary = Color(0xFF8E24AA)
-val LightOnTertiary = Color(0xFFFFFFFF)
+// Secondary (outlined / purple tone)
+val SecondaryPurple = Color(0xFF7C4DFF)
+val OnSecondaryPurple = Color(0xFFFFFFFF)
+val SecondaryContainerLight = Color(0xFFE9DFFF)
 
-val LightError = Color(0xFFB00020)
+// Text and surfaces
+val AppBackgroundLight = Color(0xFFFFEEF6) // subtle warm pink background base
+val AppSurface = Color(0xFFFFFFFF)
+val OnSurfaceDarkText = Color(0xFF111014)
+val OnBackgroundDarkText = OnSurfaceDarkText
 
-
-// ----- Dark theme palette (existing, refined for accessibility) -----
-val DarkBackground = Color(0xFF071028)    // deep navy background
-val DarkSurface = Color(0xFF0B1630)       // slightly lighter card surface
-val DarkOnBackground = Color(0xFFDEEAF6)  // light text for contrast
-val DarkOnSurface = Color(0xFFDEEAF6)
-
-val DarkPrimary = Color(0xFFFFB74D)       // warm amber CTA
-val DarkOnPrimary = Color(0xFF000000)
-val DarkPrimaryContainer = Color(0xFFFBE6C7)
-
-val DarkSecondary = Color(0xFF94A7BF)     // muted steel for secondary
-val DarkOnSecondary = DarkBackground
-val DarkSecondaryContainer = Color(0xFF0F2438)
-
-val DarkTertiary = Color(0xFFE1BEE7)
-val DarkOnTertiary = DarkBackground
-
-val DarkError = Color(0xFFCF6679)
+val ErrorRed = Color(0xFFB00020)
 
 
-// ----- No direct top-level alias: Theme.kt will pick the appropriate palette -----
+// Dark theme counterparts (toned for night mode)
+val DarkGradientStart = Color(0xFF3B1240) // darker purple
+val DarkGradientEnd = Color(0xFF0F0326)
+val DarkPrimary = Color(0xFF4DA3FF)
+val DarkOnPrimary = Color(0xFF0B1A2B)
+val DarkPrimaryContainer = Color(0xFF12314A)
+val DarkSecondary = Color(0xFF9A7BFF)
+val DarkOnSecondary = Color(0xFFFFFFFF)
+val DarkBackground = Color(0xFF0B0620)
+val DarkSurface = Color(0xFF12101A)
+val DarkOnSurface = Color(0xFFECEFF6)
+

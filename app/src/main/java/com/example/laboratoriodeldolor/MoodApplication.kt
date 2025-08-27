@@ -18,5 +18,23 @@ class MoodApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // Warm up the Room database on a background thread so any migrations or
+        // initialization work doesn't run on the main thread and cause an ANR
+        // when ViewModels request DAOs during initial composition.
+        Thread {
+            try {
+                // Accessing `database` will trigger the lazy initializer and run
+                // any pending migrations off the main thread. Assign to a
+                // non-reserved local variable so the compiler doesn't complain.
+                val dbInstance = database
+                // Optionally touch a DAO to ensure underlying DB file is opened
+                @Suppress("UNUSED_VARIABLE")
+                val _maybe = dbInstance // keep reference briefly to avoid optimization
+            } catch (t: Throwable) {
+                // Don't crash the app if pre-initialization fails; the DB will be
+                // created lazily later when needed. Log to aid debugging.
+                t.printStackTrace()
+            }
+        }.start()
     }
 }

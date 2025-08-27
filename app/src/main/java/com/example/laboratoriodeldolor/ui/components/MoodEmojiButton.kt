@@ -25,6 +25,7 @@ fun MoodEmojiButton(
     selected: Boolean,
     size: Dp = 64.dp,
     contentDesc: String? = null,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     var pressedScale by remember { mutableStateOf(1f) }
@@ -32,18 +33,18 @@ fun MoodEmojiButton(
 
     // Ensure minimum tappable area (>= 48dp). Use 56dp as comfortable target.
     val touchSize = if (size < 48.dp) 56.dp else size
-    val modifier = Modifier
+    val baseModifier = modifier
         .size(touchSize)
         .scale(scaleAnim)
 
     if (selected) {
         Box(
-            modifier = modifier
+            modifier = baseModifier
                 .semantics { if (!contentDesc.isNullOrEmpty()) this.contentDescription = contentDesc },
             contentAlignment = Alignment.Center
         ) {
             // Use themed primary colors for selected state
-            PrimaryButton(
+                PrimaryButton(
                 text = emoji,
                 onClick = {
                     pressedScale = 1.12f
@@ -61,7 +62,7 @@ fun MoodEmojiButton(
         }
     } else {
         Box(
-            modifier = modifier
+            modifier = baseModifier
                 .semantics { if (!contentDesc.isNullOrEmpty()) this.contentDescription = contentDesc },
             contentAlignment = Alignment.Center
         ) {

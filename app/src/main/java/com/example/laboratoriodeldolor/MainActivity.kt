@@ -70,8 +70,8 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     bottomBar = { if (showBottomBar) BottomBar(navController = navController, items = items) }
                 ) { innerPadding ->
-                    // Ambient animated background behind everything
-                    com.example.laboratoriodeldolor.ui.AmbientBackground()
+                    // Immersive gradient background behind everything
+                    com.example.laboratoriodeldolor.ui.GradientBackground()
 
                     NavHost(navController = navController, startDestination = Screen.CheckinMood.route, modifier = Modifier.padding(innerPadding)) {
                         // Check-in flow
@@ -201,26 +201,27 @@ fun BottomBar(navController: NavHostController, items: List<Screen>) {
     val iconSizeDp = 28.dp
     val navItemHeight = 56.dp // ensures 48dp touch target + padding
 
+    val colorScheme = MaterialTheme.colorScheme
     if (screenWidthDp >= 600) {
-        NavigationRail {
+        NavigationRail(containerColor = colorScheme.surface) {
             for (screen in items) {
                 NavigationRailItem(
                     selected = currentRoute == screen.route,
                     onClick = { if (currentRoute != screen.route) navController.navigate(screen.route) },
-                    icon = { Icon(screen.icon, contentDescription = stringResource(id = screen.labelRes), modifier = Modifier.size(iconSizeDp)) },
-                    label = { MText(text = stringResource(id = screen.labelRes)) },
+                    icon = { Icon(screen.icon, contentDescription = stringResource(id = screen.labelRes), modifier = Modifier.size(iconSizeDp), tint = if (currentRoute == screen.route) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0.6f)) },
+                    label = { MText(text = stringResource(id = screen.labelRes), color = if (currentRoute == screen.route) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0.7f)) },
                     modifier = Modifier.height(navItemHeight)
                 )
             }
         }
     } else {
-        NavigationBar(modifier = Modifier.navigationBarsPadding()) {
+        NavigationBar(containerColor = colorScheme.surface, modifier = Modifier.navigationBarsPadding()) {
             for (screen in items) {
                 NavigationBarItem(
                     selected = currentRoute == screen.route,
                     onClick = { if (currentRoute != screen.route) navController.navigate(screen.route) },
-                    icon = { Icon(screen.icon, contentDescription = stringResource(id = screen.labelRes), modifier = Modifier.size(iconSizeDp)) },
-                    label = { MText(text = stringResource(id = screen.labelRes)) },
+                    icon = { Icon(screen.icon, contentDescription = stringResource(id = screen.labelRes), modifier = Modifier.size(iconSizeDp), tint = if (currentRoute == screen.route) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0.6f)) },
+                    label = { MText(text = stringResource(id = screen.labelRes), color = if (currentRoute == screen.route) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0.7f)) },
                     modifier = Modifier.height(navItemHeight)
                 )
             }
