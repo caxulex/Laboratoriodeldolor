@@ -6,37 +6,38 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Reverted to a safe default font family to avoid build-time font/resource issues.
-val AppFontFamily = FontFamily.Default
+// Use safe default font families; runtime Google Fonts may be added later if desired.
+val TitleFontFamily: FontFamily = FontFamily.Default
+val BodyFontFamily: FontFamily = FontFamily.Default
 
 val Typography = Typography(
     displayLarge = TextStyle(
-        fontFamily = AppFontFamily,
+        fontFamily = TitleFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 32.sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = AppFontFamily,
+        fontFamily = TitleFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 20.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = AppFontFamily,
+        fontFamily = TitleFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp
     ),
     bodyLarge = TextStyle(
-        fontFamily = AppFontFamily,
+        fontFamily = BodyFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = AppFontFamily,
+        fontFamily = BodyFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 15.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = AppFontFamily,
+        fontFamily = BodyFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp
     )
