@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                 val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
 
                 val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).database.moodDao()))
-                val items = listOf(Screen.Diario, Screen.Diary, Screen.Exercises, Screen.Dolor, Screen.Recomendacion, Screen.Respiracion, Screen.Ajustes)
+                val items = listOf(Screen.Diario, Screen.Diary, Screen.Exercises, Screen.Dolor, Screen.Recomendacion, Screen.Respiracion, Screen.Progress, Screen.Ajustes)
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -149,6 +149,9 @@ class MainActivity : ComponentActivity() {
                         composable("history") {
                             MoodHistoryScreen(viewModel = moodHistoryViewModel)
                         }
+                        composable(Screen.Progress.route) {
+                            MoodChartScreen(moodDao = (application as MoodApplication).database.moodDao())
+                        }
                             // New specific front/back exercise screens
                             composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
                             composable(Screen.BackUpperBody.route) { BackUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
@@ -184,6 +187,7 @@ sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector)
     object CheckinPain : Screen("checkin_pain", R.string.checkin_pain_title, Icons.Filled.Home)
     object Recomendacion : Screen("recomendacion", R.string.recommendation_title, Icons.Filled.Home)
     object Respiracion : Screen("respiracion", R.string.breath_title, Icons.Filled.Home)
+    object Progress : Screen("progress", R.string.progress_title, Icons.Filled.Home)
     object Ajustes : Screen("ajustes", R.string.settings_title, Icons.Filled.Settings)
     object Exercises : Screen("exercises", R.string.exercises_label, Icons.Filled.Home)
 }

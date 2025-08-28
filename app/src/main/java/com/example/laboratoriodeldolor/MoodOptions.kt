@@ -5,5 +5,6 @@ package com.example.laboratoriodeldolor
  * Order: very bad -> very good
  */
 object MoodOptions {
-    val FIVE_LEVEL = listOf("😡", "😟", "😐", "🙂", "😄")
+    // Order: very bad -> very good
+    val FIVE_LEVEL = listOf("�", "😟", "😐", "🙂", "😄")
 }

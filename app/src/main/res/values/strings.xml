@@ -158,9 +158,13 @@
     <string name="exercise_marked_snackbar">Ejercicios marcados como completos</string>
     <string name="undo_action">Deshacer</string>
     <!-- Emoji accessibility descriptions (very bad -> very good) -->
-    <string name="emoji_desc_very_bad">Muy enojado</string>
+    <string name="emoji_desc_very_bad">Muy triste</string>
     <string name="emoji_desc_bad">Triste</string>
     <string name="emoji_desc_neutral">Neutral</string>
     <string name="emoji_desc_good">Contento</string>
     <string name="emoji_desc_very_good">Muy contento</string>
+    <!-- Chart / Progress screen -->
+    <string name="progress_title">Progreso</string>
+    <string name="progress_tab_weekly">Semanal</string>
+    <string name="progress_tab_monthly">Mensual</string>
 </resources>
