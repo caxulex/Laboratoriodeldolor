@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Laboratorio del dolor</string>
-    <string name="mood_tracker_title">¿Cómo te sientes hoy?</string>
-    <string name="save_mood_button">Guardar estado de ánimo</string>
+    <string name="mood_tracker_title">Â¿CÃ³mo te sientes hoy?</string>
+    <string name="save_mood_button">Guardar estado de Ã¡nimo</string>
     <string name="happy_mood_desc">Feliz</string>
     <string name="sad_mood_desc">Triste</string>
     <string name="angry_mood_desc">Enojado</string>
@@ -14,17 +14,18 @@
     <string name="save_pain_button">Guardar</string>
     <string name="clear_button">Limpiar</string>
     <string name="delete_button">Eliminar</string>
-    <string name="delete_confirm_title">Confirmar eliminación</string>
-    <string name="delete_confirm_message">¿Estás seguro de que deseas eliminar este punto de dolor?</string>
-    <string name="delete_confirm_yes">Sí, eliminar</string>
+    <string name="delete_confirm_title">Confirmar eliminaciÃ³n</string>
+    <string name="delete_confirm_message">Â¿EstÃ¡s seguro de que deseas eliminar este punto de dolor?</string>
+    <string name="delete_confirm_yes">SÃ­, eliminar</string>
     <string name="delete_confirm_no">Cancelar</string>
-    <string name="mood_question">¿Cómo te sientes hoy?</string>
-    <string name="add_note">Añade una nota</string>
+    <string name="mood_question">Â¿CÃ³mo te sientes hoy?</string>
+    <string name="add_note">AÃ±ade una nota</string>
     <!-- Button label on main screen that opens reminder settings -->
     <string name="reminder_settings_button">Recordatorios de tus ejercicios Cero Dolor</string>
     <string name="exercise_complete_button">He completado mis ejercicios de hoy</string>
-    <string name="streak_display">Racha de Ejercicios: %1$d días</string>
-    <string name="mood_history_title">Historial de tu Ánimo</string>
+    <string name="streak_display">Racha de Ejercicios: %1$d dÃ­as</string>
+    <string name="mood_history_title">Historial de tu Ãnimo</string>
     <string name="view_history_button">Ver Historial</string>
     <string name="recurring_label">Activar recordatorios diarios</string>
 </resources>
+

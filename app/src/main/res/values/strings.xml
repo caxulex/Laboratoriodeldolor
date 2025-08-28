@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Laboratorio del Dolor</string>
     <string name="mood_tracker_title">Bienvenido a tu App CeroDolor</string>
-    <string name="save_mood_button">Guardar estado de Ã¡nimo</string>
+    <string name="save_mood_button">Guardar estado de ├ínimo</string>
     <string name="happy_mood_desc">Feliz</string>
     <string name="sad_mood_desc">Triste</string>
     <string name="angry_mood_desc">Enojado</string>
@@ -14,19 +14,19 @@
     <string name="gender_female">Femenino</string>
     <string name="view_label">Vista</string>
     <string name="view_front">Frente</string>
-    <string name="view_back">AtrÃ¡s</string>
+    <string name="view_back">Atr├ís</string>
     <string name="maps_to_pain_tracker_button">Ir al rastreador de dolor</string>
     <string name="save_pain_button">Guardar</string>
     <string name="clear_button">Limpiar</string>
     <string name="delete_button">Eliminar</string>
-    <string name="delete_confirm_title">Confirmar eliminaciÃ³n</string>
-    <string name="delete_confirm_message">Â¿EstÃ¡s seguro de que deseas eliminar este punto de dolor?</string>
-    <string name="delete_confirm_yes">SÃ­, eliminar</string>
+    <string name="delete_confirm_title">Confirmar eliminaci├│n</string>
+    <string name="delete_confirm_message">┬┐Est├ís seguro de que deseas eliminar este punto de dolor?</string>
+    <string name="delete_confirm_yes">S├¡, eliminar</string>
     <string name="delete_confirm_no">Cancelar</string>
-    <string name="mood_question">Â¿CÃ³mo te sientes hoy?</string>
-    <string name="add_note">AÃ±ade una nota</string>
+    <string name="mood_question">┬┐C├│mo te sientes hoy?</string>
+    <string name="add_note">A├▒ade una nota</string>
     <string name="exercise_reminder_title">Recordatorio de Ejercicios</string>
-    <string name="exercise_reminder_text">Es hora de tu sesiÃ³n diaria para manejar el dolor. Â¡TÃº puedes!</string>
+    <string name="exercise_reminder_text">Es hora de tu sesi├│n diaria para manejar el dolor. ┬íT├║ puedes!</string>
     <string name="settings_title">Ajustes</string>
     <string name="reminder_time_label">Hora del Recordatorio</string>
     <!-- Button label on main screen that opens reminder settings -->
@@ -34,27 +34,27 @@
     <string name="recurring_label">Activar recordatorios diarios</string>
     <string name="dark_mode_label">Modo Oscuro</string>
     <string name="exercise_complete_button">He completado mis ejercicios de hoy</string>
-    <string name="streak_display">Racha de Ejercicios: %1$d dÃ­as</string>
-    <string name="streak_subtitle">Sigue asÃ­: los pequeÃ±os pasos crean hÃ¡bitos</string>
+    <string name="streak_display">Racha de Ejercicios: %1$d d├¡as</string>
+    <string name="streak_subtitle">Sigue as├¡: los peque├▒os pasos crean h├íbitos</string>
     <string name="streak_mark_button">Marcar</string>
     <string name="streak_update_button">Actualizar</string>
-    <string name="mood_history_title">Historial de tu Ãnimo</string>
+    <string name="mood_history_title">Historial de tu ├ünimo</string>
     <string name="view_history_button">Ver Historial</string>
-    <string name="empty_mood_title">AÃºn no hay registros</string>
-    <string name="empty_mood_subtitle">Cuando registres tu estado de Ã¡nimo, aquÃ­ verÃ¡s tu historial y patrones a lo largo del tiempo.</string>
+    <string name="empty_mood_title">A├║n no hay registros</string>
+    <string name="empty_mood_subtitle">Cuando registres tu estado de ├ínimo, aqu├¡ ver├ís tu historial y patrones a lo largo del tiempo.</string>
     <!-- Debug button removed from main UI -->
-    <string name="no_graph_data_message">No hay datos procesables para el grÃ¡fico</string>
-    <string name="recommendation_title">Tu recomendaciÃ³n de hoy</string>
-    <string name="recommendation_no_data_title">AÃºn no hay recomendaciones</string>
-    <string name="recommendation_no_data_subtitle">Registra tu estado de Ã¡nimo y puntos de dolor de forma regular para recibir recomendaciones personalizadas.</string>
+    <string name="no_graph_data_message">No hay datos procesables para el gr├ífico</string>
+    <string name="recommendation_title">Tu recomendaci├│n de hoy</string>
+    <string name="recommendation_no_data_title">A├║n no hay recomendaciones</string>
+    <string name="recommendation_no_data_subtitle">Registra tu estado de ├ínimo y puntos de dolor de forma regular para recibir recomendaciones personalizadas.</string>
     <string name="recommendation_action_button">Ver ejercicios sugeridos</string>
-    <string name="back_button">AtrÃ¡s</string>
-    <string name="breath_title">RespiraciÃ³n guiada</string>
+    <string name="back_button">Atr├ís</string>
+    <string name="breath_title">Respiraci├│n guiada</string>
     <string name="breath_enamorado_title">El enamorado</string>
     <string name="breath_chilindrina_title">La chilindrina</string>
     <string name="breath_cuadrado_title">El cuadrado</string>
     <string name="breath_recommended_label">Recomendado para ti</string>
-    <string name="breath_nav_button">RespiraciÃ³n guiada</string>
+    <string name="breath_nav_button">Respiraci├│n guiada</string>
     <string name="upper_body_exercises_title">Ejercicios para la Zona Superior</string>
     <string name="middle_body_exercises_title">Ejercicios para la Zona Media</string>
     <string name="lower_body_exercises_title">Ejercicios para la Zona Inferior</string>
@@ -63,14 +63,14 @@
     <string name="lower_body_exercises_button">Ejercicios para Zona Inferior</string>
     <!-- Exercise steps and timer labels -->
     <string name="upper_step_1">1. Inhala profundamente por la nariz (3s)</string>
-    <string name="upper_step_2">2. MantÃ©n el aire (3s)</string>
+    <string name="upper_step_2">2. Mant├®n el aire (3s)</string>
     <string name="upper_step_3">3. Exhala lentamente por la boca (4s)</string>
 
     <string name="middle_step_1">1. Estiramiento lateral suave (10s por lado)</string>
     <string name="middle_step_2">2. Rotaciones de tronco suaves (10 rep)</string>
     <string name="middle_step_3">3. Inclinaciones hacia adelante (5 rep)</string>
 
-    <string name="lower_step_1">1. Elevaciones de talÃ³n (10 rep)</string>
+    <string name="lower_step_1">1. Elevaciones de tal├│n (10 rep)</string>
     <string name="lower_step_2">2. Estiramiento de isquiotibiales (20s)</string>
     <string name="lower_step_3">3. Sentadillas parciales (8 rep)</string>
 
@@ -79,9 +79,9 @@
     <string name="pause_button">Pausa</string>
     <string name="reset_button">Reiniciar</string>
     <!-- Check-in flow strings -->
-    <string name="checkin_mood_title">Registro rÃ¡pido: Â¿CÃ³mo te sientes?</string>
+    <string name="checkin_mood_title">Registro r├ípido: ┬┐C├│mo te sientes?</string>
     <string name="checkin_mood_hint">Escribe una nota opcional...</string>
-    <string name="checkin_pain_title">Registro rÃ¡pido: Marca tus puntos de dolor</string>
+    <string name="checkin_pain_title">Registro r├ípido: Marca tus puntos de dolor</string>
     <string name="checkin_mood_next">Siguiente</string>
     <string name="checkin_skip">Omitir</string>
     <string name="checkin_finish">Finalizar</string>
@@ -93,9 +93,9 @@
     <string name="dolor_espalda_superior">Dolor de espalda superior</string>
     <string name="dolor_espalda_medio">Dolor de espalda medio</string>
     <string name="dolor_espalda_inferior">Dolor de espalda inferior</string>
-    <string name="dolor_ubicacion_desconocida">UbicaciÃ³n de dolor desconocida</string>
+    <string name="dolor_ubicacion_desconocida">Ubicaci├│n de dolor desconocida</string>
     <string name="diary_title">Diario</string>
-    <string name="diary_entry_hint">Escribe tu entrada de diario aquÃ­...</string>
+    <string name="diary_entry_hint">Escribe tu entrada de diario aqu├¡...</string>
     <string name="save_diary_entry_button">Guardar Entrada</string>
     <string name="exercises_label">Ejercicios</string>
     <string name="exercise_hub_title">Rutinas de Ejercicios</string>
@@ -105,27 +105,27 @@
     <string name="upper_body_routine_title">Rutina - Parte Superior</string>
     <string name="upper_body_routine_subtitle">Movimientos suaves para hombros, cuello y brazos</string>
     <string name="upper_ex1_title">Circulaciones de hombros</string>
-    <string name="upper_ex1_desc">Gira los hombros hacia atrÃ¡s y hacia adelante de forma controlada</string>
+    <string name="upper_ex1_desc">Gira los hombros hacia atr├ís y hacia adelante de forma controlada</string>
     <string name="upper_ex2_title">Estiramiento de cuello</string>
-    <string name="upper_ex2_desc">Inclina la cabeza lateralmente, mantÃ©n y cambia de lado</string>
+    <string name="upper_ex2_desc">Inclina la cabeza lateralmente, mant├®n y cambia de lado</string>
     <string name="upper_ex3_title">Rotaciones de brazos</string>
-    <string name="upper_ex3_desc">Haz cÃ­rculos con los brazos con movimiento suave</string>
+    <string name="upper_ex3_desc">Haz c├¡rculos con los brazos con movimiento suave</string>
 
     <string name="middle_body_routine_title">Rutina - Zona Media</string>
     <string name="middle_body_routine_subtitle">Ejercicios para la movilidad del tronco y la columna</string>
     <string name="middle_ex1_title">Estiramiento lateral</string>
-    <string name="middle_ex1_desc">Inclina el torso hacia cada lado y mantÃ©n 10 segundos</string>
+    <string name="middle_ex1_desc">Inclina el torso hacia cada lado y mant├®n 10 segundos</string>
     <string name="middle_ex2_title">Rotaciones de tronco</string>
     <string name="middle_ex2_desc">Gira el torso suavemente manteniendo la pelvis estable</string>
     <string name="middle_ex3_title">Inclinaciones hacia adelante</string>
-    <string name="middle_ex3_desc">Flexiona desde las caderas y vuelve a la posiciÃ³n neutra</string>
+    <string name="middle_ex3_desc">Flexiona desde las caderas y vuelve a la posici├│n neutra</string>
 
     <string name="lower_body_routine_title">Rutina - Parte Inferior</string>
-    <string name="lower_body_routine_subtitle">Fortalece y estira piernas y glÃºteos</string>
-    <string name="lower_ex1_title">Elevaciones de talÃ³n</string>
+    <string name="lower_body_routine_subtitle">Fortalece y estira piernas y gl├║teos</string>
+    <string name="lower_ex1_title">Elevaciones de tal├│n</string>
     <string name="lower_ex1_desc">Sube y baja los talones con control</string>
     <string name="lower_ex2_title">Estiramiento de isquiotibiales</string>
-    <string name="lower_ex2_desc">MantÃ©n la pierna estirada y alcanza los dedos suavemente</string>
+    <string name="lower_ex2_desc">Mant├®n la pierna estirada y alcanza los dedos suavemente</string>
     <string name="lower_ex3_title">Sentadillas parciales</string>
     <string name="lower_ex3_desc">Flexiona ligeramente las rodillas manteniendo la espalda recta</string>
 
@@ -145,15 +145,15 @@
     <string name="back_lower_body_title">Rutina - Parte de Espalda Inferior</string>
 
     <string name="view_exercises">Ver Ejercicios</string>
-    <string name="about_title">Acerca de la aplicaciÃ³n</string>
-    <string name="about_version">VersiÃ³n: %1$s</string>
-    <string name="about_privacy">PolÃ­tica de privacidad</string>
+    <string name="about_title">Acerca de la aplicaci├│n</string>
+    <string name="about_version">Versi├│n: %1$s</string>
+    <string name="about_privacy">Pol├¡tica de privacidad</string>
     <!-- Replace with your publicly hosted privacy policy URL before publishing -->
     <string name="about_privacy_url">https://example.com/politica-de-privacidad</string>
-    <string name="about_terms">TÃ©rminos de servicio (prÃ³ximamente)</string>
-    <string name="about_acknowledgments">Agradecimientos y crÃ©ditos</string>
+    <string name="about_terms">T├®rminos de servicio (pr├│ximamente)</string>
+    <string name="about_acknowledgments">Agradecimientos y cr├®ditos</string>
     <string name="about_close">Cerrar</string>
-    <string name="error_load_data">No se pudieron cargar los datos. Por favor, intÃ©ntalo de nuevo.</string>
+    <string name="error_load_data">No se pudieron cargar los datos. Por favor, int├®ntalo de nuevo.</string>
     <string name="marker_text">%1$s  %2$s</string>
     <string name="exercise_marked_snackbar">Ejercicios marcados como completos</string>
     <string name="undo_action">Deshacer</string>
