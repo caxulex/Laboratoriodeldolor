@@ -43,7 +43,8 @@ import com.example.laboratoriodeldolor.ui.theme.Dimens
 @Composable
 fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory()), onBack: () -> Unit = {}) {
     var note by remember { mutableStateOf("") }
-            var selectedEmoji by remember { mutableStateOf(MoodOptions.FIVE_LEVEL[2]) }
+            // store fallback emoji string for DB compatibility; default to neutral
+            var selectedEmoji by remember { mutableStateOf(MoodOptions.FIVE_LEVEL_EMOJI[2]) }
 
     val entries by diaryViewModel.entries.collectAsState(initial = emptyList())
 
@@ -57,8 +58,8 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
             // Five-level emoji selector
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     val options = MoodOptions.FIVE_LEVEL
-                    options.forEachIndexed { idx, e ->
-                    val isSelected = selectedEmoji == e
+                    options.forEachIndexed { idx, icon ->
+                    val isSelected = selectedEmoji == MoodOptions.FIVE_LEVEL_EMOJI[idx]
                     val desc = when (idx) {
                         0 -> stringResource(id = R.string.emoji_desc_very_bad)
                         1 -> stringResource(id = R.string.emoji_desc_bad)
@@ -66,8 +67,8 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
                         3 -> stringResource(id = R.string.emoji_desc_good)
                         else -> stringResource(id = R.string.emoji_desc_very_good)
                     }
-                    MoodEmojiButton(emoji = e, selected = isSelected, size = 64.dp, contentDesc = desc) {
-                        selectedEmoji = e
+                    MoodEmojiButton(icon = icon, selected = isSelected, size = 64.dp, contentDesc = desc) {
+                        selectedEmoji = MoodOptions.FIVE_LEVEL_EMOJI[idx]
                     }
                     if (idx < options.size - 1) Spacer(modifier = Modifier.width(14.dp))
                 }
@@ -116,7 +117,11 @@ fun DiaryEntryCard(entry: MoodEntry) {
             Text(text = sdf.format(Date(entry.timestamp)), style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = entry.emoji, style = MaterialTheme.typography.headlineMedium)
+                    // Try to show drawable icon for stored emoji if available
+                    when (val icon = MoodOptions.emojiToIcon(entry.emoji)) {
+                        is MoodIcon.DrawableRes -> androidx.compose.foundation.Image(painter = androidx.compose.ui.res.painterResource(id = icon.resId), contentDescription = entry.emoji, modifier = Modifier.size(28.dp))
+                        is MoodIcon.Emoji -> androidx.compose.material3.Text(text = icon.emoji, style = MaterialTheme.typography.headlineMedium)
+                    }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(text = entry.note, style = MaterialTheme.typography.bodyLarge)
             }

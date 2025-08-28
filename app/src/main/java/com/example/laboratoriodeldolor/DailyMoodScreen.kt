@@ -142,8 +142,9 @@ fun DailyMoodScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally)) {
                                 val options = MoodOptions.FIVE_LEVEL
-                                for ((idx, mood) in options.withIndex()) {
-                                    val selected = localSelectedEmoji.value == mood
+                                for ((idx, moodIcon) in options.withIndex()) {
+                                    // selected stored value remains emoji string for DB compatibility; compare against fallback emoji list
+                                    val selected = localSelectedEmoji.value == MoodOptions.FIVE_LEVEL_EMOJI[idx]
                                     val desc = when (idx) {
                                         0 -> stringResource(id = R.string.emoji_desc_very_bad)
                                         1 -> stringResource(id = R.string.emoji_desc_bad)
@@ -151,8 +152,9 @@ fun DailyMoodScreen(
                                         3 -> stringResource(id = R.string.emoji_desc_good)
                                         else -> stringResource(id = R.string.emoji_desc_very_good)
                                     }
-                                    MoodEmojiButton(emoji = mood, selected = selected, size = 64.dp, contentDesc = desc) {
-                                        localSelectedEmoji.value = mood
+                                    MoodEmojiButton(icon = moodIcon, selected = selected, size = 64.dp, contentDesc = desc) {
+                                        // update stored emoji fallback value so DB logic remains unchanged
+                                        localSelectedEmoji.value = MoodOptions.FIVE_LEVEL_EMOJI[idx]
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     }
                                 }

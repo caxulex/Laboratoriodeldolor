@@ -54,11 +54,11 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
                 Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
             Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
-            // Five-level emoji selector: � 😟 😐 🙂 😄 (very bad -> very good)
+            // Five-level mood selector using drawable icons (fallback emoji stored)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 val options = MoodOptions.FIVE_LEVEL
-                options.forEachIndexed { idx, e ->
-                    val selected = emojiState.value == e
+                options.forEachIndexed { idx, icon ->
+                    val selected = emojiState.value == MoodOptions.FIVE_LEVEL_EMOJI[idx]
                     val desc = when (idx) {
                         0 -> stringResource(id = R.string.emoji_desc_very_bad)
                         1 -> stringResource(id = R.string.emoji_desc_bad)
@@ -66,10 +66,10 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
                         3 -> stringResource(id = R.string.emoji_desc_good)
                         else -> stringResource(id = R.string.emoji_desc_very_good)
                     }
-                    MoodEmojiButton(emoji = e, selected = selected, size = 64.dp, contentDesc = desc, modifier = Modifier.testTag("moodEmoji_$idx")) {
-                        // give lightweight haptic feedback and update selection
+                    MoodEmojiButton(icon = icon, selected = selected, size = 64.dp, contentDesc = desc, modifier = Modifier.testTag("moodEmoji_$idx")) {
+                        // give lightweight haptic feedback and update selection (store fallback emoji for DB compatibility)
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        emojiState.value = e
+                        emojiState.value = MoodOptions.FIVE_LEVEL_EMOJI[idx]
                     }
 
                     if (idx < options.size - 1) Spacer(modifier = Modifier.width(14.dp))

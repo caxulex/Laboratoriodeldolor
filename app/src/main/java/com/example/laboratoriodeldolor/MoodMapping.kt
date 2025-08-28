@@ -8,7 +8,7 @@ object MoodMapping {
     fun emojiToScore(emoji: String): Int {
         return when (emoji) {
             // New lowest-mood emoji maps to 1
-            "�" -> 1
+            "😢" -> 1
             "😟" -> 2
             "😐" -> 3
             "🙂" -> 4
@@ -16,7 +16,7 @@ object MoodMapping {
             // legacy mappings
             "😍" -> 5
             "😊", "😀" -> 4
-            "😞", "😢" -> 2
+            "😞" -> 2
             "😠" -> 1
             else -> 3
         }

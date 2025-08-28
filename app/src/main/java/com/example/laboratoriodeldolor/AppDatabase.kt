@@ -35,7 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
                         // Slightly negative
                         database.execSQL("UPDATE mood_entries SET moodScore = 2 WHERE emoji IN ('😟')")
                         // Very negative
-                        database.execSQL("UPDATE mood_entries SET moodScore = 1 WHERE emoji IN ('�','😢','😞','😠')")
+                            database.execSQL("UPDATE mood_entries SET moodScore = 1 WHERE emoji IN ('😢','😞','😠')")
                     }
                 }
 
