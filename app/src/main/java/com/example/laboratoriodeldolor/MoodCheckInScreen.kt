@@ -54,7 +54,7 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
                 Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
             Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
-            // Five-level emoji selector: 😡 😟 😐 🙂 😄 (very bad -> very good)
+            // Five-level emoji selector: � 😟 😐 🙂 😄 (very bad -> very good)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 val options = MoodOptions.FIVE_LEVEL
                 options.forEachIndexed { idx, e ->

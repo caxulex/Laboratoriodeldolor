@@ -7,7 +7,7 @@ package com.example.laboratoriodeldolor
 object MoodMapping {
     fun emojiToScore(emoji: String): Int {
         return when (emoji) {
-            "😡" -> 1
+            "�" -> 1
             "😟" -> 2
             "😐" -> 3
             "🙂" -> 4
@@ -15,6 +15,7 @@ object MoodMapping {
             // legacy mappings
             "😍" -> 5
             "😊", "😀" -> 4
+            // Treat crying and sad variants as low scores
             "😞", "😢" -> 2
             "😠" -> 1
             else -> 3

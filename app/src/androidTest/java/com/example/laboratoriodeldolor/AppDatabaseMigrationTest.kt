@@ -41,7 +41,7 @@ class AppDatabaseMigrationTest {
             database.execSQL("UPDATE mood_entries SET moodScore = 4 WHERE emoji IN ('🙂')")
             database.execSQL("UPDATE mood_entries SET moodScore = 3 WHERE emoji IN ('😐')")
             database.execSQL("UPDATE mood_entries SET moodScore = 2 WHERE emoji IN ('😟')")
-            database.execSQL("UPDATE mood_entries SET moodScore = 1 WHERE emoji IN ('😡','😢','😞','😠')")
+            database.execSQL("UPDATE mood_entries SET moodScore = 1 WHERE emoji IN ('�','�😡','😢','😞','😠')")
         }
     }
 

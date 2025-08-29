@@ -138,7 +138,7 @@ fun DailyMoodScreen(
                     val haptic = LocalHapticFeedback.current
                     Card(shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = "Elige tu estado", style = MaterialTheme.typography.titleMedium)
+                            Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.titleMedium)
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally)) {
                                 val options = MoodOptions.FIVE_LEVEL

@@ -7,7 +7,7 @@ class MoodMappingTest {
     @Test
     fun testEmojiToScore_defaultsAndLegacy() {
         // Core five-level
-        assertEquals(1, MoodMapping.emojiToScore("😡"))
+    assertEquals(1, MoodMapping.emojiToScore("�"))
         assertEquals(2, MoodMapping.emojiToScore("😟"))
         assertEquals(3, MoodMapping.emojiToScore("😐"))
         assertEquals(4, MoodMapping.emojiToScore("🙂"))
