@@ -3,11 +3,15 @@
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -34,6 +38,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
@@ -42,6 +49,10 @@ import com.example.laboratoriodeldolor.ui.theme.LaboratorioDelDolorTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Avoid blocking the main thread while Room/DataStore warmup occurs.
+        // Call setContent immediately and perform DB/onboarding checks from Compose
+        // so the system UI can attach without an ANR.
         setContent {
             // Observe persisted theme preference and pass it to the app theme so changes apply instantly
             val settingsViewModel: SettingsViewModel = viewModel()
@@ -50,16 +61,27 @@ class MainActivity : ComponentActivity() {
             LaboratorioDelDolorTheme(isDark = isDark) {
                 val navController = rememberNavController()
 
-                val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
-                val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
-                // reuse the settingsViewModel we already observed above
-                val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
+                // Launch a suspendable effect to wait for DB warmup and then navigate
+                LaunchedEffect(Unit) {
+                    try {
+                        (application as? MoodApplication)?.awaitDatabaseReady()
+                        val prefs = (application as MoodApplication).preferencesRepository
+                        val seen = prefs.hasSeenOnboardingFlow.first()
+                        if (seen) {
+                            navController.navigate(Screen.Diario.route) {
+                                popUpTo(Screen.CheckinMood.route) { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate("onboarding") {
+                                popUpTo(Screen.CheckinMood.route) { inclusive = true }
+                            }
+                        }
+                    } catch (t: Throwable) {
+                        // keep startup resilient; if this fails we'll stay on the default
+                    }
+                }
 
-                val recommendationViewModel: RecommendationViewModel = viewModel(factory = RecommendationViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.painPointDao()))
-                val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
-
-                val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).database.moodDao()))
-                val items = listOf(Screen.Diario, Screen.Diary, Screen.Exercises, Screen.Dolor, Screen.Recomendacion, Screen.Respiracion, Screen.Progress, Screen.Ajustes)
+                val items = listOf(Screen.Home, Screen.Diario, Screen.Progress)
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -70,12 +92,11 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     bottomBar = { if (showBottomBar) BottomBar(navController = navController, items = items) }
                 ) { innerPadding ->
-                    // Immersive gradient background behind everything
-                    com.example.laboratoriodeldolor.ui.GradientBackground()
-
+                    // NavHost sits inside the app-level scaffold; individual screens draw AppScaffold which renders the gradient
                     NavHost(navController = navController, startDestination = Screen.CheckinMood.route, modifier = Modifier.padding(innerPadding)) {
                         // Check-in flow
                         composable(Screen.CheckinMood.route) {
+                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
                             MoodCheckInScreen(moodViewModel,
                                 onNext = { navController.navigate(Screen.CheckinPain.route) },
                                 onSkip = { navController.navigate(Screen.CheckinPain.route) },
@@ -89,6 +110,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Screen.CheckinPain.route) {
+                            val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
                             PainCheckInScreen(painTrackerViewModel, onFinish = {
                                 // user saved pain -> prioritize PAIN module
                                 moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.PAIN)
@@ -103,6 +126,7 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable(Screen.Diario.route) {
+                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
                             DailyMoodScreen(
                                 viewModel = moodViewModel,
                                 onNavigateToPainTracker = { navController.navigate(Screen.Dolor.route) },
@@ -112,7 +136,38 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToDiary = { navController.navigate(Screen.Diary.route) }
                             )
                         }
+
+                        // Onboarding / Home flow
+                        composable("onboarding") {
+                            OnboardingScreen(onFinish = {
+                                // mark as seen and navigate to home
+                                lifecycleScope.launch {
+                                    (application as MoodApplication).preferencesRepository.setHasSeenOnboarding(true)
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo("onboarding") { inclusive = true }
+                                    }
+                                }
+                            }, onSkip = {
+                                lifecycleScope.launch {
+                                    (application as MoodApplication).preferencesRepository.setHasSeenOnboarding(true)
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo("onboarding") { inclusive = true }
+                                    }
+                                }
+                            })
+                        }
+
+                        composable(Screen.Home.route) {
+                            HomeScreen(
+                                routineDao = (application as MoodApplication).database.routineDao(),
+                                onOpenPainRegion = { rid -> navController.navigate("pain_region/$rid") },
+                                onOpenPainTracker = { navController.navigate(Screen.Dolor.route) },
+                                onOpenTechniques = { navController.navigate("techniques") },
+                                onOpenSettings = { navController.navigate(Screen.Ajustes.route) }
+                            )
+                        }
                         composable(Screen.Dolor.route) {
+                            val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
                             PainTrackerScreen(
                                 viewModel = painTrackerViewModel,
                                 onNavigateToUpper = { navController.navigate(Screen.UpperBody.route) },
@@ -122,9 +177,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Screen.Ajustes.route) {
+                            val settingsViewModel: SettingsViewModel = viewModel()
                             SettingsScreen(viewModel = settingsViewModel, onNavigateToAbout = { navController.navigate("about") })
                         }
                         composable(Screen.Diary.route) {
+                            val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).database.moodDao()))
                             DiaryScreen(diaryViewModel = diaryViewModel, onBack = { navController.popBackStack() })
                         }
                         composable("about") {
@@ -140,37 +197,61 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToBackLower = { navController.navigate(Screen.BackLowerBody.route) }
                             )
                         }
-                            composable(Screen.Recomendacion.route) {
-                                RecommendationScreen(viewModel = recommendationViewModel)
+                        composable(Screen.Recomendacion.route) {
+                            val recommendationViewModel: RecommendationViewModel = viewModel(factory = RecommendationViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.painPointDao()))
+                            RecommendationScreen(viewModel = recommendationViewModel)
+                        }
+                        composable(Screen.Respiracion.route) {
+                            val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
+                            BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { _ -> /* TODO: navigate to instructions */ })
+                        }
+                        composable(Screen.Progress.route) {
+                            // Provide MoodDao from application to the chart screen
+                            com.example.laboratoriodeldolor.MoodProgressScreen(moodDao = (application as MoodApplication).database.moodDao())
+                        }
+                        // Techniques library
+                        composable("techniques") {
+                            TechniquesLibraryScreen(techniqueDao = (application as MoodApplication).database.techniqueDao()) { id ->
+                                navController.navigate("technique/$id")
                             }
-                            composable(Screen.Respiracion.route) {
-                                BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { _ -> /* TODO: navigate to instructions */ })
-                            }
-                            composable(Screen.Progress.route) {
-                                // Provide MoodDao from application to the chart screen
-                                com.example.laboratoriodeldolor.MoodProgressScreen(moodDao = (application as MoodApplication).database.moodDao())
-                            }
+                        }
+                        composable("routines") {
+                            val routinesVm: RoutinesListViewModel = viewModel(factory = RoutinesListViewModelFactory((application as MoodApplication).database.routineDao()))
+                            RoutinesListScreen(viewModel = routinesVm) { id -> navController.navigate("pain_region/$id") }
+                        }
+                        composable("technique/{id}") { backStack ->
+                            val id = backStack.arguments?.getString("id")?.toLongOrNull() ?: 0L
+                            TechniqueDetailScreen(techniqueId = id, techniqueDao = (application as MoodApplication).database.techniqueDao(), onBack = { navController.popBackStack() })
+                        }
+                        composable("pain_region/{routineId}") { backStack ->
+                            val rid = backStack.arguments?.getString("routineId")?.toLongOrNull() ?: 0L
+                            PainRegionScreen(routineId = rid, routineDao = (application as MoodApplication).database.routineDao(), techniqueDao = (application as MoodApplication).database.techniqueDao(), onNavigateToTechnique = { tid -> navController.navigate("technique/$tid") })
+                        }
                         composable("history") {
+                            val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
                             MoodHistoryScreen(viewModel = moodHistoryViewModel)
                         }
-                            // New specific front/back exercise screens
-                            composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                            composable(Screen.BackUpperBody.route) { BackUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                            composable(Screen.FrontMiddleBody.route) { FrontMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                            composable(Screen.BackMiddleBody.route) { BackMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                            composable(Screen.FrontLowerBody.route) { FrontLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                            composable(Screen.BackLowerBody.route) { BackLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                        
+                        // New specific front/back exercise screens
+                        composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                        composable(Screen.BackUpperBody.route) { BackUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                        composable(Screen.FrontMiddleBody.route) { FrontMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                        composable(Screen.BackMiddleBody.route) { BackMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                        composable(Screen.FrontLowerBody.route) { FrontLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                        composable(Screen.BackLowerBody.route) { BackLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
                     }
                 }
             }
         }
     }
+
 }
 
+// Extra closing brace added above to ensure the class and coroutine blocks are balanced
 sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector) {
-    object Diario : Screen("diario", R.string.mood_tracker_title, Icons.Filled.Home)
-    object Diary : Screen("diary", R.string.diary_title, Icons.Filled.Home)
+    object Home : Screen("home", R.string.home_title, Icons.Filled.Home)
+    // Primary bottom navigation: Inicio, Diario, Progreso
+    object Diario : Screen("diario", R.string.mood_tracker_title, Icons.Filled.Create)
+    object Diary : Screen("diary", R.string.diary_title, Icons.Filled.Create)
     // LocalHospital comes from the extended material icons pack; to avoid adding a new dependency here
     // we use a built-in icon (Home) as a placeholder. Replace with a different icon if you add
     // the material-icons-extended dependency in build.gradle.
@@ -188,9 +269,11 @@ sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector)
     object CheckinPain : Screen("checkin_pain", R.string.checkin_pain_title, Icons.Filled.Home)
     object Recomendacion : Screen("recomendacion", R.string.recommendation_title, Icons.Filled.Home)
     object Respiracion : Screen("respiracion", R.string.breath_title, Icons.Filled.Home)
-    object Progress : Screen("progress", R.string.progress_title, Icons.Filled.Home)
+    object Progress : Screen("progress", R.string.progress_title, Icons.Filled.MoreVert)
     object Ajustes : Screen("ajustes", R.string.settings_title, Icons.Filled.Settings)
     object Exercises : Screen("exercises", R.string.exercises_label, Icons.Filled.Home)
+    object Techniques : Screen("techniques", R.string.techniques_label, Icons.Filled.Home)
+    object Routines : Screen("routines", R.string.routines_label, Icons.Filled.Home)
 }
 
 @Composable
@@ -246,26 +329,26 @@ fun DebugDataScreen(
     val pains by painDao.getAll().collectAsState(initial = emptyList())
     val exercises by exerciseDao.getAll().collectAsState(initial = emptyList())
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            MText(text = "Debug: stored rows", style = MaterialTheme.typography.titleLarge)
-            MText(text = "Mood entries: ${moods.size}")
-            MText(text = "Pain points: ${pains.size}")
-            MText(text = "Exercise logs: ${exercises.size}")
+    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+        Column(modifier = Modifier.padding(16.dp).padding(innerPadding)) {
+            MText(text = stringResource(id = R.string.debug_stored_rows), style = MaterialTheme.typography.titleLarge)
+            MText(text = stringResource(id = R.string.debug_mood_entries, moods.size))
+            MText(text = stringResource(id = R.string.debug_pain_points, pains.size))
+            MText(text = stringResource(id = R.string.debug_exercise_logs, exercises.size))
 
-            MText(text = "\nRecent mood entries:")
+            MText(text = stringResource(id = R.string.recent_mood_entries))
             for (m in moods.take(5)) {
-                MText(text = "- ${m.emoji} @ ${m.timestamp}")
+                MText(text = stringResource(id = R.string.recent_mood_entry_format, m.emoji, m.timestamp.toString()))
             }
 
-            MText(text = "\nRecent pain points (first 5):")
+            MText(text = stringResource(id = R.string.recent_pain_points, 5))
             for (p in pains.take(5)) {
-                MText(text = "- id=${p.id} x=${p.x} y=${p.y} t=${p.timestamp}")
+                MText(text = stringResource(id = R.string.recent_pain_point_format, p.id, p.x.toString(), p.y.toString(), p.timestamp.toString()))
             }
 
-            MText(text = "\nRecent exercises:")
+            MText(text = stringResource(id = R.string.recent_exercises))
             for (e in exercises.take(5)) {
-                MText(text = "- id=${e.id} t=${e.timestamp}")
+                MText(text = stringResource(id = R.string.recent_exercise_entry_format, e.id, e.timestamp.toString()))
             }
 
             com.example.laboratoriodeldolor.ui.components.SecondaryButton(text = stringResource(id = R.string.back_button), onClick = onBack, modifier = Modifier.padding(top = 12.dp))

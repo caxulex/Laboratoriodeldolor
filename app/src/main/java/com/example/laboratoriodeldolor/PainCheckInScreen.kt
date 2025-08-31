@@ -42,10 +42,7 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
     val coroutineScope = rememberCoroutineScope()
     var visible by remember { mutableStateOf(true) }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = androidx.compose.material3.MaterialTheme.colorScheme.background) {
-        // keep the ambient background consistent with the main dashboard
-        com.example.laboratoriodeldolor.ui.GradientBackground()
-
+    com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         AnimatedVisibility(visible = visible, enter = fadeIn(animationSpec = tween(260)), exit = fadeOut(animationSpec = tween(260))) {
             Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
                 Text(text = stringResource(id = R.string.checkin_pain_title), style = MaterialTheme.typography.headlineSmall)

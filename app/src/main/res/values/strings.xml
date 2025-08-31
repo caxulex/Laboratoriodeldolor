@@ -167,4 +167,49 @@
     <string name="progress_title">Progreso</string>
     <string name="progress_tab_weekly">Semanal</string>
     <string name="progress_tab_monthly">Mensual</string>
+    <!-- Techniques / Routines strings -->
+    <string name="techniques_library_title">Biblioteca de Técnicas</string>
+    <string name="technique_detail_title">Técnica</string>
+    <string name="technique_play_video">Ver video</string>
+    <string name="routines_title">Rutinas</string>
+    <string name="pain_region_title">Región de Dolor</string>
+    <string name="techniques_label">Técnicas</string>
+    <string name="routines_label">Rutinas</string>
+    <string name="onboarding_title">Bienvenido a Laboratorio del Dolor</string>
+    <string name="onboarding_intro">Esta aplicación ofrece técnicas y rutinas para ayudar a manejar el dolor a través de respiración, movilización suave y auto-masaje. Sigue las instrucciones y usa Smärtgel según las indicaciones.</string>
+    <string name="onboarding_smärtgel_usage">Smärtgel: aplica una pequeña cantidad en la zona dolorida siguiendo las advertencias del envase. Evita contacto con ojos y mucosas.</string>
+    <string name="onboarding_warnings">Advertencias: Si el dolor es intenso, persistente o aparece con fiebre, consulta a un profesional de la salud. No sustituye atención médica.</string>
+    <string name="onboarding_continue">Continuar</string>
+    <string name="onboarding_skip">Omitir</string>
+    <string name="home_register_pain">Registrar mi Dolor de Hoy</string>
+    <string name="home_title">Inicio</string>
+    <string name="more_options">Más opciones</string>
+    <string name="region_face_head">Rostro y Cabeza</string>
+    <string name="region_neck_shoulders">Cuello y Hombros</string>
+    <string name="region_upper_back">Espalda Alta y Pecho</string>
+    <string name="region_mid_back_stomach">Espalda Media y Abdomen</string>
+    <string name="region_lower_back">Espalda Baja, Caderas y Pelvis</string>
+    <string name="region_fingers_wrist_forearm">Manos, Muñecas y Antebrazos</string>
+    <string name="region_ankles_feet_toes">Tobillos, Pies y Dedos</string>
+    <string name="mirror_technique_label">Técnica Espejo</string>
+    <string name="mirror_technique_instruction">Si masajear el hombro adolorido duele demasiado, aplique Smärtgel en él, pero realice el masaje en el hombro sano.</string>
+    <string name="mirror_technique_switch_desc">Activa para ver la instrucción de Técnica Espejo</string>
+    <!-- Added during localization sweep to match code references -->
+    <string name="actions_label">Acciones</string>
+    <string name="exercise_emoji">🏋️</string>
+    <string name="debug_stored_rows">Depuración: filas almacenadas</string>
+    <string name="debug_mood_entries">Entradas de ánimo: %d</string>
+    <string name="debug_pain_points">Puntos de dolor: %d</string>
+    <string name="debug_exercise_logs">Registros de ejercicios: %d</string>
+    <string name="recent_mood_entries">Entradas recientes de ánimo:</string>
+    <string name="recent_pain_points">Puntos de dolor recientes (primeros %d):</string>
+    <string name="recent_exercises">Ejercicios recientes:</string>
+    <string name="recent_mood_entry_format">- %1$s @ %2$s</string>
+    <string name="recent_pain_point_format">- id=%1$d x=%2$s y=%3$s t=%4$s</string>
+    <string name="recent_exercise_entry_format">- id=%1$d t=%2$s</string>
+    <string name="pain_point_label_format">#%1$d: %2$s</string>
+
+    <!-- Chart / formatting keys used in code -->
+    <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
+    <string name="date_format_short">dd/MM</string>
 </resources>

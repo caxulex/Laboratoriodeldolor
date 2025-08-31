@@ -36,9 +36,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateToAbout: () -> Unit =
     val recurring by viewModel.recurring.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
 
-    Scaffold { innerPadding ->
-        Card(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
-            Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
+    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
                 Text(text = stringResource(id = R.string.settings_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
 
                 // primary action button
@@ -65,6 +64,5 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateToAbout: () -> Unit =
 
                 com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.about_title), onClick = { onNavigateToAbout() }, modifier = Modifier.fillMaxWidth().padding(top = 20.dp).height(48.dp))
             }
-        }
     }
 }

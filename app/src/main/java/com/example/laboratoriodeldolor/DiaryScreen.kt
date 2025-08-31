@@ -47,9 +47,7 @@ fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewMo
 
     val entries by diaryViewModel.entries.collectAsState(initial = emptyList())
 
-    // Layer the app-wide gradient background behind diary content
-    Box(modifier = Modifier.fillMaxSize()) {
-        GradientBackground()
+    com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
             Text(text = stringResource(id = R.string.diary_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
             Spacer(modifier = Modifier.height(Dimens.spaceMedium))

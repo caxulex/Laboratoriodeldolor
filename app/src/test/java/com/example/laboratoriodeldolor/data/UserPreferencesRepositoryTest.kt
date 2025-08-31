@@ -15,22 +15,20 @@ import java.io.File
 class UserPreferencesRepositoryTest {
 
     @Test
-    fun `emojiPackFlow and setEmojiPack work via injected DataStore`() = runBlocking {
+    fun `emojiPackFlow and setEmojiPack work via injected DataStore`() = runTest {
         val tmpDir = createTempDir(prefix = "prefs-")
         val prefsFile = File(tmpDir, "user_prefs.preferences_pb")
 
-        val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create { prefsFile }
+        val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create(produceFile = { prefsFile })
 
-        val repo = UserPreferencesRepository(context = androidx.test.core.app.ApplicationProvider.getApplicationContext(), providedDataStore = dataStore)
+        val repo = UserPreferencesRepository(context = null, providedDataStore = dataStore)
 
         // initial value should be default 0
         val initial = repo.emojiPackFlow.first()
         assertEquals(0, initial)
 
         // write a new pack
-        runTest {
-            repo.setEmojiPack(1)
-        }
+        repo.setEmojiPack(1)
 
         val after = repo.emojiPackFlow.first()
         assertEquals(1, after)

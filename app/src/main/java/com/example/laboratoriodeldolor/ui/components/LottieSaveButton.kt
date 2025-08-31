@@ -1,9 +1,12 @@
 package com.example.laboratoriodeldolor.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,14 +53,21 @@ fun LottieSaveButton(
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
+    // Use a transparent Surface so the gradient shows; render a small rounded Box for the button's visual background
     Surface(
         modifier = Modifier.size(120.dp, 48.dp),
-        color = bgColor
+        color = Color.Transparent
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.clickable(enabled = enabled && state == SaveState.Idle) {
-            onSave()
-            state = SaveState.Playing
-        }) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(120.dp, 48.dp)
+                .clickable(enabled = enabled && state == SaveState.Idle) {
+                    onSave()
+                    state = SaveState.Playing
+                }
+                .background(color = bgColor, shape = RoundedCornerShape(8.dp))
+        ) {
             when (state) {
                 SaveState.Idle -> Text(text = stringResource(id = R.string.save_pain_button))
                 SaveState.Playing -> LottieAnimation(composition = composition.value, progress = { progress })

@@ -1,5 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="onboarding_title">Tu camino hacia una vida sin dolor comienza aquí.</string>
+    <string name="onboarding_intro">Bienvenido al Laboratorio del Dolor. Las técnicas y ejercicios en esta aplicación están diseñados para ayudarte a mejorar tu condición muscular, nerviosa, física y emocional para reducir y tratar el dolor. Para obtener los mejores resultados, aplica el Smärtgel en la región de dolor antes de cada sesión para relajar la zona y facilitar el movimiento. El éxito de tu tratamiento depende de tu constancia; el trabajo continuo te ayudará a reparar la zona y evitar que el dolor regrese. Sigue siempre las indicaciones basadas en tu mapa y diario de dolor para un tratamiento personalizado.</string>
+    <string name="onboarding_warnings">Evita el contacto del Smärtgel con los ojos, ya que puede causar molestia e irritación.\n\nSi el dolor aumenta después de una técnica, detén las maniobras, aplica solo el Smärtgel en la zona por una semana y retoma las técnicas en la segunda semana.\n\nAl encontrar un punto de dolor, respira lenta y profundamente para no tensionar los músculos.</string>
+
+    <string name="region_face_head">Rostro y Cabeza</string>
+    <string name="region_neck_shoulders">Cuello y Hombros</string>
+    <string name="region_upper_back">Espalda Alta y Pecho</string>
+    <string name="region_mid_back_stomach">Espalda Media y Abdomen</string>
+    <string name="region_lower_back">Espalda Baja, Caderas y Pelvis</string>
+    <string name="region_elbows">Codos</string>
+    <string name="region_fingers_wrist_forearm">Manos, Muñecas y Antebrazos</string>
+    <string name="region_ankles_feet_toes">Tobillos, Pies y Dedos</string>
+    <string name="home_empty_routines">Aún no tienes rutinas. Ve a tu Mapa de Dolor para registrar tus puntos y empezar tu camino hacia el bienestar.</string>
+
+    <string name="routine_no_steps">Esta rutina todavía no tiene pasos. Explora las técnicas para esta región y comienza a construir tu plan de alivio.</string>
+
+    <string name="technique_desc_amasamientos">Usa tu mano completa para realizar &quot;pellizcos&quot; profundos, agarrando, levantando y apretando suavemente el músculo para liberar la tensión acumulada.</string>
+    <string name="technique_desc_garrita">Cierra la mano en forma de puño y utiliza los nudillos (las falanges medias y proximales) para masajear las zonas de dolor con una presión firme y controlada.</string>
+    <string name="technique_desc_fricciones">Con la zona entre tu dedo índice y pulgar, realiza deslizamientos rápidos y firmes sobre el área para generar calor y estimular la circulación.</string>
+    <string name="technique_video_label">Mira cómo se hace</string>
+    <string name="technique_video_placeholder">Toca para reproducir el video de la técnica.</string>
+    <string name="technique_video_cd">Video en primer plano que muestra la mano realizando un masaje de amasamiento en el músculo trapecio. La mano completa agarra, levanta y aprieta el tejido muscular de forma rítmica y profunda. La escena es tranquila, con luz suave y natural.</string>
+
+    <string name="diary_mood_prompt">¿Cómo te sientes hoy? Elige tu estado de ánimo.</string>
+    <string name="diary_entry_placeholder">Describe tu día, tu nivel de dolor o cualquier pensamiento que quieras registrar...</string>
+    <string name="diary_save">Guardar Entrada</string>
+    <string name="diary_date_label">Fecha</string>
+    <string name="diary_empty_state">Tu diario está vacío. Registra tu primer estado de ánimo para comenzar a seguir tu progreso.</string>
+
+    <string name="progress_streak_label">Racha actual: %d días</string>
+    <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
+    <string name="date_format_short">dd/MM</string>
+    <string name="progress_empty_state">Registra tu estado de ánimo en el diario para ver tu progreso aquí.</string>
+
+    <string name="pain_tracker_title">Mapa de Dolor</string>
+    <string name="pain_map_instructions">Toca el área en la figura para marcar un punto de dolor.</string>
+    <string name="pain_map_gender_male">Masculino</string>
+    <string name="pain_map_gender_female">Femenino</string>
+    <string name="pain_save">Guardar Puntos de Dolor</string>
+    <string name="pain_save_confirmation">¡Mapa de dolor guardado con éxito!</string>
+
+    <string name="settings_privacy">Política de Privacidad</string>
+    <string name="settings_notifications">Recordatorios y Notificaciones</string>
+    <string name="settings_language">Idioma</string>
+
+    <string name="about_title">Acerca de la App Cero Dolor</string>
+    <string name="about_description_short">Cero Dolor te acompaña con ejercicios y técnicas que, con constancia, te ayudarán a mejorar tu condición muscular, nerviosa, física y emocional para la reducción y el tratamiento del dolor.</string>
+    <string name="about_release_version">Versión</string>
+
+    <string name="error_save">Error al guardar. Por favor, revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="error_no_network">Sin conexión a internet. No se pueden cargar los datos.</string>
+    <string name="confirm_delete_title">Eliminar Entrada</string>
+    <string name="confirm_delete_message">¿Estás seguro de que quieres eliminar esta entrada? Esta acción no se puede deshacer.</string>
+    <string name="confirm_delete_positive">Eliminar</string>
+    <string name="confirm_delete_negative">Cancelar</string>
+
     <string name="app_name">Laboratorio del dolor</string>
     <string name="mood_tracker_title">¿Cómo te sientes hoy?</string>
     <string name="save_mood_button">Guardar estado de ánimo</string>
@@ -8,7 +64,6 @@
     <string name="angry_mood_desc">Enojado</string>
     <string name="surprised_mood_desc">Sorprendido</string>
     <string name="pain_tracker_button">Registrar Dolor</string>
-    <string name="pain_tracker_title">Registra tus puntos de dolor</string>
     <string name="body_outline_desc">Contorno del cuerpo para registrar el dolor</string>
     <string name="maps_to_pain_tracker_button">Ir al rastreador de dolor</string>
     <string name="save_pain_button">Guardar</string>
@@ -20,11 +75,35 @@
     <string name="delete_confirm_no">Cancelar</string>
     <string name="mood_question">¿Cómo te sientes hoy?</string>
     <string name="add_note">Añade una nota</string>
-    <!-- Button label on main screen that opens reminder settings -->
     <string name="reminder_settings_button">Recordatorios de tus ejercicios Cero Dolor</string>
     <string name="exercise_complete_button">He completado mis ejercicios de hoy</string>
     <string name="streak_display">Racha de Ejercicios: %1$d días</string>
     <string name="mood_history_title">Historial de tu Ánimo</string>
     <string name="view_history_button">Ver Historial</string>
     <string name="recurring_label">Activar recordatorios diarios</string>
+
+    <!-- Small extras added during localization sweep -->
+    <string name="actions_label">Acciones</string>
+    <string name="debug_stored_rows">Depuración: filas almacenadas</string>
+    <string name="debug_mood_entries">Entradas de ánimo: %d</string>
+    <string name="debug_pain_points">Puntos de dolor: %d</string>
+    <string name="debug_exercise_logs">Registros de ejercicios: %d</string>
+    <string name="recent_mood_entries">Entradas recientes de ánimo:</string>
+    <string name="recent_pain_points">Puntos de dolor recientes (primeros %d):</string>
+    <string name="recent_exercises">Ejercicios recientes:</string>
+
+    <string name="step_label">Paso</string>
+    <string name="exercise_emoji">🏋️</string>
+    <string name="recent_mood_entry_format">- %1$s @ %2$s</string>
+    <string name="recent_pain_point_format">- id=%1$d x=%2$s y=%3$s t=%4$s</string>
+    <string name="recent_exercise_entry_format">- id=%1$d t=%2$s</string>
+    <string name="pain_point_label_format">#%1$d: %2$s</string>
+
+    <!-- Breath titles used by BreathWorkScreen mapping -->
+    <string name="breath_title">Respiración</string>
+    <string name="breath_enamorado_title">Respiración enamorada</string>
+    <string name="breath_chilindrina_title">Respiración chilindrina</string>
+    <string name="breath_cuadrado_title">Respiración cuadrada</string>
+    <string name="breath_recommended_label">Recomendado</string>
+
 </resources>

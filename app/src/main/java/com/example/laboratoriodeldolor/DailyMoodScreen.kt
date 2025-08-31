@@ -27,7 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+// Scaffold is provided by AppScaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -66,27 +66,20 @@ fun DailyMoodScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-            // Place the title in the topBar slot so content doesn't overlap
-            androidx.compose.material3.TopAppBar(
-                title = { Text(text = stringResource(id = R.string.mood_question), style = MaterialTheme.typography.headlineSmall) }
-            )
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Background remains behind scaffold content
-            com.example.laboratoriodeldolor.ui.GradientBackground()
+    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+        // Use the standard top app bar inside the scaffold surface
+        androidx.compose.material3.TopAppBar(
+            title = { Text(text = stringResource(id = R.string.mood_question), style = MaterialTheme.typography.headlineSmall) }
+        )
 
-            // Make the main area scrollable and ensure it respects scaffold padding
-            androidx.compose.foundation.lazy.LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+        // Make the main area scrollable and ensure it respects scaffold padding
+        androidx.compose.foundation.lazy.LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
                 // Top: prominent streak card
                 item {
                     Card(
@@ -161,9 +154,9 @@ fun DailyMoodScreen(
                     }
                 }
 
-                // Secondary modules — presented compactly, cards act as single entry points (no duplicate navigation buttons inside)
+                // Secondary modules - presented compactly, cards act as single entry points (no duplicate navigation buttons inside)
                 item {
-                    Text(text = "Acciones", style = MaterialTheme.typography.titleSmall)
+                            Text(text = stringResource(id = R.string.actions_label), style = MaterialTheme.typography.titleSmall)
                 }
 
                 item {
@@ -208,7 +201,8 @@ fun DailyMoodScreen(
                 }
             }
         }
+
     }
-}
+ 
 
 

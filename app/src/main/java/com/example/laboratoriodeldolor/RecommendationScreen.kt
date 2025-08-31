@@ -27,8 +27,9 @@ fun RecommendationScreen(viewModel: RecommendationViewModel) {
     val recState by viewModel.recommendation.collectAsState()
     val rec = recState
 
-    Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), verticalArrangement = Arrangement.Top) {
-    Text(text = stringResource(id = R.string.recommendation_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("screen_title"))
+    com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
+        Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), verticalArrangement = Arrangement.Top) {
+        Text(text = stringResource(id = R.string.recommendation_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("screen_title"))
         Spacer(modifier = Modifier.height(16.dp))
 
     if (rec == null) {
@@ -53,6 +54,7 @@ fun RecommendationScreen(viewModel: RecommendationViewModel) {
             // Push action button to bottom when content is sparse
             Spacer(modifier = Modifier.weight(1f))
 
+            }
         }
     }
 }

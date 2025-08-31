@@ -38,8 +38,9 @@ fun BreathWorkScreen(viewModel: BreathWorkViewModel, onInstruction: (String) -> 
         "cuadrado" to stringResource(id = R.string.breath_cuadrado_title)
     )
 
-    Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), verticalArrangement = Arrangement.Top) {
-    Text(text = stringResource(id = R.string.breath_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("screen_title"))
+    com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
+        Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), verticalArrangement = Arrangement.Top) {
+        Text(text = stringResource(id = R.string.breath_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("screen_title"))
         Spacer(modifier = Modifier.height(16.dp))
 
         for ((id, title) in exercises) {
@@ -61,10 +62,11 @@ fun BreathWorkScreen(viewModel: BreathWorkViewModel, onInstruction: (String) -> 
                         }
                     }
                     IconButton(onClick = { onInstruction(id) }) {
-                        Icon(imageVector = Icons.Filled.Home, contentDescription = stringResource(id = R.string.back_button), tint = if (isRecommended) MaterialTheme.colorScheme.primary else Color.Gray)
+                        Icon(imageVector = Icons.Filled.Home, contentDescription = stringResource(id = R.string.back_button), tint = if (isRecommended) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     }
                 }
             }
+        }
         }
     }
 }

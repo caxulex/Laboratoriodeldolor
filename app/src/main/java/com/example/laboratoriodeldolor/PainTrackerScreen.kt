@@ -69,14 +69,12 @@ fun PainTrackerScreen(
 	var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 	var toDeleteId by remember { mutableStateOf<Long?>(null) }
 
-	androidx.compose.material3.Scaffold { innerPadding ->
-		// Full-screen gradient background, content layered above
-		Box(modifier = Modifier.fillMaxSize()) {
-			GradientBackground()
-			Column(modifier = Modifier
-				.fillMaxSize()
-				.padding(innerPadding)
-				.padding(16.dp)) {
+	com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+		// Content is drawn inside the themed Surface provided by AppScaffold
+		Column(modifier = Modifier
+			.fillMaxSize()
+			.padding(innerPadding)
+			.padding(16.dp)) {
 
 				androidx.compose.material3.Text(
 					text = stringResource(id = R.string.pain_tracker_title),
@@ -264,7 +262,7 @@ fun PainTrackerScreen(
 								// Map persisted point to descriptive location
 								val key = mapPainPointToLocationKey(pp)
 								val labelRes = painLocationKeyToStringRes(key)
-								androidx.compose.material3.Text(text = "#${pp.id}: " + stringResource(id = labelRes))
+								androidx.compose.material3.Text(text = stringResource(id = R.string.pain_point_label_format, pp.id, stringResource(id = labelRes)))
 								Spacer(modifier = Modifier.width(16.dp))
 								// Open specific exercises for this pain point
 								androidx.compose.material3.OutlinedButton(onClick = {
@@ -285,7 +283,6 @@ fun PainTrackerScreen(
 								}
 							}
 						}
-					}
 				}
 
 				if (selectedAreas.isNotEmpty()) {

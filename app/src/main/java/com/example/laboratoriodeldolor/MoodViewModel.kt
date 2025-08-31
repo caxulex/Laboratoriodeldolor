@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -97,7 +99,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
                     timestamp = System.currentTimeMillis(),
                     moodScore = MoodMapping.emojiToScore(selectedEmoji)
                 )
-                moodDao.insert(newEntry)
+                withContext(Dispatchers.IO) { moodDao.insert(newEntry) }
                 Log.d(tag, "Saved mood entry at ${'$'}{newEntry.timestamp}")
             } catch (e: Exception) {
                 // Log exception so we can debug insert failures (Room, DB locked, etc.)
@@ -115,7 +117,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
         viewModelScope.launch {
                 try {
                 val now = System.currentTimeMillis()
-                exerciseDao.insert(ExerciseLog(timestamp = now))
+                withContext(Dispatchers.IO) { exerciseDao.insert(ExerciseLog(timestamp = now)) }
                 Log.d(tag, "Logged exercise at ${'$'}now")
             } catch (e: Exception) {
                 Log.e(tag, "logExerciseCompleted failed", e)
@@ -129,7 +131,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
     fun undoLastExercise() {
         viewModelScope.launch {
             try {
-                exerciseDao.deleteMostRecent()
+                withContext(Dispatchers.IO) { exerciseDao.deleteMostRecent() }
                 Log.d(tag, "Deleted most recent exercise log (undo)")
             } catch (e: Exception) {
                 Log.e(tag, "undoLastExercise failed", e)

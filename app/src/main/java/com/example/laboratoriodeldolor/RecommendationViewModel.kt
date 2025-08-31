@@ -2,6 +2,8 @@ package com.example.laboratoriodeldolor
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,11 +27,14 @@ class RecommendationViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            val recentMoods = moodDao.getRecent(14) // last 14 entries/days
-            val recentPains = painDao.getAllSnapshot() // latest snapshot
+            // Run DAO calls on IO and heavy computation on Default
+            val (recentMoods, recentPains) = withContext(Dispatchers.IO) {
+                val m = moodDao.getRecent(14)
+                val p = painDao.getAllSnapshot()
+                Pair(m, p)
+            }
 
-            // Compute recommendation based on current data
-            val rec = computeRecommendation(recentMoods, recentPains)
+            val rec = withContext(Dispatchers.Default) { computeRecommendation(recentMoods, recentPains) }
             _recommendation.value = rec
         }
     }

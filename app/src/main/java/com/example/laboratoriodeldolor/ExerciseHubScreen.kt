@@ -28,7 +28,7 @@ fun ExerciseHubScreen(
     onNavigateToBackLower: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-    Surface(modifier = Modifier.fillMaxSize()) {
+    com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = stringResource(id = R.string.exercise_hub_title), style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(16.dp))

@@ -5,10 +5,11 @@ import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Card
@@ -61,7 +62,7 @@ fun MoodHistoryScreen(viewModel: MoodHistoryViewModel) {
     val error by viewModel.error.collectAsState()
     val snackbarHostState = SnackbarHostState()
 
-    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
         // show snackbar when an error occurs
         val snackbarMessage = stringResource(id = R.string.error_load_data)
         LaunchedEffect(error) {

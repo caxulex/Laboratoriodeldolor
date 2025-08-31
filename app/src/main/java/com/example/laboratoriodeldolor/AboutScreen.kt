@@ -29,8 +29,9 @@ fun AboutScreen(onBack: () -> Unit = {}) {
         } catch (e: Exception) { "1.0" }
     }
 
-    Scaffold { innerPadding ->
-        Surface(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+        // Keep the Surface transparent so the app-wide gradient behind AppScaffold remains visible
+        Surface(modifier = Modifier.fillMaxSize().padding(innerPadding), color = androidx.compose.ui.graphics.Color.Transparent) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(text = stringResource(id = R.string.about_title), style = MaterialTheme.typography.headlineSmall)
                 Text(text = stringResource(id = R.string.about_version, version), modifier = Modifier.padding(top = 8.dp))

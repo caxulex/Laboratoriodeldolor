@@ -2,6 +2,8 @@ package com.example.laboratoriodeldolor
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,7 +23,7 @@ class BreathWorkViewModel(private val moodDao: MoodDao) : ViewModel() {
 
     fun refresh() {
         viewModelScope.launch {
-            val recent = moodDao.getRecent(1)
+            val recent = withContext(Dispatchers.IO) { moodDao.getRecent(1) }
             val latest = recent.firstOrNull()
             val id = when (latest?.emoji) {
                 "😞" -> "enamorado"

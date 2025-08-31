@@ -1,12 +1,22 @@
 package com.example.laboratoriodeldolor
 
 import android.app.Application
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class MoodApplication : Application() {
     // Using lazy so the database is only created when it's first needed
     val database: AppDatabase by lazy { AppDatabase.getDatabase(this) }
     // Preferences repository for lightweight persisted user choices
     val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository by lazy { com.example.laboratoriodeldolor.data.UserPreferencesRepository(this) }
+
+    // CompletableDeferred lets activities await DB warmup without blocking the main thread
+    private val _databaseReady = CompletableDeferred<Unit>()
+    val databaseReady get() = _databaseReady
 
     companion object {
         // A simple static reference so ViewModel factories can access the app DB
@@ -18,23 +28,39 @@ class MoodApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        // Warm up the Room database on a background thread so any migrations or
+
+        // Warm up the Room database on a background coroutine so any migrations or
         // initialization work doesn't run on the main thread and cause an ANR
         // when ViewModels request DAOs during initial composition.
-        Thread {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Accessing `database` will trigger the lazy initializer and run
-                // any pending migrations off the main thread. Assign to a
-                // non-reserved local variable so the compiler doesn't complain.
+                // Force DB creation on the IO dispatcher
                 val dbInstance = database
-                // Optionally touch a DAO to ensure underlying DB file is opened
-                @Suppress("UNUSED_VARIABLE")
-                val _maybe = dbInstance // keep reference briefly to avoid optimization
+
+                // Use suspendable APIs for DataStore and DAO calls (safe on IO)
+                try {
+                    // Keep warmup lightweight; seeding handled by DatabaseSeeder on DB creation
+                    val prefs = preferencesRepository
+                    prefs.hasSeededContentFlow.map { it }.first()
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                }
             } catch (t: Throwable) {
-                // Don't crash the app if pre-initialization fails; the DB will be
-                // created lazily later when needed. Log to aid debugging.
+                // Keep startup resilient
                 t.printStackTrace()
+            } finally {
+                // Signal that DB warmup finished (success or failure)
+                if (!_databaseReady.isCompleted) _databaseReady.complete(Unit)
             }
-        }.start()
+        }
+    }
+
+    /**
+     * Suspendable helper for activities to await DB warmup.
+     * Activities should call this from a coroutine (e.g. lifecycleScope) and
+     * it will not block the main thread while waiting.
+     */
+    suspend fun awaitDatabaseReady() {
+        databaseReady.await()
     }
 }

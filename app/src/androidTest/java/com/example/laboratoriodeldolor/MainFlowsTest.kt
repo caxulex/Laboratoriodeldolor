@@ -9,7 +9,7 @@ import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.*
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
+// removed unused UiDevice import (uiautomator dependency added to androidTest if needed)
 
 @RunWith(AndroidJUnit4::class)
 class MainFlowsTest {

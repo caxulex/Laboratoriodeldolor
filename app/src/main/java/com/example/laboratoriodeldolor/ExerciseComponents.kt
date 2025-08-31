@@ -37,12 +37,12 @@ fun ExerciseStepCard(
             .padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start) {
 
             // Placeholder visual: simple emoji; replace with Image(painterResource(...)) when you add drawables.
-            Text(text = "🏋️", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.size(64.dp))
+            Text(text = stringResource(id = R.string.exercise_emoji), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.size(64.dp))
 
             Spacer(modifier = Modifier.padding(horizontal = 8.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "${stringResource(id = R.string.step_label)} $stepNumber: ${stringResource(id = titleRes)}",
+                Text(text = stringResource(id = R.string.step_label) + " " + stepNumber + ": " + stringResource(id = titleRes),
                     style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(text = stringResource(id = descRes), style = MaterialTheme.typography.bodyMedium)

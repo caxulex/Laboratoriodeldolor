@@ -5,13 +5,16 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [MoodEntry::class, PainPoint::class, PainLog::class, ExerciseLog::class], version = 7, exportSchema = false)
+@Database(entities = [MoodEntry::class, PainPoint::class, PainLog::class, ExerciseLog::class, Technique::class, Routine::class, RoutineStep::class], version = 9, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun moodDao(): MoodDao
     abstract fun painPointDao(): PainPointDao
     abstract fun painLogDao(): PainLogDao
     abstract fun exerciseDao(): ExerciseDao
+    abstract fun techniqueDao(): TechniqueDao
+    abstract fun routineDao(): RoutineDao
+    abstract fun routineStepDao(): RoutineStepDao
 
     companion object {
         @Volatile
@@ -50,11 +53,36 @@ abstract class AppDatabase : RoomDatabase() {
                     }
                 }
 
+                val MIGRATION_7_8 = object : androidx.room.migration.Migration(7, 8) {
+                    override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                        // Drop the legacy diary_entries table which is now consolidated into mood_entries
+                        database.execSQL("DROP TABLE IF EXISTS diary_entries")
+                    }
+                }
+
+                val MIGRATION_8_9 = object : androidx.room.migration.Migration(8, 9) {
+                    override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                        // Create techniques, routines, and routine_steps tables if they don't exist.
+                        database.execSQL("CREATE TABLE IF NOT EXISTS techniques (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, videoUrl TEXT)")
+                        database.execSQL("CREATE TABLE IF NOT EXISTS routines (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title TEXT NOT NULL, bodyRegion TEXT, summary TEXT)")
+                        database.execSQL("CREATE TABLE IF NOT EXISTS routine_steps (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, routineId INTEGER NOT NULL, stepOrder INTEGER NOT NULL, description TEXT NOT NULL, techniqueId INTEGER)")
+                    }
+                }
+
+                // Provide a deferred so the seeding callback can await the fully-built AppDatabase
+                val dbDeferred = kotlinx.coroutines.CompletableDeferred<AppDatabase>()
+
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "mood_database"
-                ).addMigrations(MIGRATION_5_6, MIGRATION_6_7).build()
+                ).addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                    .addCallback(DatabaseSeeder.createCallback(dbDeferred, context.applicationContext))
+                    .build()
+
+                // Complete the deferred so the seeder callback can access DAOs
+                dbDeferred.complete(instance)
+
                 INSTANCE = instance
                 instance
             }

@@ -47,8 +47,7 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
 
     val coroutineScope = rememberCoroutineScope()
 
-    Surface(modifier = Modifier.fillMaxSize(), color = androidx.compose.material3.MaterialTheme.colorScheme.background) {
-        com.example.laboratoriodeldolor.ui.GradientBackground()
+    com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         AnimatedVisibility(visible = visible, enter = fadeIn(animationSpec = tween(260)), exit = fadeOut(animationSpec = tween(260))) {
             Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
                 Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))

@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.isSystemInDarkTheme
 
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
@@ -40,8 +41,8 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun LaboratorioDelDolorTheme(
-    // Default to Light mode unless caller requests dark
-    isDark: Boolean = false,
+    // Respect system theme by default
+    isDark: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit

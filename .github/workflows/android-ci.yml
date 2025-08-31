@@ -1,0 +1,88 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main, master, '**' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    name: Build and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
+
+      - name: Build (assembleDebug)
+        run: ./gradlew assembleDebug --no-daemon --warning-mode all
+
+      - name: Run unit tests
+        run: ./gradlew test --no-daemon --warning-mode all
+
+  instrumentation:
+    name: Instrumentation tests (emulator)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Run connected instrumentation tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: true
+          emulator-options: -no-window -gpu swiftshader_indirect
+          script: ./gradlew connectedAndroidTest --no-daemon --warning-mode all
+
+      # Upload test artifacts and adb logs if the instrumentation step failed
+      - name: Collect connected test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-test-reports
+          path: app/build/reports/androidTests/connected
+
+      - name: Upload connected test XML results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-test-results
+          path: app/build/outputs/androidTest-results/connected
+
+      - name: Capture adb logcat
+        if: failure()
+        run: |
+          mkdir -p test-artifacts
+          adb -s emulator-5554 logcat -d > test-artifacts/adb_logcat.txt || true
+          ls -la test-artifacts || true
+
+      - name: Upload adb logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adb-logcat
+          path: test-artifacts/adb_logcat.txt

@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -46,6 +46,11 @@ fun MoodProgressScreen(moodDao: MoodDao) {
         !d.isBefore(cutoff)
     }.sortedBy { it.timestamp }
 
+    val chartDesc = stringResource(id = R.string.progress_chart_desc)
+    val dateFormatPattern = stringResource(id = R.string.date_format_short)
+
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Top) {
     androidx.compose.material3.Text(text = stringResource(id = R.string.progress_title), style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(12.dp))
@@ -64,8 +69,8 @@ fun MoodProgressScreen(moodDao: MoodDao) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add accessibility description for the chart area
-        Card(modifier = Modifier.fillMaxWidth().height(320.dp).semantics { contentDescription = "Mood chart showing recent mood scores" }) {
+    // Add accessibility description for the chart area
+    Card(modifier = Modifier.fillMaxWidth().height(320.dp).semantics { contentDescription = chartDesc }) {
             if (entries.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     androidx.compose.material3.Text(text = stringResource(id = R.string.no_graph_data_message))
@@ -107,25 +112,25 @@ fun MoodProgressScreen(moodDao: MoodDao) {
                     val maxScore = 5f
                     val ys = smoothScores.map { s -> paddingY + h * (1f - (s - minScore) / (maxScore - minScore)) }
 
-                    // draw axes
-                    drawLine(color = Color.LightGray, start = androidx.compose.ui.geometry.Offset(paddingX, paddingY + h), end = androidx.compose.ui.geometry.Offset(paddingX + w, paddingY + h), strokeWidth = 2f)
+                    // draw axes using theme onSurface with low alpha
+                    drawLine(color = colorScheme.onSurface.copy(alpha = 0.12f), start = androidx.compose.ui.geometry.Offset(paddingX, paddingY + h), end = androidx.compose.ui.geometry.Offset(paddingX + w, paddingY + h), strokeWidth = 2f)
 
-                    // draw polyline
+                    // draw polyline using theme primary color
                     for (i in 0 until xs.size - 1) {
-                        drawLine(color = Color(0xFF4CAF50), start = androidx.compose.ui.geometry.Offset(xs[i], ys[i]), end = androidx.compose.ui.geometry.Offset(xs[i+1], ys[i+1]), strokeWidth = 6f)
+                        drawLine(color = colorScheme.primary, start = androidx.compose.ui.geometry.Offset(xs[i], ys[i]), end = androidx.compose.ui.geometry.Offset(xs[i+1], ys[i+1]), strokeWidth = 6f)
                     }
 
-                    // draw points
+                    // draw points using theme secondary color
                     for (i in xs.indices) {
-                        drawCircle(color = Color(0xFF388E3C), radius = 8f, center = androidx.compose.ui.geometry.Offset(xs[i], ys[i]))
+                        drawCircle(color = colorScheme.secondary, radius = 8f, center = androidx.compose.ui.geometry.Offset(xs[i], ys[i]))
                     }
 
                     // draw x-axis labels (dates)
-                    val formatter = DateTimeFormatter.ofPattern("MM/dd")
+                    val formatter = DateTimeFormatter.ofPattern(dateFormatPattern)
                     for (i in dates.indices) {
                         val label = dates.getOrNull(i)?.format(formatter) ?: ""
                         drawContext.canvas.nativeCanvas.apply {
-                            drawText(label, xs.getOrNull(i) ?: 0f, paddingY + h + 18f, android.graphics.Paint().apply { textSize = 24f; color = android.graphics.Color.DKGRAY })
+                            drawText(label, xs.getOrNull(i) ?: 0f, paddingY + h + 18f, android.graphics.Paint().apply { textSize = 24f; color = colorScheme.onSurface.copy(alpha = 0.7f).toArgb() })
                         }
                     }
                 }
