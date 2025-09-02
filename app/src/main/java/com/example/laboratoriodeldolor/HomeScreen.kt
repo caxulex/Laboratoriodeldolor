@@ -54,7 +54,7 @@ fun HomeScreen(routineDao: RoutineDao, onOpenPainRegion: (Long) -> Unit, onOpenP
                     Icon(imageVector = Icons.Filled.MoreVert, contentDescription = stringResource(id = R.string.more_options))
                 }
                 DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                    DropdownMenuItem(text = { Text(text = stringResource(id = R.string.techniques_library_title)) }, onClick = { menuExpanded = false; onOpenTechniques() })
+                    // Techniques moved to a prominent card on the Home screen.
                     DropdownMenuItem(text = { Text(text = stringResource(id = R.string.settings_title)) }, onClick = { menuExpanded = false; onOpenSettings() })
                 }
             })
@@ -65,6 +65,14 @@ fun HomeScreen(routineDao: RoutineDao, onOpenPainRegion: (Long) -> Unit, onOpenP
                 com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.home_register_pain), onClick = { onOpenPainTracker() })
 
                 Spacer(modifier = Modifier.height(12.dp))
+
+                // Prominent Techniques card added to Home screen
+                androidx.compose.material3.Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable { onOpenTechniques() }) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(text = stringResource(id = R.string.techniques_library_title), style = MaterialTheme.typography.titleMedium)
+                        Text(text = stringResource(id = R.string.techniques_library_subtitle), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+                    }
+                }
 
                 LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxWidth()) {
                     items(DEFAULT_REGIONS) { region ->

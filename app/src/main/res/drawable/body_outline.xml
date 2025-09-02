@@ -4,7 +4,7 @@
 <!-- Viewport coordinates are arbitrary and the vector will scale to the Image size. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="200dp"
-    android:height="280dp"
+    android:height="200dp"
     android:viewportWidth="100"
     android:viewportHeight="140">
 

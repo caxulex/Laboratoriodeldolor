@@ -8,7 +8,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -23,12 +23,12 @@ import androidx.compose.ui.Alignment
 fun MoodEmojiButton(
     emoji: String,
     selected: Boolean,
+    modifier: Modifier = Modifier,
     size: Dp = 64.dp,
     contentDesc: String? = null,
-    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    var pressedScale by remember { mutableStateOf(1f) }
+    var pressedScale by remember { mutableFloatStateOf(1f) }
     val scaleAnim by animateFloatAsState(targetValue = pressedScale)
 
     // Ensure minimum tappable area (>= 48dp). Use 56dp as comfortable target.

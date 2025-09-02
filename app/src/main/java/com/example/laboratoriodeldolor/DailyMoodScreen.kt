@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.launch
@@ -72,14 +73,15 @@ fun DailyMoodScreen(
             title = { Text(text = stringResource(id = R.string.mood_question), style = MaterialTheme.typography.headlineSmall) }
         )
 
-        // Make the main area scrollable and ensure it respects scaffold padding
-        androidx.compose.foundation.lazy.LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        // Place content and a SnackbarHost in a Box so snackbars overlay the list and sit above the nav bar
+        androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            // Make the main area scrollable and ensure it respects scaffold padding
+            androidx.compose.foundation.lazy.LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 // Top: prominent streak card
                 item {
                     Card(
@@ -94,7 +96,8 @@ fun DailyMoodScreen(
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 val streakCount by viewModel.streak.collectAsState()
                                 AnimatedContent(targetState = streakCount, transitionSpec = { scaleIn(tween(300)).togetherWith(scaleOut(tween(200))) }) { target ->
-                                    Text(text = stringResource(id = R.string.streak_display, target) + " 🔥", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(4.dp))
+                                    val streakText = LocalContext.current.resources.getQuantityString(R.plurals.streak_display, target, target)
+                                    Text(text = "$streakText 🔥", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(4.dp))
                                 }
 
                                 // Keep action here to mark today's exercise (not navigation)
@@ -200,9 +203,14 @@ fun DailyMoodScreen(
                     Spacer(modifier = Modifier.height(64.dp))
                 }
             }
+
+            // Snackbar host shown above content; keep it above navigation with a small bottom padding
+            SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 72.dp))
         }
 
     }
- 
+
+}
+
 
 

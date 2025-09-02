@@ -34,7 +34,10 @@
     <string name="recurring_label">Activar recordatorios diarios</string>
     <string name="dark_mode_label">Modo Oscuro</string>
     <string name="exercise_complete_button">He completado mis ejercicios de hoy</string>
-    <string name="streak_display">Racha de Ejercicios: %1$d días</string>
+    <plurals name="streak_display">
+        <item quantity="one">Racha de Ejercicios: %d día</item>
+        <item quantity="other">Racha de Ejercicios: %d días</item>
+    </plurals>
     <string name="streak_subtitle">Sigue así: los pequeños pasos crean hábitos</string>
     <string name="streak_mark_button">Marcar</string>
     <string name="streak_update_button">Actualizar</string>
@@ -80,24 +83,17 @@
     <string name="reset_button">Reiniciar</string>
     <!-- Check-in flow strings -->
     <string name="checkin_mood_title">Registro rápido: ¿Cómo te sientes?</string>
-    <string name="checkin_mood_hint">Escribe una nota opcional...</string>
+    <string name="checkin_mood_hint">Escribe una nota opcional…</string>
     <string name="checkin_pain_title">Registro rápido: Marca tus puntos de dolor</string>
     <string name="checkin_mood_next">Siguiente</string>
     <string name="checkin_skip">Omitir</string>
     <string name="checkin_finish">Finalizar</string>
     <string name="checkin_pain_instruction">Toca el mapa corporal para marcar puntos de dolor</string>
-    <!-- Pain location descriptive strings -->
-    <string name="dolor_frontal_superior">Dolor frontal superior</string>
-    <string name="dolor_frontal_medio">Dolor frontal medio</string>
-    <string name="dolor_frontal_inferior">Dolor frontal inferior</string>
-    <string name="dolor_espalda_superior">Dolor de espalda superior</string>
-    <string name="dolor_espalda_medio">Dolor de espalda medio</string>
-    <string name="dolor_espalda_inferior">Dolor de espalda inferior</string>
-    <string name="dolor_ubicacion_desconocida">Ubicación de dolor desconocida</string>
+
     <string name="diary_title">Diario</string>
-    <string name="diary_entry_hint">Escribe tu entrada de diario aquí...</string>
+    <string name="diary_entry_hint">Escribe tu entrada de diario aquí…</string>
     <string name="save_diary_entry_button">Guardar Entrada</string>
-    <string name="exercises_label">Ejercicios</string>
+
     <string name="exercise_hub_title">Rutinas de Ejercicios</string>
     <!-- Exercise UI helpers -->
     <string name="step_label">Paso</string>
@@ -137,12 +133,12 @@
     <string name="saved_label">Guardado</string>
 
     <!-- Specific front/back routine titles -->
-    <string name="front_upper_body_title">Rutina - Parte Frontal Superior</string>
-    <string name="back_upper_body_title">Rutina - Parte de Espalda Superior</string>
-    <string name="front_middle_body_title">Rutina - Parte Frontal Media</string>
-    <string name="back_middle_body_title">Rutina - Parte de Espalda Media</string>
-    <string name="front_lower_body_title">Rutina - Parte Frontal Inferior</string>
-    <string name="back_lower_body_title">Rutina - Parte de Espalda Inferior</string>
+    <string name="front_upper_body_routine_title">Rutina - Parte Frontal Superior</string>
+    <string name="back_upper_body_routine_title">Rutina - Parte de Espalda Superior</string>
+    <string name="front_middle_body_routine_title">Rutina - Parte Frontal Media</string>
+    <string name="back_middle_body_routine_title">Rutina - Parte de Espalda Media</string>
+    <string name="front_lower_body_routine_title">Rutina - Parte Frontal Inferior</string>
+    <string name="back_lower_body_routine_title">Rutina - Parte de Espalda Inferior</string>
 
     <string name="view_exercises">Ver Ejercicios</string>
     <string name="about_title">Acerca de la aplicación</string>
@@ -167,13 +163,14 @@
     <string name="progress_title">Progreso</string>
     <string name="progress_tab_weekly">Semanal</string>
     <string name="progress_tab_monthly">Mensual</string>
+    <string name="view_pain_chart_button">Ver Gráfico de Dolor</string>
     <!-- Techniques / Routines strings -->
     <string name="techniques_library_title">Biblioteca de Técnicas</string>
+    <string name="techniques_library_subtitle">Aprende cada maniobra en detalle</string>
     <string name="technique_detail_title">Técnica</string>
     <string name="technique_play_video">Ver video</string>
     <string name="routines_title">Rutinas</string>
     <string name="pain_region_title">Región de Dolor</string>
-    <string name="techniques_label">Técnicas</string>
     <string name="routines_label">Rutinas</string>
     <string name="onboarding_title">Bienvenido a Laboratorio del Dolor</string>
     <string name="onboarding_intro">Esta aplicación ofrece técnicas y rutinas para ayudar a manejar el dolor a través de respiración, movilización suave y auto-masaje. Sigue las instrucciones y usa Smärtgel según las indicaciones.</string>
@@ -212,4 +209,102 @@
     <!-- Chart / formatting keys used in code -->
     <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
     <string name="date_format_short">dd/MM</string>
+    <!-- Fallback/defaults for localized keys added in values-es -->
+    <string name="about_description_short">Cero Dolor ayuda con ejercicios y técnicas para manejar el dolor.</string>
+    <string name="about_release_version">Versión</string>
+
+    <string name="confirm_delete_title">Eliminar Entrada</string>
+    <string name="confirm_delete_message">¿Estás seguro de que quieres eliminar esta entrada? Esta acción no se puede deshacer.</string>
+    <string name="confirm_delete_positive">Eliminar</string>
+    <string name="confirm_delete_negative">Cancelar</string>
+
+    <string name="diary_date_label">Fecha</string>
+    <string name="diary_empty_state">Tu diario está vacío. Registra tu primer estado de ánimo para comenzar a seguir tu progreso.</string>
+    <string name="diary_entry_placeholder">Describe tu día, tu nivel de dolor o cualquier pensamiento que quieras registrar…</string>
+    <string name="diary_mood_prompt">¿Cómo te sientes hoy? Elige tu estado de ánimo.</string>
+    <string name="diary_save">Guardar Entrada</string>
+
+    <string name="error_no_network">Sin conexión a internet. No se pueden cargar los datos.</string>
+    <string name="error_save">Error al guardar. Por favor, revisa tu conexión e inténtalo de nuevo.</string>
+
+    <string name="home_empty_routines">Aún no tienes rutinas. Ve a tu Mapa de Dolor para registrar tus puntos y empezar tu camino hacia el bienestar.</string>
+
+    <string name="pain_map_instructions">Toca el área en la figura para marcar un punto de dolor.</string>
+    <string name="pain_map_gender_male">Masculino</string>
+    <string name="pain_map_gender_female">Femenino</string>
+    <string name="pain_save">Guardar Puntos de Dolor</string>
+    <string name="pain_save_confirmation">¡Mapa de dolor guardado con éxito!</string>
+
+    <string name="progress_empty_state">Registra tu estado de ánimo en el diario para ver tu progreso aquí.</string>
+    <plurals name="progress_streak_label">
+        <item quantity="one">Racha actual: %d día</item>
+        <item quantity="other">Racha actual: %d días</item>
+    </plurals>
+
+    <string name="region_elbows">Codos</string>
+    <string name="routine_no_steps">Esta rutina todavía no tiene pasos. Explora las técnicas para esta región y comienza a construir tu plan de alivio.</string>
+
+    <string name="settings_language">Idioma</string>
+    <string name="settings_notifications">Recordatorios y Notificaciones</string>
+    <string name="settings_privacy">Política de Privacidad</string>
+
+    <string name="technique_desc_amasamientos">Usa tu mano completa para realizar movimientos de amasamiento profundos y rítmicos sobre el músculo.</string>
+    <string name="technique_desc_fricciones">Realiza fricciones cortas y firmes sobre la zona para aumentar la circulación.</string>
+    <string name="technique_desc_garrita">Usa los nudillos para presionar puntos locales con una presión controlada.</string>
+    <string name="technique_video_label">Mira cómo se hace</string>
+    <string name="technique_video_placeholder">Toca para reproducir el video de la técnica.</string>
+    <string name="technique_video_cd">Video mostrando la técnica aplicada con la mano sobre la zona objetivo.</string>
+
+    <!-- Pain Tracker Screen strings -->
+    <string name="recorded_points_title">Puntos registrados</string>
+    <string name="intensity_severe">Severo</string>
+    <string name="intensity_high">Alto</string>
+    <string name="intensity_moderate">Moderado</string>
+
+    <!-- Pain Chart Screen strings -->
+    <string name="pain_intensity_chart_title">Evolución de la Intensidad del Dolor</string>
+    <string name="no_pain_data_message">No hay datos de dolor registrados</string>
+    <string name="pain_chart_description">Gráfico que muestra la evolución de la intensidad del dolor a lo largo del tiempo</string>
+    <string name="last_7_days">Últimos 7 días</string>
+    <string name="last_30_days">Últimos 30 días</string>
+    <string name="last_90_days">Últimos 90 días</string>
+    <string name="pain_intensity_label">Intensidad del Dolor</string>
+    <string name="date_axis_label">Fecha</string>
+    <string name="pain_chart_suggestion">Registra puntos de dolor en el Mapa de Dolor para ver tu evolución</string>
+    <string name="intensity_legend_title">Leyenda de Intensidad</string>
+    <string name="no_pain">Sin dolor</string>
+    <string name="pain_summary_title">Resumen del Período</string>
+    <string name="days_with_pain">Días con dolor</string>
+    <string name="avg_intensity">Intensidad promedio</string>
+    <string name="total_points">Puntos totales</string>
+
+    <!-- Pain Location strings -->
+    <string name="dolor_frontal_superior">Dolor frontal superior</string>
+    <string name="dolor_frontal_medio">Dolor frontal medio</string>
+    <string name="dolor_frontal_inferior">Dolor frontal inferior</string>
+    <string name="dolor_espalda_superior">Dolor de espalda superior</string>
+    <string name="dolor_espalda_medio">Dolor de espalda medio</string>
+    <string name="dolor_espalda_inferior">Dolor de espalda inferior</string>
+    <string name="dolor_ubicacion_desconocida">Ubicación de dolor desconocida</string>
+    <string name="no_pain_areas">No hay áreas de dolor registradas</string>
+
+    <!-- Smart Navigation Messages -->
+    <string name="navigating_to_front_upper">Taking you to upper body (front) techniques</string>
+    <string name="navigating_to_back_upper">Taking you to upper body (back) techniques</string>
+    <string name="navigating_to_front_middle">Taking you to middle body (front) techniques</string>
+    <string name="navigating_to_back_middle">Taking you to middle body (back) techniques</string>
+    <string name="navigating_to_front_lower">Taking you to lower body (front) techniques</string>
+    <string name="navigating_to_back_lower">Taking you to lower body (back) techniques</string>
+    <string name="navigating_to_exercises">Taking you to exercise techniques</string>
+    <string name="navigating_to_techniques">Taking you to available techniques</string>
+
+    <!-- Screen Titles -->
+    <string name="front_upper_body_title">Upper Body (Front)</string>
+    <string name="back_upper_body_title">Upper Body (Back)</string>
+    <string name="front_middle_body_title">Middle Body (Front)</string>
+    <string name="back_middle_body_title">Middle Body (Back)</string>
+    <string name="front_lower_body_title">Lower Body (Front)</string>
+    <string name="back_lower_body_title">Lower Body (Back)</string>
+    <string name="exercises_label">Exercises</string>
+    <string name="techniques_label">Techniques</string>
 </resources>

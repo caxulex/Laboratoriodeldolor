@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="5" by="lint 8.2.0 [11076708] " client="cli" dependencies="true" name="Lint" type="baseline" variant="all" version="8.2.0 [11076708] ">
+
+    <issue
+        id="LintError"
+        message="&quot;`app`&quot; is a Gradle project. To correctly analyze Gradle projects, you should run &quot;`gradlew lint`&quot; instead.">
+        <location
+            file="build.gradle.kts"/>
+    </issue>
+
+</issues>

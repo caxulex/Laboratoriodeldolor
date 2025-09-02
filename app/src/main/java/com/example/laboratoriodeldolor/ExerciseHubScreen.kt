@@ -34,22 +34,22 @@ fun ExerciseHubScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onNavigateToFrontUpper() }, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-                Text(text = stringResource(id = R.string.front_upper_body_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(id = R.string.front_upper_body_routine_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
             }
             Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onNavigateToBackUpper() }, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-                Text(text = stringResource(id = R.string.back_upper_body_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(id = R.string.back_upper_body_routine_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
             }
             Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onNavigateToFrontMiddle() }, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-                Text(text = stringResource(id = R.string.front_middle_body_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(id = R.string.front_middle_body_routine_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
             }
             Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onNavigateToBackMiddle() }, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-                Text(text = stringResource(id = R.string.back_middle_body_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(id = R.string.back_middle_body_routine_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
             }
             Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onNavigateToFrontLower() }, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-                Text(text = stringResource(id = R.string.front_lower_body_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(id = R.string.front_lower_body_routine_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
             }
             Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onNavigateToBackLower() }, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-                Text(text = stringResource(id = R.string.back_lower_body_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(id = R.string.back_lower_body_routine_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
             }
         }
     }

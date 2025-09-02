@@ -55,7 +55,10 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
 
                 // Show a miniature preview of the body map by reusing the PainTrackerScreen composable but without navigation
                 Box(modifier = Modifier.fillMaxWidth().height(420.dp)) {
-                    PainTrackerScreen(viewModel = painViewModel, onNavigateToExercise = { /* no-op in preview */ })
+                    PainTrackerScreen(onSave = { points -> 
+                        // Points are handled automatically by the PainTrackerScreen's internal state
+                        // No additional action needed in preview mode
+                    })
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

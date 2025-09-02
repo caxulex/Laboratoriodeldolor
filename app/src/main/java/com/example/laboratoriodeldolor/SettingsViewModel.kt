@@ -113,7 +113,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             action = ReminderReceiver.ACTION_REMIND
         }
-        val pendingFlags = if (android.os.Build.VERSION.SDK_INT >= 23) FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT else FLAG_UPDATE_CURRENT
+    val pendingFlags = FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT
         val pending = PendingIntent.getBroadcast(context, 0, intent, pendingFlags)
 
         // Use exact alarm if the app is allowed to schedule exact alarms; otherwise fall back
@@ -141,7 +141,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun cancelAlarm(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, ReminderReceiver::class.java).apply { action = ReminderReceiver.ACTION_REMIND }
-        val pendingFlags = if (android.os.Build.VERSION.SDK_INT >= 23) FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT else FLAG_UPDATE_CURRENT
+    val pendingFlags = FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT
         val pending = PendingIntent.getBroadcast(context, 0, intent, pendingFlags)
         alarmManager.cancel(pending)
     }

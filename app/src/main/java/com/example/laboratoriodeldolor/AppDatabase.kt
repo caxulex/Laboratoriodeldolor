@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [MoodEntry::class, PainPoint::class, PainLog::class, ExerciseLog::class, Technique::class, Routine::class, RoutineStep::class], version = 9, exportSchema = false)
+@Database(entities = [MoodEntry::class, PainPoint::class, PainLog::class, ExerciseLog::class, Technique::class, Routine::class, RoutineStep::class], version = 10, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun moodDao(): MoodDao
@@ -69,6 +69,13 @@ abstract class AppDatabase : RoomDatabase() {
                     }
                 }
 
+                val MIGRATION_9_10 = object : androidx.room.migration.Migration(9, 10) {
+                    override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                        // Add intensity column to pain_points with a safe default of 1 (moderate)
+                        database.execSQL("ALTER TABLE pain_points ADD COLUMN intensity INTEGER NOT NULL DEFAULT 1")
+                    }
+                }
+
                 // Provide a deferred so the seeding callback can await the fully-built AppDatabase
                 val dbDeferred = kotlinx.coroutines.CompletableDeferred<AppDatabase>()
 
@@ -76,7 +83,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "mood_database"
-                ).addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                ).addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .addCallback(DatabaseSeeder.createCallback(dbDeferred, context.applicationContext))
                     .build()
 

@@ -197,16 +197,16 @@ class EmojiMarkerView(context: Context, private val timestamps: List<Long>, priv
         val idx = e.x.toInt()
         val emoji = if (idx >= 0 && idx < emojis.size) emojis[idx] else ""
         val date = if (idx >= 0 && idx < timestamps.size) fmt.format(Date(timestamps[idx])) else ""
-    // Use a string resource with placeholders for safer localization
-    tv.text = context.getString(R.string.marker_text, emoji, date)
+        // Use a string resource with placeholders for safer localization
+        tv.text = context.getString(R.string.marker_text, emoji, date)
         super.refreshContent(e, highlight)
     }
 
     override fun getOffset(): MPPointF {
         // Center the marker horizontally and place it above the point
         return MPPointF(-(width / 2).toFloat(), -height.toFloat())
-        }
     }
+}
 
 private fun mapEmojiToValue(emoji: String): Int? {
     // Legacy helper removed — use MoodMapping.emojiToScore(emoji) when a numeric value is required.

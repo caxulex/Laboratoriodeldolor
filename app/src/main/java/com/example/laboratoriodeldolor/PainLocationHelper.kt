@@ -18,22 +18,33 @@ enum class PainLocationKey {
 /** Map a PainPoint to a PainLocationKey according to simple band thresholds. */
 fun mapPainPointToLocationKey(pp: PainPoint): PainLocationKey {
     val y = pp.y.coerceIn(0f, 1f)
-    val band = when {
-        y < 0.33f -> "upper"
-        y < 0.66f -> "middle"
-        else -> "lower"
-    }
-
+    val x = pp.x.coerceIn(0f, 1f)
+    
+    // More refined mapping based on both x and y coordinates
     return when (pp.view) {
-        "front" -> when (band) {
-            "upper" -> PainLocationKey.FRONT_UPPER
-            "middle" -> PainLocationKey.FRONT_MIDDLE
-            else -> PainLocationKey.FRONT_LOWER
+        "front" -> {
+            when {
+                // Head and neck area
+                y < 0.2f -> PainLocationKey.FRONT_UPPER
+                // Chest, shoulders, arms
+                y < 0.5f -> PainLocationKey.FRONT_UPPER
+                // Abdomen, middle torso
+                y < 0.7f -> PainLocationKey.FRONT_MIDDLE
+                // Hips, legs, feet
+                else -> PainLocationKey.FRONT_LOWER
+            }
         }
-        "back" -> when (band) {
-            "upper" -> PainLocationKey.BACK_UPPER
-            "middle" -> PainLocationKey.BACK_MIDDLE
-            else -> PainLocationKey.BACK_LOWER
+        "back" -> {
+            when {
+                // Head, neck, upper back
+                y < 0.2f -> PainLocationKey.BACK_UPPER
+                // Shoulders, middle back
+                y < 0.5f -> PainLocationKey.BACK_UPPER
+                // Lower back, middle spine
+                y < 0.7f -> PainLocationKey.BACK_MIDDLE
+                // Lower back, glutes, legs
+                else -> PainLocationKey.BACK_LOWER
+            }
         }
         else -> PainLocationKey.UNKNOWN
     }
@@ -52,4 +63,69 @@ fun painLocationKeyToStringRes(key: PainLocationKey): Int {
         PainLocationKey.BACK_LOWER -> R.string.dolor_espalda_inferior
         PainLocationKey.UNKNOWN -> R.string.dolor_ubicacion_desconocida
     }
+}
+
+/**
+ * Map a PainLocationKey to the corresponding navigation route for technique screens.
+ * This enables direct navigation from pain tracking to relevant exercises.
+ */
+fun painLocationKeyToRoute(key: PainLocationKey): String {
+    return when (key) {
+        PainLocationKey.FRONT_UPPER -> "front_upper_body"
+        PainLocationKey.BACK_UPPER -> "back_upper_body"
+        PainLocationKey.FRONT_MIDDLE -> "front_middle_body"
+        PainLocationKey.BACK_MIDDLE -> "back_middle_body"
+        PainLocationKey.FRONT_LOWER -> "front_lower_body"
+        PainLocationKey.BACK_LOWER -> "back_lower_body"
+        PainLocationKey.UNKNOWN -> "exercises" // fallback to exercise hub
+    }
+}
+
+/**
+ * Analyze a collection of pain points and determine the most relevant navigation target.
+ * Returns the route for the most prevalent pain area, or a general route if multiple areas are affected.
+ */
+fun analyzePainPointsForNavigation(painPoints: List<PainPoint>): String {
+    if (painPoints.isEmpty()) {
+        return "exercises" // fallback to general exercises
+    }
+    
+    // Group pain points by location and count occurrences
+    val locationCounts = painPoints
+        .groupBy { mapPainPointToLocationKey(it) }
+        .mapValues { (_, points) -> 
+            // Weight by intensity: higher intensity points count more
+            points.sumOf { it.intensity }
+        }
+        .filterKeys { it != PainLocationKey.UNKNOWN }
+    
+    if (locationCounts.isEmpty()) {
+        return "exercises"
+    }
+    
+    // Find the location with the highest weighted score
+    val dominantLocation = locationCounts.maxByOrNull { it.value }?.key
+        ?: return "exercises"
+    
+    return painLocationKeyToRoute(dominantLocation)
+}
+
+/**
+ * Get a user-friendly description of the dominant pain area for the given points.
+ * Returns a string resource ID that can be used with stringResource().
+ */
+fun getDominantPainAreaDescription(painPoints: List<PainPoint>): Int {
+    if (painPoints.isEmpty()) {
+        return R.string.no_pain_areas
+    }
+    
+    val locationCounts = painPoints
+        .groupBy { mapPainPointToLocationKey(it) }
+        .mapValues { (_, points) -> points.sumOf { it.intensity } }
+        .filterKeys { it != PainLocationKey.UNKNOWN }
+    
+    val dominantLocation = locationCounts.maxByOrNull { it.value }?.key
+        ?: return R.string.dolor_ubicacion_desconocida
+    
+    return painLocationKeyToStringRes(dominantLocation)
 }

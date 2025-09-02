@@ -24,12 +24,16 @@
     <string name="technique_video_cd">Video en primer plano que muestra la mano realizando un masaje de amasamiento en el músculo trapecio. La mano completa agarra, levanta y aprieta el tejido muscular de forma rítmica y profunda. La escena es tranquila, con luz suave y natural.</string>
 
     <string name="diary_mood_prompt">¿Cómo te sientes hoy? Elige tu estado de ánimo.</string>
-    <string name="diary_entry_placeholder">Describe tu día, tu nivel de dolor o cualquier pensamiento que quieras registrar...</string>
+    <string name="diary_entry_placeholder">Describe tu día, tu nivel de dolor o cualquier pensamiento que quieras registrar…</string>
     <string name="diary_save">Guardar Entrada</string>
     <string name="diary_date_label">Fecha</string>
     <string name="diary_empty_state">Tu diario está vacío. Registra tu primer estado de ánimo para comenzar a seguir tu progreso.</string>
 
-    <string name="progress_streak_label">Racha actual: %d días</string>
+    <plurals name="progress_streak_label">
+        <item quantity="one">Racha actual: %d día</item>
+        <item quantity="many">Racha actual: %d días</item>
+        <item quantity="other">Racha actual: %d días</item>
+    </plurals>
     <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
     <string name="date_format_short">dd/MM</string>
     <string name="progress_empty_state">Registra tu estado de ánimo en el diario para ver tu progreso aquí.</string>
@@ -38,6 +42,9 @@
     <string name="pain_map_instructions">Toca el área en la figura para marcar un punto de dolor.</string>
     <string name="pain_map_gender_male">Masculino</string>
     <string name="pain_map_gender_female">Femenino</string>
+    <string name="gender_label">Sexo</string>
+    <string name="gender_male">Masculino</string>
+    <string name="gender_female">Femenino</string>
     <string name="pain_save">Guardar Puntos de Dolor</string>
     <string name="pain_save_confirmation">¡Mapa de dolor guardado con éxito!</string>
 
@@ -77,7 +84,11 @@
     <string name="add_note">Añade una nota</string>
     <string name="reminder_settings_button">Recordatorios de tus ejercicios Cero Dolor</string>
     <string name="exercise_complete_button">He completado mis ejercicios de hoy</string>
-    <string name="streak_display">Racha de Ejercicios: %1$d días</string>
+    <plurals name="streak_display">
+        <item quantity="one">Racha de Ejercicios: %d día</item>
+        <item quantity="many">Racha de Ejercicios: %d días</item>
+        <item quantity="other">Racha de Ejercicios: %d días</item>
+    </plurals>
     <string name="mood_history_title">Historial de tu Ánimo</string>
     <string name="view_history_button">Ver Historial</string>
     <string name="recurring_label">Activar recordatorios diarios</string>
@@ -105,5 +116,209 @@
     <string name="breath_chilindrina_title">Respiración chilindrina</string>
     <string name="breath_cuadrado_title">Respiración cuadrada</string>
     <string name="breath_recommended_label">Recomendado</string>
+    <string name="breath_nav_button">Respiración guiada</string>
 
+<!-- Added missing translations reported by lint -->
+    <string name="view_label">Vista</string>
+    <string name="view_front">Frente</string>
+    <string name="view_back">Atrás</string>
+
+    <string name="exercise_reminder_title">Recordatorio de Ejercicios</string>
+    <string name="exercise_reminder_text">Es hora de tu sesión diaria para manejar el dolor. ¡Tú puedes!</string>
+
+    <string name="settings_title">Ajustes</string>
+    <string name="reminder_time_label">Hora del Recordatorio</string>
+    <string name="dark_mode_label">Modo Oscuro</string>
+
+    <string name="streak_subtitle">Sigue así: los pequeños pasos crean hábitos</string>
+    <string name="streak_mark_button">Marcar</string>
+    <string name="streak_update_button">Actualizar</string>
+
+    <string name="empty_mood_title">Aún no hay registros</string>
+    <string name="empty_mood_subtitle">Cuando registres tu estado de ánimo, aquí verás tu historial y patrones a lo largo del tiempo.</string>
+    <string name="no_graph_data_message">No hay datos procesables para el gráfico</string>
+
+    <string name="recommendation_title">Tu recomendación de hoy</string>
+    <string name="recommendation_no_data_title">Aún no hay recomendaciones</string>
+    <string name="recommendation_no_data_subtitle">Registra tu estado de ánimo y puntos de dolor de forma regular para recibir recomendaciones personalizadas.</string>
+    <string name="recommendation_action_button">Ver ejercicios sugeridos</string>
+
+    <string name="back_button">Atrás</string>
+
+    <string name="upper_body_exercises_title">Ejercicios para la Zona Superior</string>
+    <string name="middle_body_exercises_title">Ejercicios para la Zona Media</string>
+    <string name="lower_body_exercises_title">Ejercicios para la Zona Inferior</string>
+    <string name="upper_body_exercises_button">Ejercicios para Zona Superior</string>
+    <string name="middle_body_exercises_button">Ejercicios para Zona Media</string>
+    <string name="lower_body_exercises_button">Ejercicios para Zona Inferior</string>
+
+    <string name="upper_step_1">1. Inhala profundamente por la nariz (3s)</string>
+    <string name="upper_step_2">2. Mantén el aire (3s)</string>
+    <string name="upper_step_3">3. Exhala lentamente por la boca (4s)</string>
+
+    <string name="middle_step_1">1. Estiramiento lateral suave (10s por lado)</string>
+    <string name="middle_step_2">2. Rotaciones de tronco suaves (10 rep)</string>
+    <string name="middle_step_3">3. Inclinaciones hacia adelante (5 rep)</string>
+
+    <string name="lower_step_1">1. Elevaciones de talón (10 rep)</string>
+    <string name="lower_step_2">2. Estiramiento de isquiotibiales (20s)</string>
+    <string name="lower_step_3">3. Sentadillas parciales (8 rep)</string>
+
+    <string name="timer_label">Tiempo: %1$d s</string>
+    <string name="start_button">Iniciar</string>
+    <string name="pause_button">Pausa</string>
+    <string name="reset_button">Reiniciar</string>
+
+    <string name="checkin_mood_title">Registro rápido: ¿Cómo te sientes?</string>
+    <string name="checkin_mood_hint">Escribe una nota opcional…</string>
+    <string name="checkin_pain_title">Registro rápido: Marca tus puntos de dolor</string>
+    <string name="checkin_mood_next">Siguiente</string>
+    <string name="checkin_skip">Omitir</string>
+    <string name="checkin_finish">Finalizar</string>
+    <string name="checkin_pain_instruction">Toca el mapa corporal para marcar puntos de dolor</string>
+
+    <string name="diary_title">Diario</string>
+    <string name="diary_entry_hint">Escribe tu entrada de diario aquí…</string>
+    <string name="save_diary_entry_button">Guardar Entrada</string>
+
+    <string name="exercise_hub_title">Rutinas de Ejercicios</string>
+
+    <string name="upper_body_routine_title">Rutina - Parte Superior</string>
+    <string name="upper_body_routine_subtitle">Movimientos suaves para hombros, cuello y brazos</string>
+    <string name="upper_ex1_title">Circulaciones de hombros</string>
+    <string name="upper_ex1_desc">Gira los hombros hacia atrás y hacia adelante de forma controlada</string>
+    <string name="upper_ex2_title">Estiramiento de cuello</string>
+    <string name="upper_ex2_desc">Inclina la cabeza lateralmente, mantén y cambia de lado</string>
+    <string name="upper_ex3_title">Rotaciones de brazos</string>
+    <string name="upper_ex3_desc">Haz círculos con los brazos con movimiento suave</string>
+
+    <string name="middle_body_routine_title">Rutina - Zona Media</string>
+    <string name="middle_body_routine_subtitle">Ejercicios para la movilidad del tronco y la columna</string>
+    <string name="middle_ex1_title">Estiramiento lateral</string>
+    <string name="middle_ex1_desc">Inclina el torso hacia cada lado y mantén 10 segundos</string>
+    <string name="middle_ex2_title">Rotaciones de tronco</string>
+    <string name="middle_ex2_desc">Gira el torso suavemente manteniendo la pelvis estable</string>
+    <string name="middle_ex3_title">Inclinaciones hacia adelante</string>
+    <string name="middle_ex3_desc">Flexiona desde las caderas y vuelve a la posición neutra</string>
+
+    <string name="lower_body_routine_title">Rutina - Parte Inferior</string>
+    <string name="lower_body_routine_subtitle">Fortalece y estira piernas y glúteos</string>
+    <string name="lower_ex1_title">Elevaciones de talón</string>
+    <string name="lower_ex1_desc">Sube y baja los talones con control</string>
+    <string name="lower_ex2_title">Estiramiento de isquiotibiales</string>
+    <string name="lower_ex2_desc">Mantén la pierna estirada y alcanza los dedos suavemente</string>
+    <string name="lower_ex3_title">Sentadillas parciales</string>
+    <string name="lower_ex3_desc">Flexiona ligeramente las rodillas manteniendo la espalda recta</string>
+
+    <string name="reps_10">10 rep.</string>
+    <string name="reps_5">5 rep.</string>
+    <string name="reps_12">12 rep.</string>
+    <string name="reps_30s">30 s</string>
+
+    <string name="saved_label">Guardado</string>
+
+    <string name="front_upper_body_routine_title">Rutina - Parte Frontal Superior</string>
+    <string name="back_upper_body_routine_title">Rutina - Parte de Espalda Superior</string>
+    <string name="front_middle_body_routine_title">Rutina - Parte Frontal Media</string>
+    <string name="back_middle_body_routine_title">Rutina - Parte de Espalda Media</string>
+    <string name="front_lower_body_routine_title">Rutina - Parte Frontal Inferior</string>
+    <string name="back_lower_body_routine_title">Rutina - Parte de Espalda Inferior</string>
+
+    <string name="view_exercises">Ver Ejercicios</string>
+
+    <string name="about_version">Versión: %1$s</string>
+    <string name="about_privacy">Política de privacidad</string>
+    <string name="about_privacy_url">https://example.com/política-de-privacidad</string>
+    <string name="about_terms">Términos de servicio (próximamente)</string>
+    <string name="about_acknowledgments">Agradecimientos y créditos</string>
+    <string name="about_close">Cerrar</string>
+
+    <string name="error_load_data">No se pudieron cargar los datos. Por favor, inténtalo de nuevo.</string>
+    <string name="marker_text">%1$s  %2$s</string>
+    <string name="exercise_marked_snackbar">Ejercicios marcados como completos</string>
+    <string name="undo_action">Deshacer</string>
+
+    <string name="emoji_desc_very_bad">Muy triste</string>
+    <string name="emoji_desc_bad">Triste</string>
+    <string name="emoji_desc_neutral">Neutral</string>
+    <string name="emoji_desc_good">Contento</string>
+    <string name="emoji_desc_very_good">Muy contento</string>
+
+    <string name="progress_title">Progreso</string>
+    <string name="progress_tab_weekly">Semanal</string>
+    <string name="progress_tab_monthly">Mensual</string>
+    <string name="view_pain_chart_button">Ver Gráfico de Dolor</string>
+
+    <string name="techniques_library_title">Biblioteca de Técnicas</string>
+    <string name="techniques_library_subtitle">Aprende cada maniobra en detalle</string>
+    <string name="technique_detail_title">Técnica</string>
+    <string name="technique_play_video">Ver video</string>
+    <string name="routines_title">Rutinas</string>
+    <string name="pain_region_title">Región de Dolor</string>
+    <string name="routines_label">Rutinas</string>
+
+    <string name="onboarding_smärtgel_usage">Smärtgel: aplica una pequeña cantidad en la zona dolorida siguiendo las advertencias del envase. Evita contacto con ojos y mucosas.</string>
+    <string name="onboarding_continue">Continuar</string>
+    <string name="onboarding_skip">Omitir</string>
+
+    <string name="home_register_pain">Registrar mi Dolor de Hoy</string>
+    <string name="home_title">Inicio</string>
+    <string name="more_options">Más opciones</string>
+
+    <string name="mirror_technique_label">Técnica Espejo</string>
+    <string name="mirror_technique_instruction">Si masajear el hombro adolorido duele demasiado, aplique Smärtgel en él, pero realice el masaje en el hombro sano.</string>
+    <string name="mirror_technique_switch_desc">Activa para ver la instrucción de Técnica Espejo</string>
+
+    <!-- Pain Tracker Screen strings -->
+    <string name="recorded_points_title">Puntos registrados</string>
+    <string name="intensity_severe">Severo</string>
+    <string name="intensity_high">Alto</string>
+    <string name="intensity_moderate">Moderado</string>
+
+    <!-- Pain Chart Screen strings -->
+    <string name="pain_intensity_chart_title">Evolución de la Intensidad del Dolor</string>
+    <string name="no_pain_data_message">No hay datos de dolor registrados</string>
+    <string name="pain_chart_description">Gráfico que muestra la evolución de la intensidad del dolor a lo largo del tiempo</string>
+    <string name="last_7_days">Últimos 7 días</string>
+    <string name="last_30_days">Últimos 30 días</string>
+    <string name="last_90_days">Últimos 90 días</string>
+    <string name="pain_intensity_label">Intensidad del Dolor</string>
+    <string name="date_axis_label">Fecha</string>
+    <string name="pain_chart_suggestion">Registra puntos de dolor en el Mapa de Dolor para ver tu evolución</string>
+    <string name="intensity_legend_title">Leyenda de Intensidad</string>
+    <string name="no_pain">Sin dolor</string>
+    <string name="pain_summary_title">Resumen del Período</string>
+    <string name="days_with_pain">Días con dolor</string>
+    <string name="avg_intensity">Intensidad promedio</string>
+    <string name="total_points">Puntos totales</string>
+
+    <!-- Pain Location strings -->
+    <string name="dolor_frontal_superior">Dolor frontal superior</string>
+    <string name="dolor_frontal_medio">Dolor frontal medio</string>
+    <string name="dolor_frontal_inferior">Dolor frontal inferior</string>
+    <string name="dolor_espalda_superior">Dolor de espalda superior</string>
+    <string name="dolor_espalda_medio">Dolor de espalda medio</string>
+    <string name="dolor_espalda_inferior">Dolor de espalda inferior</string>
+    <string name="dolor_ubicacion_desconocida">Ubicación de dolor desconocida</string>
+    <string name="no_pain_areas">No hay áreas de dolor registradas</string>
+
+    <!-- Smart Navigation Messages -->
+    <string name="navigating_to_front_upper">Te llevo a técnicas para la parte superior frontal</string>
+    <string name="navigating_to_back_upper">Te llevo a técnicas para la parte superior de la espalda</string>
+    <string name="navigating_to_front_middle">Te llevo a técnicas para la zona media frontal</string>
+    <string name="navigating_to_back_middle">Te llevo a técnicas para la zona media de la espalda</string>
+    <string name="navigating_to_front_lower">Te llevo a técnicas para la parte inferior frontal</string>
+    <string name="navigating_to_back_lower">Te llevo a técnicas para la parte inferior de la espalda</string>
+    <string name="navigating_to_exercises">Te llevo a las técnicas de ejercicios</string>
+    <string name="navigating_to_techniques">Te llevo a las técnicas disponibles</string>
+
+    <!-- Screen Titles -->
+    <string name="front_upper_body_title">Parte Superior (Frontal)</string>
+    <string name="back_upper_body_title">Parte Superior (Espalda)</string>
+    <string name="front_middle_body_title">Zona Media (Frontal)</string>
+    <string name="back_middle_body_title">Zona Media (Espalda)</string>
+    <string name="front_lower_body_title">Parte Inferior (Frontal)</string>
+    <string name="back_lower_body_title">Parte Inferior (Espalda)</string>
+    <string name="exercises_label">Ejercicios</string>
+    <string name="techniques_label">Técnicas</string>
 </resources>

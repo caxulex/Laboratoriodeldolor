@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 fun BackUpperBodyExerciseScreen(onBack: () -> Unit = {}) {
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
-            Text(text = stringResource(id = R.string.back_upper_body_title), style = MaterialTheme.typography.headlineSmall)
+            Text(text = stringResource(id = R.string.back_upper_body_routine_title), style = MaterialTheme.typography.headlineSmall)
             Text(text = stringResource(id = R.string.upper_body_routine_subtitle), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
 
             val steps = listOf(

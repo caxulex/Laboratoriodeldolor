@@ -23,4 +23,3 @@ kotlin.code.style=official
 android.nonTransitiveRClass=true
 # Temporarily added by script to force lint baseline update
 android.lint.baseline=app/lint-baseline.xml
-android.lint.baseline=app/lint-baseline.generated.xml

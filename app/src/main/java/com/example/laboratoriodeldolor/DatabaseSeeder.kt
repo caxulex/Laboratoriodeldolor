@@ -37,15 +37,17 @@ object DatabaseSeeder {
                         val techniqueMap = mutableMapOf<String, Long>()
 
                         val techniques = listOf(
-                            Technique(title = "Amasamiento", description = "Amasar la musculatura con movimientos profundos y lentos para liberar tensión."),
-                            Technique(title = "Garrita", description = "Presión puntual con el pulgar o los dedos para puntos gatillo locales."),
-                            Technique(title = "Fricción", description = "Movimientos de fricción cortos y directos sobre fibras tensas para movilizar tejido."),
-                            Technique(title = "Respiración diafragmática", description = "Respira profundamente usando el diafragma para reducir la tensión."),
-                            Technique(title = "Estiramiento suave", description = "Estiramientos lentos y controlados para mejorar la movilidad."),
-                            Technique(title = "Liberación miofascial suave", description = "Masajea suavemente la zona con movimientos circulares para liberar la fascia."),
-                            Technique(title = "Dedo a dedo / Hueso a hueso", description = "Trabajo localizado con dedos para movilidad y descarga entre estructuras óseas y tejido blando."),
-                            Technique(title = "Movilización articular", description = "Pequeños movimientos dirigidos a la articulación para recuperar rango de movimiento."),
-                            Technique(title = "Técnica Espejo", description = "Técnica espejo: aplicar Smärtgel en la zona dolorosa y masajear la parte simétrica sana cuando sea necesario.")
+                            Technique(title = "Dedo índice sobre dedo corazón", description = "Poner el dedo corazón encima del dedo índice para generar más presión en el punto de dolor, realizar el masaje en círculos."),
+                            // Keep singular title used in routines but update description to final wording
+                            Technique(title = "Amasamiento", description = "Dar pellizcos en la zona de dolor con la mano completa."),
+                            Technique(title = "Fricción", description = "Con la parte que une el dedo índice con el dedo pulgar realiza deslizamientos rápidos."),
+                            Technique(title = "Garrita", description = "Cerrar la mano en forma de puño y usar los “nudillos” o falanges medias y las proximales para masajear."),
+                            // Add techniques requested by content list
+                            Technique(title = "Percusiones", description = "Palmadas rápidas y constantes para atraer la circulación."),
+                            Technique(title = "Bombeo", description = "Usar la palma de la mano para hacer movimientos de presión hacia abajo."),
+                            // Update existing combined entry to include the video URL for 'hueso a hueso' technique
+                            Technique(title = "Dedo a dedo / Hueso a hueso", description = "Esta técnica se realiza usando el dedo pulgar de forma lateral, donde se encuentra el hueso y no la yema del dedo, para ejercer más presión sobre la zona a trabajar.", videoUrl = "https://drive.google.com/drive/u/0/folders/1A0IOUnAagu4hpcx2TD89K4m-p_GcZZpv"),
+                            Technique(title = "Técnica Espejo", description = "En caso de dolor crónico o cirugía que no permite masajear. Por ejemplo: en la lesión del hombro poner el Smärtgel y masajear el hombro sano.")
                         )
 
                         for (t in techniques) {

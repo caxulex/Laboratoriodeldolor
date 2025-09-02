@@ -39,7 +39,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 val nextTrigger = computeNextTriggerMillis(hour, minute)
                 val nextIntent = Intent(context, ReminderReceiver::class.java).apply { action = ACTION_REMIND }
-                val flags = if (Build.VERSION.SDK_INT >= 23) FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT else FLAG_UPDATE_CURRENT
+                val flags = FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT
                 val pending = PendingIntent.getBroadcast(context, 0, nextIntent, flags)
 
                 try {
