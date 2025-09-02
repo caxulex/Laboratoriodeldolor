@@ -130,24 +130,28 @@ fun DailyMoodScreen(
 
                 // Emoji selector — prominent
                 item {
-                    val localSelectedEmoji = remember { androidx.compose.runtime.mutableStateOf(viewModel.selectedEmoji) }
+                    val localSelectedEmoji = remember(viewModel.selectedEmoji) { 
+                        mutableStateOf(viewModel.selectedEmoji) 
+                    }
                     val haptic = LocalHapticFeedback.current
                     Card(shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.titleMedium)
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally)) {
-                                val options = MoodOptions.FIVE_LEVEL
+                                val options = remember { MoodOptions.FIVE_LEVEL }
                                 for ((idx, mood) in options.withIndex()) {
                                     val selected = localSelectedEmoji.value == mood
-                                    val desc = when (idx) {
-                                        0 -> stringResource(id = R.string.emoji_desc_very_bad)
-                                        1 -> stringResource(id = R.string.emoji_desc_bad)
-                                        2 -> stringResource(id = R.string.emoji_desc_neutral)
-                                        3 -> stringResource(id = R.string.emoji_desc_good)
-                                        else -> stringResource(id = R.string.emoji_desc_very_good)
+                                    val desc = remember(idx) {
+                                        when (idx) {
+                                            0 -> R.string.emoji_desc_very_bad
+                                            1 -> R.string.emoji_desc_bad
+                                            2 -> R.string.emoji_desc_neutral
+                                            3 -> R.string.emoji_desc_good
+                                            else -> R.string.emoji_desc_very_good
+                                        }
                                     }
-                                    MoodEmojiButton(emoji = mood, selected = selected, size = 64.dp, contentDesc = desc) {
+                                    MoodEmojiButton(emoji = mood, selected = selected, size = 64.dp, contentDesc = stringResource(desc)) {
                                         localSelectedEmoji.value = mood
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     }

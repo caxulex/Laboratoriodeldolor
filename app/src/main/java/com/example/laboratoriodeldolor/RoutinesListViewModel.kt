@@ -28,8 +28,8 @@ class RoutinesListViewModel(
             emit(emptyList())
         }
         .stateIn(
-            scope = CoroutineScope(viewModelScope.coroutineContext + dispatcher),
-            started = SharingStarted.Eagerly,
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 

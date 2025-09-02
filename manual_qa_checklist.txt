@@ -1,0 +1,160 @@
+# Manual QA Checklist - Laboratorio del Dolor
+
+## App Theme Consistency
+### Verify Material3 Theme Application Across All Screens
+- [ ] **Home Screen**: Consistent colors, typography, and spacing
+- [ ] **Mood Check-in Screen**: Material3 components (buttons, cards, dialogs)
+- [ ] **Daily Mood Screen**: Color scheme matches app theme
+- [ ] **Pain Tracker Screen**: Canvas elements and buttons use theme colors
+- [ ] **Pain Chart Screen**: Chart colors and UI elements consistent
+- [ ] **Exercise Hub Screen**: Card styling and navigation consistent
+- [ ] **Individual Exercise Screens** (6 screens):
+  - [ ] Front Upper Body Exercise Screen
+  - [ ] Back Upper Body Exercise Screen  
+  - [ ] Front Middle Body Exercise Screen
+  - [ ] Back Middle Body Exercise Screen
+  - [ ] Front Lower Body Exercise Screen
+  - [ ] Back Lower Body Exercise Screen
+- [ ] **Breath Work Screen**: Animation colors and controls
+- [ ] **Diary Screen**: Text fields and entry cards
+- [ ] **Settings Screen**: Switch and preference controls
+- [ ] **About Screen**: Links and text styling
+- [ ] **Mood History Screen**: Chart and list components
+
+## Navigation Integrity
+### Bottom Navigation
+- [ ] **Home Tab**: Navigates to home screen correctly
+- [ ] **Diario Tab**: Opens diary/mood screens properly
+- [ ] **Dolor Tab**: Access pain tracker functionality
+- [ ] **Progreso Tab**: Shows mood charts and pain charts
+- [ ] **Ejercicios Tab**: Opens exercise hub
+- [ ] **Tab Selection State**: Correct highlighting of active tab
+
+### Screen-to-Screen Navigation
+- [ ] **Pain Tracker → Exercise Screens**: Smart navigation based on pain analysis
+- [ ] **Exercise Hub → Individual Exercise**: Navigation to specific routines
+- [ ] **Progreso → Pain Chart**: "Ver Gráfico de Dolor" button functionality
+- [ ] **Settings → About**: Navigation and back button
+- [ ] **Back Button Behavior**: Consistent across all screens
+- [ ] **Deep Linking**: Navigation handles state restoration properly
+
+### Smart Pain Analysis Navigation
+- [ ] **Pain Points → Front Upper Body**: When pain detected in shoulders/neck
+- [ ] **Pain Points → Back Upper Body**: When pain detected in upper back
+- [ ] **Pain Points → Front Middle**: When pain detected in chest/abdomen
+- [ ] **Pain Points → Back Middle**: When pain detected in middle back
+- [ ] **Pain Points → Front Lower**: When pain detected in legs/front lower
+- [ ] **Pain Points → Back Lower**: When pain detected in lower back
+- [ ] **Fallback Navigation**: Default to exercise hub when analysis unclear
+
+## Core Functionality Verification
+### Mood Tracking & Diary
+- [ ] **Mood Selection**: 5 emoji states selectable and saveable
+- [ ] **Diary Entry Creation**: Text entry saves properly
+- [ ] **Diary Entry Deletion**: Confirmation dialog and actual deletion
+- [ ] **Mood History Display**: Chart shows historical data correctly
+- [ ] **Data Persistence**: Entries survive app restart
+- [ ] **Empty State Handling**: Proper messages when no data exists
+
+### Pain Tracking System
+- [ ] **Pain Point Placement**: Touch interaction on body diagram works
+- [ ] **Intensity Selection**: 1-3 intensity levels selectable
+- [ ] **Gender Toggle**: Male/female body diagrams switch properly
+- [ ] **View Toggle**: Front/back body views switch correctly
+- [ ] **Pain Point Saving**: Data persists and triggers navigation
+- [ ] **Pain Analysis**: Coordinate mapping to body regions accurate
+- [ ] **Smart Navigation**: Automatic routing to relevant exercise
+
+### Pain Chart Visualization
+- [ ] **Chart Data Display**: Shows pain intensity over time
+- [ ] **Time Range Filters**: 7/30/90 day filters work correctly
+- [ ] **Bar Chart Rendering**: Proper scaling and colors by intensity
+- [ ] **Legend Display**: Intensity levels clearly labeled
+- [ ] **Summary Statistics**: Accurate calculations of days with pain, averages
+- [ ] **Empty State**: Proper message when no pain data exists
+- [ ] **Loading States**: Smooth transitions during data fetch
+
+### Exercise System
+- [ ] **Exercise Hub Cards**: Display different body region routines
+- [ ] **Exercise Screen Content**: Proper instructions and imagery
+- [ ] **Exercise Completion**: Save button functionality
+- [ ] **Exercise Navigation**: Forward/back between exercises
+- [ ] **Exercise Persistence**: Completion status tracked
+- [ ] **Lottie Animations**: Save button animations work smoothly
+
+### Breathing Exercises
+- [ ] **Breath Timer**: Start/pause/reset functionality
+- [ ] **Visual Feedback**: Breathing rhythm visual cues
+- [ ] **Audio Integration**: Sound cues (if implemented)
+- [ ] **Session Completion**: Proper ending and feedback
+
+## Data Persistence & Performance
+### Database Operations
+- [ ] **Mood Entry Storage**: Entries save and retrieve correctly
+- [ ] **Pain Point Storage**: Pain data persists with coordinates and intensity
+- [ ] **Exercise Log Storage**: Completion tracking works
+- [ ] **Settings Persistence**: User preferences survive restarts
+- [ ] **Database Migration**: No data loss during app updates
+
+### Performance Validation
+- [ ] **App Startup Time**: Fast launch (< 3 seconds on typical device)
+- [ ] **Screen Transitions**: Smooth navigation without lag
+- [ ] **Chart Rendering**: Pain charts load without blocking UI
+- [ ] **Canvas Performance**: Pain tracker drawing responsive
+- [ ] **Memory Usage**: No excessive memory consumption during usage
+- [ ] **Background Processing**: Database operations don't block UI
+
+## Accessibility & Usability
+- [ ] **Touch Targets**: Minimum 48dp touch targets met
+- [ ] **Content Descriptions**: Screen reader compatibility
+- [ ] **High Contrast**: Readable in accessibility modes
+- [ ] **Text Sizing**: Respects system font size settings
+- [ ] **Error Messages**: Clear, actionable error feedback
+- [ ] **Loading Indicators**: User feedback during processing
+
+## Localization (Spanish)
+- [ ] **UI Text**: All visible text in Spanish
+- [ ] **Error Messages**: Localized error handling
+- [ ] **Date Formatting**: Correct Spanish date formats
+- [ ] **Number Formatting**: Proper decimal separators
+- [ ] **Navigation Labels**: Tab and button text correct
+
+## Edge Cases & Error Handling
+- [ ] **No Network**: Graceful offline functionality
+- [ ] **Storage Full**: Proper error handling for storage issues
+- [ ] **Corrupted Data**: Recovery mechanisms work
+- [ ] **Large Datasets**: Performance with extensive historical data
+- [ ] **Rapid Interactions**: No crashes from fast tapping
+- [ ] **Background/Foreground**: State preservation during app switching
+
+## Device Compatibility
+- [ ] **Portrait Orientation**: All screens work properly
+- [ ] **Landscape Orientation**: Reasonable layout adaptation
+- [ ] **Small Screens**: Usable on minimum supported screen size
+- [ ] **Large Screens**: Proper tablet/large phone adaptation
+- [ ] **Different Densities**: UI scales correctly across DPI ranges
+
+## Final Integration Test
+- [ ] **Complete User Journey**: 
+  1. Open app → 2. Log mood → 3. Track pain → 4. Navigate to exercises → 
+  5. Complete routine → 6. View progress charts → 7. Verify data persistence
+
+## Critical Issues Found (Fill during testing):
+- [ ] Issue 1: _______________________
+- [ ] Issue 2: _______________________
+- [ ] Issue 3: _______________________
+
+## Performance Issues Found:
+- [ ] Performance Issue 1: _______________________
+- [ ] Performance Issue 2: _______________________
+
+## Theme/Visual Inconsistencies:
+- [ ] Theme Issue 1: _______________________
+- [ ] Theme Issue 2: _______________________
+
+## Test Environment:
+- Device: _______________________
+- Android Version: _______________________
+- App Version: _______________________
+- Test Date: _______________________
+- Tester: _______________________

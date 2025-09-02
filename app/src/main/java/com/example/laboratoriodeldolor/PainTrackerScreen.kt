@@ -2,8 +2,27 @@
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background					Canvas(modifier = Modifier.fillMaxSize()) {
+						val w = size.width
+						val h = size.height
+						
+						// Cache colors to avoid repeated allocations
+						val redColor = Color.Red
+						val orangeColor = Color(0xFFFFA500)
+						val yellowColor = Color.Yellow
+						
+						points.forEach { p ->
+							val cx = p.xNorm * w
+							val cy = p.yNorm * h
+							val radius = 18f
+							val color = when (p.intensity) {
+								3 -> redColor
+								2 -> orangeColor
+								else -> yellowColor
+							}
+							drawCircle(color = color, radius = radius, center = Offset(cx, cy))
+						}
+					}dx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -190,25 +209,38 @@ fun PainTrackerScreen(
 					Canvas(modifier = Modifier.fillMaxSize()) {
 						val w = size.width
 						val h = size.height
+						
+						// Cache frequently used values and colors
+						val bgColor = if (frontView.value) Color(0xFFEFEFEF) else Color(0xFFF0F0F8)
+						val cornerRadius = CornerRadius(24f, 24f)
+						val circleColor = Color(0xFFD0D0D0)
+						val headRadius = w.coerceAtMost(h) * 0.08f
+						val headCenter = Offset(w * 0.5f, h * 0.15f)
+						
+						// Cache pain point colors
+						val redColor = Color.Red
+						val orangeColor = Color(0xFFFFA500)
+						val yellowColor = Color.Yellow
+						
 						drawRoundRect(
-							color = if (frontView.value) Color(0xFFEFEFEF) else Color(0xFFF0F0F8),
-							topLeft = Offset(0f, 0f),
+							color = bgColor,
+							topLeft = Offset.Zero,
 							size = size,
-							cornerRadius = CornerRadius(24f, 24f)
+							cornerRadius = cornerRadius
 						)
 						drawCircle(
-							color = Color(0xFFD0D0D0),
-							radius = (w.coerceAtMost(h) * 0.08f),
-							center = Offset(w * 0.5f, h * 0.15f)
+							color = circleColor,
+							radius = headRadius,
+							center = headCenter
 						)
 						points.forEach { p ->
 							val cx = p.xNorm * w
 							val cy = p.yNorm * h
 							val radius = 18f
 							val color = when (p.intensity) {
-								3 -> Color.Red
-								2 -> Color(0xFFFFA500)
-								else -> Color.Yellow
+								3 -> redColor
+								2 -> orangeColor
+								else -> yellowColor
 							}
 							drawCircle(color = color, radius = radius, center = Offset(cx, cy))
 						}
