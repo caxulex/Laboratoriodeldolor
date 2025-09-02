@@ -64,33 +64,21 @@
     <string name="confirm_delete_negative">Cancelar</string>
 
     <string name="app_name">Laboratorio del dolor</string>
-    <string name="mood_tracker_title">¿Cómo te sientes hoy?</string>
-    <string name="save_mood_button">Guardar estado de ánimo</string>
-    <string name="happy_mood_desc">Feliz</string>
-    <string name="sad_mood_desc">Triste</string>
-    <string name="angry_mood_desc">Enojado</string>
-    <string name="surprised_mood_desc">Sorprendido</string>
     <string name="pain_tracker_button">Registrar Dolor</string>
     <string name="body_outline_desc">Contorno del cuerpo para registrar el dolor</string>
-    <string name="maps_to_pain_tracker_button">Ir al rastreador de dolor</string>
     <string name="save_pain_button">Guardar</string>
     <string name="clear_button">Limpiar</string>
-    <string name="delete_button">Eliminar</string>
     <string name="delete_confirm_title">Confirmar eliminación</string>
     <string name="delete_confirm_message">¿Estás seguro de que deseas eliminar este punto de dolor?</string>
     <string name="delete_confirm_yes">Sí, eliminar</string>
     <string name="delete_confirm_no">Cancelar</string>
     <string name="mood_question">¿Cómo te sientes hoy?</string>
-    <string name="add_note">Añade una nota</string>
-    <string name="reminder_settings_button">Recordatorios de tus ejercicios Cero Dolor</string>
-    <string name="exercise_complete_button">He completado mis ejercicios de hoy</string>
     <plurals name="streak_display">
         <item quantity="one">Racha de Ejercicios: %d día</item>
         <item quantity="many">Racha de Ejercicios: %d días</item>
         <item quantity="other">Racha de Ejercicios: %d días</item>
     </plurals>
     <string name="mood_history_title">Historial de tu Ánimo</string>
-    <string name="view_history_button">Ver Historial</string>
     <string name="recurring_label">Activar recordatorios diarios</string>
 
     <!-- Small extras added during localization sweep -->
@@ -116,10 +104,8 @@
     <string name="breath_chilindrina_title">Respiración chilindrina</string>
     <string name="breath_cuadrado_title">Respiración cuadrada</string>
     <string name="breath_recommended_label">Recomendado</string>
-    <string name="breath_nav_button">Respiración guiada</string>
 
 <!-- Added missing translations reported by lint -->
-    <string name="view_label">Vista</string>
     <string name="view_front">Frente</string>
     <string name="view_back">Atrás</string>
 
@@ -151,23 +137,6 @@
     <string name="upper_body_exercises_button">Ejercicios para Zona Superior</string>
     <string name="middle_body_exercises_button">Ejercicios para Zona Media</string>
     <string name="lower_body_exercises_button">Ejercicios para Zona Inferior</string>
-
-    <string name="upper_step_1">1. Inhala profundamente por la nariz (3s)</string>
-    <string name="upper_step_2">2. Mantén el aire (3s)</string>
-    <string name="upper_step_3">3. Exhala lentamente por la boca (4s)</string>
-
-    <string name="middle_step_1">1. Estiramiento lateral suave (10s por lado)</string>
-    <string name="middle_step_2">2. Rotaciones de tronco suaves (10 rep)</string>
-    <string name="middle_step_3">3. Inclinaciones hacia adelante (5 rep)</string>
-
-    <string name="lower_step_1">1. Elevaciones de talón (10 rep)</string>
-    <string name="lower_step_2">2. Estiramiento de isquiotibiales (20s)</string>
-    <string name="lower_step_3">3. Sentadillas parciales (8 rep)</string>
-
-    <string name="timer_label">Tiempo: %1$d s</string>
-    <string name="start_button">Iniciar</string>
-    <string name="pause_button">Pausa</string>
-    <string name="reset_button">Reiniciar</string>
 
     <string name="checkin_mood_title">Registro rápido: ¿Cómo te sientes?</string>
     <string name="checkin_mood_hint">Escribe una nota opcional…</string>
