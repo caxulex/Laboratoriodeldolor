@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Laboratorio del Dolor</string>
+    <string name="app_title_cero_dolor">Cero Dolor App</string>
     <string name="mood_tracker_title">Bienvenido a tu App CeroDolor</string>
     <string name="pain_tracker_button">Registrar Dolor</string>
     <string name="pain_tracker_title">Registra tus puntos de dolor</string>
@@ -26,6 +27,12 @@
         <item quantity="one">Racha de Ejercicios: %d día</item>
         <item quantity="other">Racha de Ejercicios: %d días</item>
     </plurals>
+    <!-- Streak action labels referenced from DailyMoodScreen -->
+    <string name="streak_mark_button">Marcar</string>
+    <string name="streak_update_button">Actualizar</string>
+    <string name="streak_mark_button_today">Ya los hice hoy</string>
+    <string name="streak_marked_today">Completado</string>
+    <string name="streak_subtitle">Sigue registrando tus ejercicios para mantener la racha</string>
     <string name="mood_history_title">Historial de tu Ánimo</string>
     <string name="empty_mood_title">Aún no hay registros</string>
     <string name="empty_mood_subtitle">Cuando registres tu estado de ánimo, aquí verás tu historial y patrones a lo largo del tiempo.</string>
@@ -225,6 +232,7 @@
     <string name="intensity_severe">Severo</string>
     <string name="intensity_high">Alto</string>
     <string name="intensity_moderate">Moderado</string>
+    <string name="recorded_point_format">Punto %1$d: Intensidad = %2$s</string>
 
     <!-- Pain Chart Screen strings -->
     <string name="pain_intensity_chart_title">Evolución de la Intensidad del Dolor</string>

@@ -1,6 +1,5 @@
 package com.example.laboratoriodeldolor
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,8 +10,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.viewinterop.AndroidView
+import android.view.ViewGroup
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
+import android.content.Context
+import android.graphics.Canvas
+import com.github.mikephil.charting.components.IMarker
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.utils.MPPointF
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -130,11 +142,47 @@ fun PainChartScreen(
                     }
                     
                     else -> {
-                        PainIntensityChart(
-                            entries = uiState.entries,
-                            viewModel = viewModel,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        // MPAndroidChart LineChart rendering via AndroidView
+                        AndroidView(factory = { ctx ->
+                            LineChart(ctx).apply {
+                                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                                setNoDataText("No hay datos")
+                                setTouchEnabled(true)
+                                setPinchZoom(true)
+                                axisRight.isEnabled = false
+                                xAxis.position = XAxis.XAxisPosition.BOTTOM
+                                legend.isEnabled = false
+                                description = Description().apply { text = "" }
+                            }
+                        }, update = { chart ->
+                            val entriesList = uiState.entries.mapIndexed { idx, e -> Entry(idx.toFloat(), e.maxIntensity.toFloat()) }
+                            val dataSet = LineDataSet(entriesList, "Intensidad").apply {
+                                color = android.graphics.Color.RED
+                                setDrawCircles(true)
+                                setDrawValues(false)
+                                lineWidth = 2f
+                                circleRadius = 4f
+                                mode = LineDataSet.Mode.CUBIC_BEZIER // smooth curve
+                            }
+                            val lineData = LineData(dataSet)
+                            chart.data = lineData
+
+                            // X axis labels: use viewModel.formatDate()
+                            val labels = uiState.entries.map { viewModel.formatDate(it.date) }
+                            chart.xAxis.valueFormatter = object : ValueFormatter() {
+                                override fun getFormattedValue(value: Float): String {
+                                    val i = value.toInt()
+                                    return labels.getOrNull(i) ?: ""
+                                }
+                            }
+                            chart.xAxis.labelRotationAngle = -45f
+
+                            // Attach a lightweight Marker to show date + intensity when touching points
+                            val labelsForMarker = uiState.entries.map { viewModel.formatDate(it.date) }
+                            chart.marker = ChartMarker(chart.context, labelsForMarker)
+
+                            chart.invalidate()
+                        })
                     }
                 }
             }
@@ -163,117 +211,59 @@ fun PainChartScreen(
     }
 }
 
-@Composable
-private fun PainIntensityChart(
-    entries: List<PainChartEntry>,
-    viewModel: PainChartViewModel,
-    modifier: Modifier = Modifier
-) {
-    Canvas(modifier = modifier) {
-        val paddingX = 60f
-        val paddingY = 60f
-        val chartWidth = size.width - paddingX * 2
-        val chartHeight = size.height - paddingY * 2
-        
-        if (entries.isEmpty()) return@Canvas
-        
-        // Draw Y-axis (intensity scale)
-        val maxIntensity = 3f
-        val yAxisColor = Color.Gray.copy(alpha = 0.5f)
-        
-        // Y-axis line
-        drawLine(
-            color = yAxisColor,
-            start = androidx.compose.ui.geometry.Offset(paddingX, paddingY),
-            end = androidx.compose.ui.geometry.Offset(paddingX, paddingY + chartHeight),
-            strokeWidth = 2f
-        )
-        
-        // Y-axis labels
-        for (i in 0..3) {
-            val y = paddingY + chartHeight - (i / maxIntensity) * chartHeight
-            val label = when (i) {
-                0 -> "Sin dolor"
-                1 -> "Moderado"
-                2 -> "Alto"
-                3 -> "Severo"
-                else -> ""
-            }
-            
-            // Grid line
-            if (i > 0) {
-                drawLine(
-                    color = yAxisColor.copy(alpha = 0.3f),
-                    start = androidx.compose.ui.geometry.Offset(paddingX, y),
-                    end = androidx.compose.ui.geometry.Offset(paddingX + chartWidth, y),
-                    strokeWidth = 1f
-                )
-            }
-            
-            // Label
-            drawContext.canvas.nativeCanvas.apply {
-                drawText(
-                    label,
-                    paddingX - 50f,
-                    y + 5f,
-                    android.graphics.Paint().apply {
-                        color = yAxisColor.toArgb()
-                        textSize = 24f
-                        textAlign = android.graphics.Paint.Align.RIGHT
-                    }
-                )
-            }
-        }
-        
-        // Draw X-axis
-        drawLine(
-            color = yAxisColor,
-            start = androidx.compose.ui.geometry.Offset(paddingX, paddingY + chartHeight),
-            end = androidx.compose.ui.geometry.Offset(paddingX + chartWidth, paddingY + chartHeight),
-            strokeWidth = 2f
-        )
-        
-        // Draw bars
-        val barWidth = chartWidth / entries.size * 0.8f
-        val barSpacing = chartWidth / entries.size
-        
-        entries.forEachIndexed { index, entry ->
-            val barHeight = if (entry.maxIntensity > 0) {
-                (entry.maxIntensity / maxIntensity) * chartHeight
-            } else {
-                0f
-            }
-            
-            val x = paddingX + index * barSpacing + (barSpacing - barWidth) / 2
-            val y = paddingY + chartHeight - barHeight
-            
-            val barColor = viewModel.getIntensityColor(entry.maxIntensity)
-            
-            drawRect(
-                color = barColor,
-                topLeft = androidx.compose.ui.geometry.Offset(x, y),
-                size = androidx.compose.ui.geometry.Size(barWidth, barHeight)
-            )
-            
-            // Draw date labels (every few days to avoid crowding)
-            if (entries.size <= 7 || index % (entries.size / 7).coerceAtLeast(1) == 0) {
-                val dateLabel = viewModel.formatDate(entry.date)
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        dateLabel,
-                        x + barWidth / 2,
-                        paddingY + chartHeight + 30f,
-                        android.graphics.Paint().apply {
-                            color = yAxisColor.toArgb()
-                            textSize = 20f
-                            textAlign = android.graphics.Paint.Align.CENTER
-                        }
-                    )
-                }
-            }
-        }
+/**
+ * Simple IMarker implementation that draws a small rounded tooltip with the date and intensity.
+ * Avoids XML resources so it works inline.
+ */
+private class ChartMarker(private val context: Context, private val labels: List<String>) : IMarker {
+    private var text: String = ""
+    private val textPaint = android.graphics.Paint().apply {
+        color = android.graphics.Color.WHITE
+        textSize = 36f
+        isAntiAlias = true
+    }
+    private val bgPaint = android.graphics.Paint().apply {
+        color = android.graphics.Color.argb(190, 0, 0, 0)
+        isAntiAlias = true
+    }
+    private val padding = 12f
+    private var measuredWidth = 0f
+    private var measuredHeight = 0f
+
+    override fun refreshContent(e: Entry?, highlight: Highlight?) {
+        if (e == null) return
+        val idx = e.x.toInt()
+        val label = labels.getOrNull(idx) ?: ""
+        val intensity = e.y.toInt()
+        text = "$label: $intensity"
+        measuredWidth = textPaint.measureText(text) + padding * 2
+        measuredHeight = textPaint.textSize + padding * 2
+    }
+
+    override fun getOffset(): MPPointF {
+        return MPPointF(-(measuredWidth / 2f), -measuredHeight - 10f)
+    }
+    // Newer versions of MPAndroidChart require getOffsetForDrawingAtPoint
+    override fun getOffsetForDrawingAtPoint(posX: Float, posY: Float): MPPointF {
+        return getOffset()
+    }
+
+    override fun draw(canvas: Canvas, posX: Float, posY: Float) {
+        val offset = getOffsetForDrawingAtPoint(posX, posY)
+        val left = posX + offset.x
+        val top = posY + offset.y
+        val right = left + measuredWidth
+        val bottom = top + measuredHeight
+        val rectF = android.graphics.RectF(left, top, right, bottom)
+        canvas.drawRoundRect(rectF, 8f, 8f, bgPaint)
+        // draw text baseline
+        val textX = left + padding
+        val textY = top + padding + textPaint.textSize * 0.8f
+        canvas.drawText(text, textX, textY, textPaint)
     }
 }
+
+// The previous Canvas-based chart implementation was replaced by MPAndroidChart AndroidView.
 
 @Composable
 private fun PainIntensityLegend(viewModel: PainChartViewModel) {

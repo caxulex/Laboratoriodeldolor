@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -53,12 +54,44 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
                 Text(text = stringResource(id = R.string.checkin_pain_instruction))
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Show a miniature preview of the body map by reusing the PainTrackerScreen composable but without navigation
+                // Show a miniature preview of the body map by reusing the PainTrackerScreen composable.
+                // Provide the silhouette painters and an onSave callback that persists points to the provided ViewModel.
                 Box(modifier = Modifier.fillMaxWidth().height(420.dp)) {
-                    PainTrackerScreen(onSave = { points -> 
-                        // Points are handled automatically by the PainTrackerScreen's internal state
-                        // No additional action needed in preview mode
-                    })
+                    PainTrackerScreen(
+                        maleFrontPainter = painterResource(id = R.drawable.boy_front),
+                        maleBackPainter = painterResource(id = R.drawable.boy_back),
+                        femaleFrontPainter = painterResource(id = R.drawable.girl_front),
+                        femaleBackPainter = painterResource(id = R.drawable.girl_back),
+                        onSave = { points ->
+                            // Persist the points into the provided PainTrackerViewModel and save to DB
+                            scope.launch {
+                                try {
+                                    painViewModel.clearPainPoints()
+                                    val frontPoints = points.filter { it.view == "front" }
+                                    val backPoints = points.filter { it.view == "back" }
+
+                                    if (frontPoints.isNotEmpty()) {
+                                        painViewModel.selectView("front")
+                                        frontPoints.forEach { lp ->
+                                            painViewModel.addPainPointNormalized(androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), lp.intensity)
+                                        }
+                                    }
+
+                                    if (backPoints.isNotEmpty()) {
+                                        painViewModel.selectView("back")
+                                        backPoints.forEach { lp ->
+                                            painViewModel.addPainPointNormalized(androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), lp.intensity)
+                                        }
+                                    }
+
+                                    // Persist immediately so the check-in finish step can proceed
+                                    painViewModel.savePainPoints()
+                                } catch (e: Exception) {
+                                    // ignore - best-effort in preview
+                                }
+                            }
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

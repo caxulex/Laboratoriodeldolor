@@ -7,8 +7,8 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.OptIn
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -37,14 +37,14 @@ class PainTrackerViewModelTest {
     }
 
     @Test
-    fun savePainPoints_returnsFalseWhenNoDao() = runTest {
+    fun savePainPoints_returnsNullWhenNoDao() = runTest {
         val vm = PainTrackerViewModel(null)
         val result = vm.savePainPoints()
-        assertFalse(result)
+        assertNull(result)
     }
 
     @Test
-    fun savePainPoints_returnsTrueWhenDaoProvided() = runTest {
+    fun savePainPoints_returnsNonNullWhenDaoProvided() = runTest {
         // Provide a fake DAO that records calls but does not require Room
         val fakeDao = object : PainPointDao {
             var saved: List<PainPoint>? = null
@@ -67,7 +67,8 @@ class PainTrackerViewModelTest {
             val vm = PainTrackerViewModel(fakeDao)
             vm.addPainPointNormalized(androidx.compose.ui.geometry.Offset(0.3f, 0.4f))
             val result = vm.savePainPoints()
-            assertTrue(result)
+            // The method now returns a nullable navigation route (String?), assert we got a non-null result
+            assertNotNull(result)
         } finally {
             kotlinx.coroutines.Dispatchers.resetMain()
         }

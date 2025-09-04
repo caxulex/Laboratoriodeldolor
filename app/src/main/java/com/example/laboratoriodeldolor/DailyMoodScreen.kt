@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +63,10 @@ fun DailyMoodScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToBreath: () -> Unit = {},
-    onNavigateToDiary: () -> Unit = {}
+    onNavigateToDiary: () -> Unit = {},
+    onNavigateToPainChart: () -> Unit = {},
+    onNavigateToTechniquesLibrary: () -> Unit = {},
+    onNavigateToExerciseHub: () -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -70,7 +74,7 @@ fun DailyMoodScreen(
     com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
         // Use the standard top app bar inside the scaffold surface
         androidx.compose.material3.TopAppBar(
-            title = { Text(text = stringResource(id = R.string.mood_question), style = MaterialTheme.typography.headlineSmall) }
+            title = { Text(text = stringResource(id = R.string.app_title_cero_dolor), style = MaterialTheme.typography.headlineSmall) }
         )
 
         // Place content and a SnackbarHost in a Box so snackbars overlay the list and sit above the nav bar
@@ -100,24 +104,13 @@ fun DailyMoodScreen(
                                     Text(text = "$streakText 🔥", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(4.dp))
                                 }
 
-                                // Keep action here to mark today's exercise (not navigation)
+                                // New CTA: "Ya los hice hoy" — updates streak immediately via ViewModel
                                 val loggedToday by viewModel.loggedToday.collectAsState()
-                                val exerciseMarkedMsg = stringResource(id = R.string.exercise_marked_snackbar)
-                                val undoLabel = stringResource(id = R.string.undo_action)
-                                com.example.laboratoriodeldolor.ui.components.SecondaryButton(
-                                    text = if (loggedToday) stringResource(id = R.string.streak_update_button) else stringResource(id = R.string.streak_mark_button),
+                                com.example.laboratoriodeldolor.ui.components.PrimaryButton(
+                                    text = if (loggedToday) stringResource(id = R.string.streak_marked_today) else stringResource(id = R.string.streak_mark_button_today),
                                     onClick = {
                                         coroutineScope.launch {
                                             viewModel.logExerciseCompleted()
-                                            val result = snackbarHostState.showSnackbar(
-                                                message = exerciseMarkedMsg,
-                                                actionLabel = undoLabel,
-                                                duration = androidx.compose.material3.SnackbarDuration.Short
-                                            )
-
-                                            if (result == SnackbarResult.ActionPerformed) {
-                                                viewModel.undoLastExercise()
-                                            }
                                         }
                                     }
                                 )
@@ -128,38 +121,7 @@ fun DailyMoodScreen(
                     }
                 }
 
-                // Emoji selector — prominent
-                item {
-                    val localSelectedEmoji = remember(viewModel.selectedEmoji) { 
-                        mutableStateOf(viewModel.selectedEmoji) 
-                    }
-                    val haptic = LocalHapticFeedback.current
-                    Card(shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.checkin_mood_title), style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally)) {
-                                val options = remember { MoodOptions.FIVE_LEVEL }
-                                for ((idx, mood) in options.withIndex()) {
-                                    val selected = localSelectedEmoji.value == mood
-                                    val desc = remember(idx) {
-                                        when (idx) {
-                                            0 -> R.string.emoji_desc_very_bad
-                                            1 -> R.string.emoji_desc_bad
-                                            2 -> R.string.emoji_desc_neutral
-                                            3 -> R.string.emoji_desc_good
-                                            else -> R.string.emoji_desc_very_good
-                                        }
-                                    }
-                                    MoodEmojiButton(emoji = mood, selected = selected, size = 64.dp, contentDesc = stringResource(desc)) {
-                                        localSelectedEmoji.value = mood
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                // Quick mood register removed — mood is captured via the Check-in flow or the Diary screen
 
                 // Secondary modules - presented compactly, cards act as single entry points (no duplicate navigation buttons inside)
                 item {
@@ -167,37 +129,18 @@ fun DailyMoodScreen(
                 }
 
                 item {
-                    // Compose a list of module entries with a single clickable card each
-                    val priority by viewModel.dashboardPriority.collectAsState()
-                    val modules = when (priority) {
-                        MoodViewModel.DashboardPriority.PAIN -> listOf("pain", "breath", "diary")
-                        MoodViewModel.DashboardPriority.BREATH -> listOf("breath", "diary", "pain")
-                        else -> listOf("diary", "pain", "breath")
-                    }
-
+                    // Static Actions: Pain Chart, Techniques Library, Exercise Hub
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        for (m in modules) {
-                            when (m) {
-                                "pain" -> Card(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onNavigateToPainTracker() }
-                                ) {
-                                    Text(text = stringResource(id = R.string.pain_tracker_title), modifier = Modifier.padding(16.dp))
-                                }
-                                "breath" -> Card(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onNavigateToBreath() }
-                                ) {
-                                    Text(text = stringResource(id = R.string.breath_title), modifier = Modifier.padding(16.dp))
-                                }
-                                "diary" -> Card(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onNavigateToDiary() }
-                                ) {
-                                    // This is the single content shortcut to Diary (uses same callback as bottom nav)
-                                    Text(text = stringResource(id = R.string.diary_title), modifier = Modifier.padding(16.dp))
-                                }
-                            }
+                        Card(modifier = Modifier.fillMaxWidth().clickable { onNavigateToPainChart() }) {
+                            Text(text = stringResource(id = R.string.view_pain_chart_button), modifier = Modifier.padding(16.dp))
+                        }
+
+                        Card(modifier = Modifier.fillMaxWidth().clickable { onNavigateToTechniquesLibrary() }) {
+                            Text(text = stringResource(id = R.string.techniques_library_title), modifier = Modifier.padding(16.dp))
+                        }
+
+                        Card(modifier = Modifier.fillMaxWidth().clickable { onNavigateToExerciseHub() }) {
+                            Text(text = stringResource(id = R.string.exercise_hub_title), modifier = Modifier.padding(16.dp))
                         }
                     }
                 }

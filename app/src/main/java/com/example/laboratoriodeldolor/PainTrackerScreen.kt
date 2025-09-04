@@ -2,27 +2,8 @@
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background					Canvas(modifier = Modifier.fillMaxSize()) {
-						val w = size.width
-						val h = size.height
-						
-						// Cache colors to avoid repeated allocations
-						val redColor = Color.Red
-						val orangeColor = Color(0xFFFFA500)
-						val yellowColor = Color.Yellow
-						
-						points.forEach { p ->
-							val cx = p.xNorm * w
-							val cy = p.yNorm * h
-							val radius = 18f
-							val color = when (p.intensity) {
-								3 -> redColor
-								2 -> orangeColor
-								else -> yellowColor
-							}
-							drawCircle(color = color, radius = radius, center = Offset(cx, cy))
-						}
-					}dx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,26 +42,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 
 /**
- * Clean, self-contained PainTrackerScreen replacement.
- * - Gender + front/back selection
- * - Optional silhouette painters passed from caller
- * - Tap / press / long-press gestures -> intensity 1..3
- * - List of recorded points, clear and save actions
+ * PainTrackerScreen - clean implementation with press-duration preview.
+ * - Tap/press on the silhouette to record pain points.
+ * - While holding, a preview dot appears and escalates color by duration:
+ *   quick tap -> yellow (1), ~1s -> orange (2), ~2s -> red (3).
  */
 
 data class LocalPainPoint(
 	val xNorm: Float,
 	val yNorm: Float,
 	val intensity: Int,
-	val view: String = "front", // "front" or "back"
+	val view: String = "front",
 	val timestamp: Long = System.currentTimeMillis()
+)
+
+data class PreviewPoint(
+	val xNorm: Float,
+	val yNorm: Float,
+	val intensity: Int,
+	val view: String = "front"
 )
 
 @Composable
@@ -97,32 +86,31 @@ fun PainTrackerScreen(
 	val points = remember { mutableStateListOf<LocalPainPoint>() }
 	val boxSize = remember { mutableStateOf(IntSize(300, 600)) }
 	val scope = rememberCoroutineScope()
+	val preview = remember { mutableStateOf<PreviewPoint?>(null) }
+	val haptic = LocalHapticFeedback.current
 
 	Column(modifier = modifier.padding(16.dp)) {
-		// Controls: gender + front/back
-		Row(
-			horizontalArrangement = Arrangement.SpaceBetween,
-			verticalAlignment = Alignment.CenterVertically,
-			modifier = Modifier.fillMaxWidth()
-		) {
-			Column {
-				Text(text = "Selecciona género", style = MaterialTheme.typography.titleMedium)
-				Row(verticalAlignment = Alignment.CenterVertically) {
-					RadioButton(selected = genderMale.value, onClick = { genderMale.value = true })
-					Spacer(modifier = Modifier.size(6.dp))
-					Text(text = "Hombre", modifier = Modifier.padding(end = 12.dp))
-					RadioButton(selected = !genderMale.value, onClick = { genderMale.value = false })
-					Spacer(modifier = Modifier.size(6.dp))
-					Text(text = "Mujer")
+		// Controls: gender + front/back - balanced two-column layout for improved visual balance
+		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+			// Gender selector
+			Column(modifier = Modifier.weight(1f)) {
+				Text(text = stringResource(id = R.string.gender_label), style = MaterialTheme.typography.titleMedium)
+				Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+					OutlinedButton(onClick = { genderMale.value = true }, modifier = Modifier.weight(1f)) {
+						Text(text = stringResource(id = R.string.gender_male))
+					}
+					OutlinedButton(onClick = { genderMale.value = false }, modifier = Modifier.weight(1f)) {
+						Text(text = stringResource(id = R.string.gender_female))
+					}
 				}
 			}
 
-			Column(horizontalAlignment = Alignment.End) {
-				Text(text = "Vista", style = MaterialTheme.typography.titleMedium)
-				Row(verticalAlignment = Alignment.CenterVertically) {
-					OutlinedButton(onClick = { frontView.value = true }) { Text(text = "Frente") }
-					Spacer(modifier = Modifier.size(8.dp))
-					OutlinedButton(onClick = { frontView.value = false }) { Text(text = "Espalda") }
+			// View (Front / Back) selector
+			Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+				Text(text = stringResource(id = R.string.view_front), style = MaterialTheme.typography.titleMedium)
+				Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+					OutlinedButton(onClick = { frontView.value = true }) { Text(text = stringResource(id = R.string.view_front)) }
+					OutlinedButton(onClick = { frontView.value = false }) { Text(text = stringResource(id = R.string.view_back)) }
 				}
 			}
 		}
@@ -152,43 +140,64 @@ fun PainTrackerScreen(
 					.padding(12.dp)
 					.onSizeChanged { size -> boxSize.value = size }
 					.pointerInput(Unit) {
-						detectTapGestures(
-							onTap = { offset ->
-								val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
-								val currentView = if (frontView.value) "front" else "back"
-								points.add(LocalPainPoint(xNorm, yNorm, 1, currentView))
-							},
-							onLongPress = { offset ->
-								val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
-								val currentView = if (frontView.value) "front" else "back"
-								points.add(LocalPainPoint(xNorm, yNorm, 3, currentView))
-							},
-							onPress = { offset ->
-								val start = System.currentTimeMillis()
-								try {
-									tryAwaitRelease()
-									val duration = System.currentTimeMillis() - start
-									val intensity = when {
-										duration > 2000L -> 3
-										duration > 1000L -> 2
+						detectTapGestures(onPress = { offset ->
+							val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
+							val currentView = if (frontView.value) "front" else "back"
+
+							// Start preview at intensity 1 and update while pressed
+							val start = System.currentTimeMillis()
+							preview.value = PreviewPoint(xNorm, yNorm, 1, currentView)
+							val job = scope.launch {
+								var lastIntensity = 1
+								while (true) {
+									val elapsed = System.currentTimeMillis() - start
+									val newIntensity = when {
+										elapsed > 2000L -> 3
+										elapsed > 1000L -> 2
 										else -> 1
 									}
-									val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
-									val currentView = if (frontView.value) "front" else "back"
-									points.add(LocalPainPoint(xNorm, yNorm, intensity, currentView))
-								} catch (_: Exception) {
-									// cancelled
+									if (newIntensity != lastIntensity) {
+										// Haptic feedback when crossing thresholds upward
+										if (newIntensity > lastIntensity) {
+											try {
+												haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+											} catch (_: Exception) {
+												// ignore on platforms without haptic
+											}
+										}
+										lastIntensity = newIntensity
+										val current = preview.value
+										if (current != null && current.intensity != newIntensity) {
+											preview.value = current.copy(intensity = newIntensity)
+										}
+									}
+									delay(100L)
 								}
 							}
-						)
+
+							var released = false
+							try {
+								tryAwaitRelease()
+								released = true
+							} catch (_: Exception) {
+								// cancelled or interrupted
+							} finally {
+								job.cancel()
+								val finalIntensity = preview.value?.intensity ?: 1
+								if (released) {
+									points.add(LocalPainPoint(xNorm, yNorm, finalIntensity, currentView))
+								}
+								preview.value = null
+							}
+						})
 					}
 			) {
 				if (selectedPainter != null) {
-					Image(
-						painter = selectedPainter,
-						contentDescription = "Silhouette",
-						modifier = Modifier.fillMaxSize()
-					)
+						Image(
+							painter = selectedPainter,
+							contentDescription = stringResource(id = R.string.body_outline_desc),
+							modifier = Modifier.fillMaxSize()
+						)
 
 					Canvas(modifier = Modifier.fillMaxSize()) {
 						val w = size.width
@@ -204,24 +213,37 @@ fun PainTrackerScreen(
 							}
 							drawCircle(color = color, radius = radius, center = Offset(cx, cy))
 						}
+
+						// Preview marker while pressing (scoped where w/h exist)
+						preview.value?.let { pv ->
+							val pcx = pv.xNorm * w
+							val pcy = pv.yNorm * h
+							val pradius = 22f
+							val pcolor = when (pv.intensity) {
+								3 -> Color.Red
+								2 -> Color(0xFFFFA500)
+								else -> Color.Yellow
+							}
+							drawCircle(color = pcolor, radius = pradius, center = Offset(pcx, pcy))
+						}
 					}
 				} else {
 					Canvas(modifier = Modifier.fillMaxSize()) {
 						val w = size.width
 						val h = size.height
-						
+
 						// Cache frequently used values and colors
 						val bgColor = if (frontView.value) Color(0xFFEFEFEF) else Color(0xFFF0F0F8)
 						val cornerRadius = CornerRadius(24f, 24f)
 						val circleColor = Color(0xFFD0D0D0)
 						val headRadius = w.coerceAtMost(h) * 0.08f
 						val headCenter = Offset(w * 0.5f, h * 0.15f)
-						
+
 						// Cache pain point colors
 						val redColor = Color.Red
 						val orangeColor = Color(0xFFFFA500)
 						val yellowColor = Color.Yellow
-						
+
 						drawRoundRect(
 							color = bgColor,
 							topLeft = Offset.Zero,
@@ -243,6 +265,19 @@ fun PainTrackerScreen(
 								else -> yellowColor
 							}
 							drawCircle(color = color, radius = radius, center = Offset(cx, cy))
+						}
+
+						// Preview marker while pressing (scoped where w/h exist)
+						preview.value?.let { pv ->
+							val pcx = pv.xNorm * w
+							val pcy = pv.yNorm * h
+							val pradius = 22f
+							val pcolor = when (pv.intensity) {
+								3 -> Color.Red
+								2 -> Color(0xFFFFA500)
+								else -> Color.Yellow
+							}
+							drawCircle(color = pcolor, radius = pradius, center = Offset(pcx, pcy))
 						}
 					}
 				}
@@ -266,7 +301,7 @@ fun PainTrackerScreen(
 						2 -> stringResource(id = R.string.intensity_high)
 						else -> stringResource(id = R.string.intensity_moderate)
 					}
-					Text(text = "Punto ${index + 1}: Intensidad = $intensityLabel")
+					Text(text = stringResource(id = R.string.recorded_point_format, index + 1, intensityLabel))
 					Spacer(modifier = Modifier.weight(1f))
 					IconButton(onClick = { points.removeAt(index) }) {
 						Icon(imageVector = Icons.Filled.Delete, contentDescription = "Eliminar")

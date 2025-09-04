@@ -1,64 +1,57 @@
 package com.example.laboratoriodeldolor
 
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlin.OptIn
-import org.junit.Assert.assertEquals
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import org.junit.Assert.assertEquals
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.collect
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RoutinesListViewModelTest {
 
     @Test
     fun routinesFlow_emitsListFromDao() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        kotlinx.coroutines.Dispatchers.setMain(dispatcher)
-
         val sample = listOf(Routine(id = 1, title = "R1", bodyRegion = "upper", summary = "s1"))
         val fakeDao = object : RoutineDao {
-            override fun getAll(): kotlinx.coroutines.flow.Flow<List<Routine>> = flowOf(sample)
+            override fun getAll() = flowOf(sample)
             override suspend fun getById(id: Long) = sample.firstOrNull()
-            override suspend fun insert(routine: Routine): Long { return 1L }
-            override fun getWithSteps(id: Long): kotlinx.coroutines.flow.Flow<RoutineWithSteps?> = flowOf(null)
+            override suspend fun insert(routine: Routine) = 1L
+            // Provide explicit type so flowOf(null) is not ambiguous
+            override fun getWithSteps(id: Long) = flowOf<RoutineWithSteps?>(null)
         }
 
-        val vm = RoutinesListViewModel(fakeDao, dispatcher = dispatcher)
+        // Use backgroundScope so collection job doesn't count as an active child of the test scope
+        val vm = RoutinesListViewModel(fakeDao, externalScope = this.backgroundScope)
 
-        // Move dispatcher so stateIn collects
-        dispatcher.scheduler.advanceUntilIdle()
-
-    // advance until the stateIn collection runs and updates the StateFlow
-    dispatcher.scheduler.advanceUntilIdle()
-    val item = vm.routines.value
-    assertEquals(1, item.size)
-    assertEquals("R1", item[0].title)
-        kotlinx.coroutines.Dispatchers.resetMain()
+        // Subscribe to the flow so SharingStarted.WhileSubscribed will start upstream collection
+        vm.routines.test {
+            val first = awaitItem()
+            val list = if (first.isEmpty()) awaitItem() else first
+            assertEquals(1, list.size)
+            assertEquals("R1", list[0].title)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
     fun routinesFlow_emitsEmptyOnDaoError() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        kotlinx.coroutines.Dispatchers.setMain(dispatcher)
-
         val fakeDao = object : RoutineDao {
-            override fun getAll(): kotlinx.coroutines.flow.Flow<List<Routine>> = flow { throw RuntimeException("boom") }
+            // Specify generic for the flow builder so the type matches Flow<List<Routine>>
+            override fun getAll() = kotlinx.coroutines.flow.flow<List<Routine>> { throw RuntimeException("boom") }
             override suspend fun getById(id: Long): Routine? = null
-            override suspend fun insert(routine: Routine): Long = 0L
-            override fun getWithSteps(id: Long): kotlinx.coroutines.flow.Flow<RoutineWithSteps?> = flowOf(null)
+            override suspend fun insert(routine: Routine) = 0L
+            override fun getWithSteps(id: Long) = flowOf<RoutineWithSteps?>(null)
         }
 
-        val vm = RoutinesListViewModel(fakeDao, dispatcher = dispatcher)
-        dispatcher.scheduler.advanceUntilIdle()
+        // Use backgroundScope so collection job doesn't count as an active child of the test scope
+        val vm = RoutinesListViewModel(fakeDao, externalScope = this.backgroundScope)
 
-    dispatcher.scheduler.advanceUntilIdle()
-    val item = vm.routines.value
-    // on error the ViewModel should provide an empty list
-    assertEquals(0, item.size)
-        kotlinx.coroutines.Dispatchers.resetMain()
+        vm.routines.test {
+            val list = awaitItem()
+            assertEquals(0, list.size)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

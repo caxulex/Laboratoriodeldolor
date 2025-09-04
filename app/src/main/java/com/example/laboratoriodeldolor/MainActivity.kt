@@ -130,7 +130,10 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToSettings = { navController.navigate(Screen.Ajustes.route) },
                                 onNavigateToHistory = { navController.navigate("history") },
                                 onNavigateToBreath = { navController.navigate(Screen.Respiracion.route) },
-                                onNavigateToDiary = { navController.navigate(Screen.Diary.route) }
+                                onNavigateToDiary = { navController.navigate(Screen.Diary.route) },
+                                onNavigateToPainChart = { navController.navigate("pain_chart") },
+                                onNavigateToTechniquesLibrary = { navController.navigate("techniques") },
+                                onNavigateToExerciseHub = { navController.navigate(Screen.Exercises.route) }
                             )
                         }
 
@@ -165,61 +168,81 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Screen.Dolor.route) {
                             val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+
+                            // Load painters once in this composable and pass to PainTrackerScreen
+                            val maleFrontPainterLocal = painterResource(id = R.drawable.boy_front)
+                            val maleBackPainterLocal = painterResource(id = R.drawable.boy_back)
+                            val femaleFrontPainterLocal = painterResource(id = R.drawable.girl_front)
+                            val femaleBackPainterLocal = painterResource(id = R.drawable.girl_back)
+
                             PainTrackerScreen(
-                                maleFrontPainter = painterResource(id = R.drawable.boy_front),
-                                maleBackPainter = painterResource(id = R.drawable.boy_back),
-                                femaleFrontPainter = painterResource(id = R.drawable.girl_front),
-                                femaleBackPainter = painterResource(id = R.drawable.girl_back),
+                                maleFrontPainter = maleFrontPainterLocal,
+                                maleBackPainter = maleBackPainterLocal,
+                                femaleFrontPainter = femaleFrontPainterLocal,
+                                femaleBackPainter = femaleBackPainterLocal,
                                 onSave = { points ->
-                                    // Save points using ViewModel and navigate to recommended exercise
+                                    // Save points using ViewModel and navigate to the most relevant exercise route
                                     lifecycleScope.launch {
-                                        // Clear existing points in ViewModel
+                                        // Clear existing points in ViewModel for both views to avoid stale data
+                                        painTrackerViewModel.selectView("front")
                                         painTrackerViewModel.clearPainPoints()
-                                        
+                                        painTrackerViewModel.selectView("back")
+                                        painTrackerViewModel.clearPainPoints()
+
                                         // Group points by view (front/back) and add them properly
                                         val frontPoints = points.filter { it.view == "front" }
                                         val backPoints = points.filter { it.view == "back" }
-                                        
+
                                         // Add front view points
                                         if (frontPoints.isNotEmpty()) {
                                             painTrackerViewModel.selectView("front")
                                             frontPoints.forEach { lp ->
                                                 painTrackerViewModel.addPainPointNormalized(
-                                                    androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), 
+                                                    androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm),
                                                     lp.intensity
                                                 )
                                             }
                                         }
-                                        
+
                                         // Add back view points
                                         if (backPoints.isNotEmpty()) {
                                             painTrackerViewModel.selectView("back")
                                             backPoints.forEach { lp ->
                                                 painTrackerViewModel.addPainPointNormalized(
-                                                    androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), 
+                                                    androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm),
                                                     lp.intensity
                                                 )
                                             }
                                         }
-                                        
-                                        // Save to database and get recommended exercise route
-                                        val recommendedRoute = painTrackerViewModel.savePainPoints()
-                                        
-                                        // Navigate to the recommended exercise screen using smart analysis
-                                        if (recommendedRoute != null) {
-                                            navController.navigate(recommendedRoute)
+
+                                        // Persist to DB. The ViewModel returns a recommended route (or null on failure)
+                                        val targetRoute = painTrackerViewModel.savePainPoints()
+
+                                        if (!targetRoute.isNullOrEmpty()) {
+                                            // Navigate directly to the most relevant exercise page
+                                            navController.navigate(targetRoute)
                                         } else {
-                                            // Fallback: analyze points directly and navigate
-                                            val painPoints = (frontPoints + backPoints).map { lp ->
-                                                PainPoint(
-                                                    x = lp.xNorm,
-                                                    y = lp.yNorm,
-                                                    view = lp.view,
-                                                    intensity = lp.intensity
-                                                )
+                                            // Fallback: show recommended techniques list as before
+                                            val combined = frontPoints + backPoints
+                                            val detectedAreas = detectBodyAreas(combined.map { androidx.compose.ui.geometry.Offset(it.xNorm, it.yNorm) })
+                                            val routineNames = mutableListOf<String>()
+                                            if (detectedAreas.contains(BodyArea.UPPER)) {
+                                                routineNames.add(this@MainActivity.getString(R.string.region_face_head))
+                                                routineNames.add(this@MainActivity.getString(R.string.region_neck_shoulders))
+                                                routineNames.add(this@MainActivity.getString(R.string.region_upper_back))
                                             }
-                                            val smartRoute = analyzePainPointsForNavigation(painPoints)
-                                            navController.navigate(smartRoute)
+                                            if (detectedAreas.contains(BodyArea.MIDDLE)) {
+                                                routineNames.add(this@MainActivity.getString(R.string.region_mid_back_stomach))
+                                                routineNames.add(this@MainActivity.getString(R.string.region_fingers_wrist_forearm))
+                                            }
+                                            if (detectedAreas.contains(BodyArea.LOWER)) {
+                                                routineNames.add(this@MainActivity.getString(R.string.region_lower_back))
+                                                routineNames.add(this@MainActivity.getString(R.string.region_ankles_feet_toes))
+                                            }
+
+                                            val entry = navController.currentBackStackEntry
+                                            entry?.savedStateHandle?.set("recommended_routines", routineNames)
+                                            navController.navigate("recommended_techniques")
                                         }
                                     }
                                 }
@@ -261,6 +284,23 @@ class MainActivity : ComponentActivity() {
                         composable("pain_chart") {
                             // Placeholder - implemented in PainChartScreen.kt
                             PainChartScreen(painDao = (application as MoodApplication).database.painPointDao(), onBack = { navController.popBackStack() })
+                        }
+                        composable("recommended_techniques") {
+                            // Read recommended routines list from savedStateHandle
+                            val list = navController.currentBackStackEntry?.savedStateHandle?.get<List<String>>("recommended_routines") ?: emptyList()
+                            RecommendedTechniquesScreen(routines = list, onSelectRoutine = { routineName ->
+                                // Map routineName to route heuristically by checking known strings
+                                when (routineName) {
+                                    this@MainActivity.getString(R.string.region_face_head) -> navController.navigate(Screen.FrontUpperBody.route)
+                                    this@MainActivity.getString(R.string.region_neck_shoulders) -> navController.navigate(Screen.FrontUpperBody.route)
+                                    this@MainActivity.getString(R.string.region_upper_back) -> navController.navigate(Screen.BackUpperBody.route)
+                                    this@MainActivity.getString(R.string.region_mid_back_stomach) -> navController.navigate(Screen.FrontMiddleBody.route)
+                                    this@MainActivity.getString(R.string.region_fingers_wrist_forearm) -> navController.navigate(Screen.FrontMiddleBody.route)
+                                    this@MainActivity.getString(R.string.region_lower_back) -> navController.navigate(Screen.BackLowerBody.route)
+                                    this@MainActivity.getString(R.string.region_ankles_feet_toes) -> navController.navigate(Screen.FrontLowerBody.route)
+                                    else -> navController.navigate(Screen.Exercises.route)
+                                }
+                            }, onBack = { navController.popBackStack() })
                         }
                         // Techniques library
                         composable("techniques") {
