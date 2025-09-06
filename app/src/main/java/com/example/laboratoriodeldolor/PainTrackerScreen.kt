@@ -40,6 +40,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
@@ -47,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 
@@ -84,10 +87,20 @@ fun PainTrackerScreen(
 	val genderMale = remember { mutableStateOf(true) }
 	val frontView = remember { mutableStateOf(true) }
 	val points = remember { mutableStateListOf<LocalPainPoint>() }
+	// Use a small event queue to defer additions so we don't mutate the composition tree
+	// while AnimatedContent/nav transitions may be in progress.
+	val addPointFlow = remember { MutableSharedFlow<LocalPainPoint>(extraBufferCapacity = 16) }
 	val boxSize = remember { mutableStateOf(IntSize(300, 600)) }
 	val scope = rememberCoroutineScope()
 	val preview = remember { mutableStateOf<PreviewPoint?>(null) }
 	val haptic = LocalHapticFeedback.current
+
+	// Collector coroutine: perform point additions off the immediate composition callbacks
+	androidx.compose.runtime.LaunchedEffect(Unit) {
+		addPointFlow.collect { p ->
+			points.add(p)
+		}
+	}
 
 	Column(modifier = modifier.padding(16.dp)) {
 		// Controls: gender + front/back - balanced two-column layout for improved visual balance
@@ -139,7 +152,7 @@ fun PainTrackerScreen(
 					.fillMaxSize()
 					.padding(12.dp)
 					.onSizeChanged { size -> boxSize.value = size }
-					.pointerInput(Unit) {
+							.pointerInput(Unit) {
 						detectTapGestures(onPress = { offset ->
 							val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
 							val currentView = if (frontView.value) "front" else "back"
@@ -185,100 +198,67 @@ fun PainTrackerScreen(
 								job.cancel()
 								val finalIntensity = preview.value?.intensity ?: 1
 								if (released) {
-									points.add(LocalPainPoint(xNorm, yNorm, finalIntensity, currentView))
+									// enqueue the point so the actual mutation happens in the collector
+									addPointFlow.tryEmit(LocalPainPoint(xNorm, yNorm, finalIntensity, currentView))
 								}
 								preview.value = null
 							}
 						})
 					}
 			) {
-				if (selectedPainter != null) {
-						Image(
-							painter = selectedPainter,
-							contentDescription = stringResource(id = R.string.body_outline_desc),
-							modifier = Modifier.fillMaxSize()
-						)
+				// Keep a stable composition: always render an Image composable (use a transparent ColorPainter when
+				// there is no actual painter) and always render the Canvas. This avoids changing the number of
+				// children during navigation AnimatedContent transitions which can trigger internal node-insertion
+				// mismatches in some Compose versions.
+				Image(
+					painter = selectedPainter ?: ColorPainter(Color.Transparent),
+					contentDescription = stringResource(id = R.string.body_outline_desc),
+					modifier = Modifier.fillMaxSize()
+				)
 
-					Canvas(modifier = Modifier.fillMaxSize()) {
-						val w = size.width
-						val h = size.height
-						points.forEach { p ->
-							val cx = p.xNorm * w
-							val cy = p.yNorm * h
-							val radius = 18f
-							val color = when (p.intensity) {
-								3 -> Color.Red
-								2 -> Color(0xFFFFA500)
-								else -> Color.Yellow
-							}
-							drawCircle(color = color, radius = radius, center = Offset(cx, cy))
-						}
+				Canvas(modifier = Modifier.fillMaxSize()) {
+					val w = size.width
+					val h = size.height
 
-						// Preview marker while pressing (scoped where w/h exist)
-						preview.value?.let { pv ->
-							val pcx = pv.xNorm * w
-							val pcy = pv.yNorm * h
-							val pradius = 22f
-							val pcolor = when (pv.intensity) {
-								3 -> Color.Red
-								2 -> Color(0xFFFFA500)
-								else -> Color.Yellow
-							}
-							drawCircle(color = pcolor, radius = pradius, center = Offset(pcx, pcy))
-						}
-					}
-				} else {
-					Canvas(modifier = Modifier.fillMaxSize()) {
-						val w = size.width
-						val h = size.height
-
-						// Cache frequently used values and colors
+					// If no painter provided, draw a subtle background/body placeholder
+					if (selectedPainter == null) {
 						val bgColor = if (frontView.value) Color(0xFFEFEFEF) else Color(0xFFF0F0F8)
 						val cornerRadius = CornerRadius(24f, 24f)
-						val circleColor = Color(0xFFD0D0D0)
-						val headRadius = w.coerceAtMost(h) * 0.08f
-						val headCenter = Offset(w * 0.5f, h * 0.15f)
-
-						// Cache pain point colors
-						val redColor = Color.Red
-						val orangeColor = Color(0xFFFFA500)
-						val yellowColor = Color.Yellow
-
 						drawRoundRect(
 							color = bgColor,
 							topLeft = Offset.Zero,
 							size = size,
 							cornerRadius = cornerRadius
 						)
-						drawCircle(
-							color = circleColor,
-							radius = headRadius,
-							center = headCenter
-						)
-						points.forEach { p ->
-							val cx = p.xNorm * w
-							val cy = p.yNorm * h
-							val radius = 18f
-							val color = when (p.intensity) {
-								3 -> redColor
-								2 -> orangeColor
-								else -> yellowColor
-							}
-							drawCircle(color = color, radius = radius, center = Offset(cx, cy))
-						}
+						val circleColor = Color(0xFFD0D0D0)
+						val headRadius = w.coerceAtMost(h) * 0.08f
+						val headCenter = Offset(w * 0.5f, h * 0.15f)
+						drawCircle(color = circleColor, radius = headRadius, center = headCenter)
+					}
 
-						// Preview marker while pressing (scoped where w/h exist)
-						preview.value?.let { pv ->
-							val pcx = pv.xNorm * w
-							val pcy = pv.yNorm * h
-							val pradius = 22f
-							val pcolor = when (pv.intensity) {
-								3 -> Color.Red
-								2 -> Color(0xFFFFA500)
-								else -> Color.Yellow
-							}
-							drawCircle(color = pcolor, radius = pradius, center = Offset(pcx, pcy))
+					points.forEach { p ->
+						val cx = p.xNorm * w
+						val cy = p.yNorm * h
+						val radius = 18f
+						val color = when (p.intensity) {
+							3 -> Color.Red
+							2 -> Color(0xFFFFA500)
+							else -> Color.Yellow
 						}
+						drawCircle(color = color, radius = radius, center = Offset(cx, cy))
+					}
+
+					// Preview marker while pressing (scoped where w/h exist)
+					preview.value?.let { pv ->
+						val pcx = pv.xNorm * w
+						val pcy = pv.yNorm * h
+						val pradius = 22f
+						val pcolor = when (pv.intensity) {
+							3 -> Color.Red
+							2 -> Color(0xFFFFA500)
+							else -> Color.Yellow
+						}
+						drawCircle(color = pcolor, radius = pradius, center = Offset(pcx, pcy))
 					}
 				}
 			}
@@ -289,7 +269,7 @@ fun PainTrackerScreen(
 		// Recorded points list
 		Text(text = stringResource(id = R.string.recorded_points_title), style = MaterialTheme.typography.titleMedium)
 		LazyColumn(modifier = Modifier.fillMaxHeight(0.25f)) {
-			itemsIndexed(points) { index, point ->
+			itemsIndexed(items = points, key = { index, point -> "${point.timestamp}_${index}" }) { index, point ->
 				Row(
 					modifier = Modifier
 						.fillMaxWidth()

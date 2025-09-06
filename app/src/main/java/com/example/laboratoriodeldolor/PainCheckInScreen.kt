@@ -58,10 +58,10 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
                 // Provide the silhouette painters and an onSave callback that persists points to the provided ViewModel.
                 Box(modifier = Modifier.fillMaxWidth().height(420.dp)) {
                     PainTrackerScreen(
-                        maleFrontPainter = painterResource(id = R.drawable.boy_front),
-                        maleBackPainter = painterResource(id = R.drawable.boy_back),
-                        femaleFrontPainter = painterResource(id = R.drawable.girl_front),
-                        femaleBackPainter = painterResource(id = R.drawable.girl_back),
+                        maleFrontPainter = runCatching { painterResource(id = R.drawable.boy_front) }.getOrNull(),
+                        maleBackPainter = runCatching { painterResource(id = R.drawable.boy_back) }.getOrNull(),
+                        femaleFrontPainter = runCatching { painterResource(id = R.drawable.girl_front) }.getOrNull(),
+                        femaleBackPainter = runCatching { painterResource(id = R.drawable.girl_back) }.getOrNull(),
                         onSave = { points ->
                             // Persist the points into the provided PainTrackerViewModel and save to DB
                             scope.launch {

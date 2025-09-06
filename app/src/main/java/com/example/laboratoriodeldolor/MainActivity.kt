@@ -8,9 +8,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
@@ -69,9 +79,12 @@ class MainActivity : ComponentActivity() {
                         val prefs = (application as MoodApplication).preferencesRepository
                         val seen = prefs.hasSeenOnboardingFlow.first()
                         // If user has seen onboarding, set Diario as start; otherwise onboarding
-                        startDestinationState.value = if (seen) Screen.Diario.route else "onboarding"
+                        val chosen = if (seen) Screen.Diario.route else "onboarding"
+                        android.util.Log.d("MainActivity", "Resolved start destination='$chosen' on thread=${Thread.currentThread().name}")
+                        startDestinationState.value = chosen
                     } catch (t: Throwable) {
                         // keep startup resilient; fallback to checkin mood if anything fails
+                        android.util.Log.w("MainActivity", "awaitDatabaseReady failed: ${'$'}t")
                         startDestinationState.value = Screen.CheckinMood.route
                     }
                 }
@@ -88,256 +101,274 @@ class MainActivity : ComponentActivity() {
                     bottomBar = { if (showBottomBar) BottomBar(navController = navController, items = items) }
                 ) { innerPadding ->
                     // NavHost sits inside the app-level scaffold; individual screens draw AppScaffold which renders the gradient
-                    // Use startDestinationState if available; otherwise default to the checkin flow while we wait
-                    val startDest = startDestinationState.value ?: Screen.CheckinMood.route
-                    NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(innerPadding)) {
-                        // Check-in flow
-                        composable(Screen.CheckinMood.route) {
-                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
-                            MoodCheckInScreen(moodViewModel,
-                                onNext = { navController.navigate(Screen.CheckinPain.route) },
-                                onSkip = { navController.navigate(Screen.CheckinPain.route) },
-                                onSaved = { emoji ->
-                                    if (emoji == "😞") {
-                                        moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.BREATH)
-                                    } else {
-                                        moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.DIARY)
-                                    }
-                                }
-                            )
+                    // Only create the NavHost after we've resolved the start destination.
+                    // Changing the NavHost `startDestination` while it's already composed can
+                    // break the Compose runtime (it expects a stable initial graph). Show a
+                    // simple placeholder while we wait for DB/preferences to warm up.
+                    val resolvedStart = startDestinationState.value
+                    if (resolvedStart == null) {
+                        // Minimal placeholder while waiting; keep layout stable relative to innerPadding
+                        Column(modifier = Modifier.padding(innerPadding)) {
+                            // Intentionally empty placeholder to avoid creating NavHost prematurely
                         }
-                        composable(Screen.CheckinPain.route) {
-                            val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
-                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
-                            PainCheckInScreen(painTrackerViewModel, onFinish = {
-                                // user saved pain -> prioritize PAIN module
-                                moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.PAIN)
-                                navController.navigate(Screen.Diario.route) {
-                                    popUpTo(Screen.CheckinMood.route) { inclusive = true }
-                                }
-                            }, onSkip = {
-                                // didn't save pain: fallback to DIARY by default (or mood-based prioritization handled in mood save)
-                                navController.navigate(Screen.Diario.route) {
-                                    popUpTo(Screen.CheckinMood.route) { inclusive = true }
-                                }
-                            })
-                        }
-                        composable(Screen.Diario.route) {
-                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
-                            DailyMoodScreen(
-                                viewModel = moodViewModel,
-                                onNavigateToPainTracker = { navController.navigate(Screen.Dolor.route) },
-                                onNavigateToSettings = { navController.navigate(Screen.Ajustes.route) },
-                                onNavigateToHistory = { navController.navigate("history") },
-                                onNavigateToBreath = { navController.navigate(Screen.Respiracion.route) },
-                                onNavigateToDiary = { navController.navigate(Screen.Diary.route) },
-                                onNavigateToPainChart = { navController.navigate("pain_chart") },
-                                onNavigateToTechniquesLibrary = { navController.navigate("techniques") },
-                                onNavigateToExerciseHub = { navController.navigate(Screen.Exercises.route) }
-                            )
-                        }
+                    } else {
+                        // Manual rendering of destinations using current route to avoid NavHost's AnimatedContent transitions
+                        // This avoids the Compose runtime internal error seen with node insertions during transitions.
+                        Column(modifier = Modifier.padding(innerPadding)) {
+                            val navBackStackEntry by navController.currentBackStackEntryAsState()
+                            val currentRoute = navBackStackEntry?.destination?.route ?: resolvedStart
 
-                        // Onboarding / Home flow
-                        composable("onboarding") {
-                            OnboardingScreen(onFinish = {
-                                // mark as seen and navigate to Diario (daily mood) so Diario becomes the landing screen
-                                lifecycleScope.launch {
-                                    (application as MoodApplication).preferencesRepository.setHasSeenOnboarding(true)
-                                    navController.navigate(Screen.Diario.route) {
-                                        popUpTo("onboarding") { inclusive = true }
-                                    }
-                                }
-                            }, onSkip = {
-                                lifecycleScope.launch {
-                                    (application as MoodApplication).preferencesRepository.setHasSeenOnboarding(true)
-                                    navController.navigate(Screen.Diario.route) {
-                                        popUpTo("onboarding") { inclusive = true }
-                                    }
-                                }
-                            })
-                        }
-
-                        composable(Screen.Home.route) {
-                            HomeScreen(
-                                routineDao = (application as MoodApplication).database.routineDao(),
-                                onOpenPainRegion = { rid -> navController.navigate("pain_region/$rid") },
-                                onOpenPainTracker = { navController.navigate(Screen.Dolor.route) },
-                                onOpenTechniques = { navController.navigate("techniques") },
-                                onOpenSettings = { navController.navigate(Screen.Ajustes.route) }
-                            )
-                        }
-                        composable(Screen.Dolor.route) {
-                            val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
-
-                            // Load painters once in this composable and pass to PainTrackerScreen
-                            val maleFrontPainterLocal = painterResource(id = R.drawable.boy_front)
-                            val maleBackPainterLocal = painterResource(id = R.drawable.boy_back)
-                            val femaleFrontPainterLocal = painterResource(id = R.drawable.girl_front)
-                            val femaleBackPainterLocal = painterResource(id = R.drawable.girl_back)
-
-                            PainTrackerScreen(
-                                maleFrontPainter = maleFrontPainterLocal,
-                                maleBackPainter = maleBackPainterLocal,
-                                femaleFrontPainter = femaleFrontPainterLocal,
-                                femaleBackPainter = femaleBackPainterLocal,
-                                onSave = { points ->
-                                    // Save points using ViewModel and navigate to the most relevant exercise route
-                                    lifecycleScope.launch {
-                                        // Clear existing points in ViewModel for both views to avoid stale data
-                                        painTrackerViewModel.selectView("front")
-                                        painTrackerViewModel.clearPainPoints()
-                                        painTrackerViewModel.selectView("back")
-                                        painTrackerViewModel.clearPainPoints()
-
-                                        // Group points by view (front/back) and add them properly
-                                        val frontPoints = points.filter { it.view == "front" }
-                                        val backPoints = points.filter { it.view == "back" }
-
-                                        // Add front view points
-                                        if (frontPoints.isNotEmpty()) {
-                                            painTrackerViewModel.selectView("front")
-                                            frontPoints.forEach { lp ->
-                                                painTrackerViewModel.addPainPointNormalized(
-                                                    androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm),
-                                                    lp.intensity
-                                                )
+                            when (currentRoute) {
+                                Screen.CheckinMood.route -> {
+                                    val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
+                                    MoodCheckInScreen(moodViewModel,
+                                        onNext = { navController.navigate(Screen.CheckinPain.route) },
+                                        onSkip = { navController.navigate(Screen.CheckinPain.route) },
+                                        onSaved = { emoji ->
+                                            if (emoji == "😞") {
+                                                moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.BREATH)
+                                            } else {
+                                                moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.DIARY)
                                             }
                                         }
-
-                                        // Add back view points
-                                        if (backPoints.isNotEmpty()) {
-                                            painTrackerViewModel.selectView("back")
-                                            backPoints.forEach { lp ->
-                                                painTrackerViewModel.addPainPointNormalized(
-                                                    androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm),
-                                                    lp.intensity
-                                                )
+                                    )
+                                }
+                                Screen.CheckinPain.route -> {
+                                    val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+                                    val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
+                                    PainCheckInScreen(painTrackerViewModel, onFinish = {
+                                        moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.PAIN)
+                                        navController.navigate(Screen.Diario.route) {
+                                            popUpTo(Screen.CheckinMood.route) { inclusive = true }
+                                        }
+                                    }, onSkip = {
+                                        navController.navigate(Screen.Diario.route) {
+                                            popUpTo(Screen.CheckinMood.route) { inclusive = true }
+                                        }
+                                    })
+                                }
+                                Screen.Diario.route -> {
+                                    val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
+                                    DailyMoodScreen(
+                                        viewModel = moodViewModel,
+                                        onNavigateToPainTracker = { navController.navigate(Screen.Dolor.route) },
+                                        onNavigateToSettings = { navController.navigate(Screen.Ajustes.route) },
+                                        onNavigateToHistory = { navController.navigate("history") },
+                                        onNavigateToBreath = { navController.navigate(Screen.Respiracion.route) },
+                                        onNavigateToDiary = { navController.navigate(Screen.Diary.route) },
+                                        onNavigateToPainChart = { navController.navigate("pain_chart") },
+                                        onNavigateToTechniquesLibrary = { navController.navigate("techniques") },
+                                        onNavigateToExerciseHub = { navController.navigate(Screen.Exercises.route) }
+                                    )
+                                }
+                                "onboarding" -> {
+                                    OnboardingScreen(onFinish = {
+                                        lifecycleScope.launch {
+                                            (application as MoodApplication).preferencesRepository.setHasSeenOnboarding(true)
+                                            navController.navigate(Screen.Diario.route) {
+                                                popUpTo("onboarding") { inclusive = true }
                                             }
                                         }
-
-                                        // Persist to DB. The ViewModel returns a recommended route (or null on failure)
-                                        val targetRoute = painTrackerViewModel.savePainPoints()
-
-                                        if (!targetRoute.isNullOrEmpty()) {
-                                            // Navigate directly to the most relevant exercise page
-                                            navController.navigate(targetRoute)
-                                        } else {
-                                            // Fallback: show recommended techniques list as before
-                                            val combined = frontPoints + backPoints
-                                            val detectedAreas = detectBodyAreas(combined.map { androidx.compose.ui.geometry.Offset(it.xNorm, it.yNorm) })
-                                            val routineNames = mutableListOf<String>()
-                                            if (detectedAreas.contains(BodyArea.UPPER)) {
-                                                routineNames.add(this@MainActivity.getString(R.string.region_face_head))
-                                                routineNames.add(this@MainActivity.getString(R.string.region_neck_shoulders))
-                                                routineNames.add(this@MainActivity.getString(R.string.region_upper_back))
+                                    }, onSkip = {
+                                        lifecycleScope.launch {
+                                            (application as MoodApplication).preferencesRepository.setHasSeenOnboarding(true)
+                                            navController.navigate(Screen.Diario.route) {
+                                                popUpTo("onboarding") { inclusive = true }
                                             }
-                                            if (detectedAreas.contains(BodyArea.MIDDLE)) {
-                                                routineNames.add(this@MainActivity.getString(R.string.region_mid_back_stomach))
-                                                routineNames.add(this@MainActivity.getString(R.string.region_fingers_wrist_forearm))
+                                        }
+                                    })
+                                }
+                                Screen.Home.route -> {
+                                    HomeScreen(
+                                        routineDao = (application as MoodApplication).database.routineDao(),
+                                        onOpenPainRegion = { rid -> navController.navigate("pain_region/$rid") },
+                                        onOpenPainTracker = { navController.navigate(Screen.Dolor.route) },
+                                        onOpenTechniques = { navController.navigate("techniques") },
+                                        onOpenSettings = { navController.navigate(Screen.Ajustes.route) }
+                                    )
+                                }
+                                Screen.Dolor.route -> {
+                                    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+                                        Column(modifier = Modifier.padding(16.dp).padding(innerPadding)) {
+                                            MText(text = stringResource(id = R.string.pain_tracker_title), style = MaterialTheme.typography.titleLarge)
+                                            MText(text = stringResource(id = R.string.pain_tracker_placeholder_notice))
+                                            Button(onClick = { navController.navigate("dolor_real") }, modifier = Modifier.padding(top = 12.dp)) {
+                                                MText(text = stringResource(id = R.string.open_real_pain_tracker))
                                             }
-                                            if (detectedAreas.contains(BodyArea.LOWER)) {
-                                                routineNames.add(this@MainActivity.getString(R.string.region_lower_back))
-                                                routineNames.add(this@MainActivity.getString(R.string.region_ankles_feet_toes))
-                                            }
-
-                                            val entry = navController.currentBackStackEntry
-                                            entry?.savedStateHandle?.set("recommended_routines", routineNames)
-                                            navController.navigate("recommended_techniques")
                                         }
                                     }
                                 }
-                            )
-                        }
-                        composable(Screen.Ajustes.route) {
-                            // Use a distinct local name to avoid shadowing the top-level settingsViewModel
-                            val settingsVm: SettingsViewModel = viewModel()
-                            SettingsScreen(viewModel = settingsVm, onNavigateToAbout = { navController.navigate("about") })
-                        }
-                        composable(Screen.Diary.route) {
-                            val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).database.moodDao()))
-                            DiaryScreen(diaryViewModel = diaryViewModel, onBack = { navController.popBackStack() })
-                        }
-                        composable("about") {
-                            AboutScreen(onBack = { navController.popBackStack() })
-                        }
-                        composable(Screen.Exercises.route) {
-                            ExerciseHubScreen(
-                                onNavigateToFrontUpper = { navController.navigate(Screen.FrontUpperBody.route) },
-                                onNavigateToBackUpper = { navController.navigate(Screen.BackUpperBody.route) },
-                                onNavigateToFrontMiddle = { navController.navigate(Screen.FrontMiddleBody.route) },
-                                onNavigateToBackMiddle = { navController.navigate(Screen.BackMiddleBody.route) },
-                                onNavigateToFrontLower = { navController.navigate(Screen.FrontLowerBody.route) },
-                                onNavigateToBackLower = { navController.navigate(Screen.BackLowerBody.route) }
-                            )
-                        }
-                        // Recommendation screen removed - users are navigated directly to technique pages after saving pain points
-                        composable(Screen.Respiracion.route) {
-                            val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
-                            BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { _ -> /* TODO: navigate to instructions */ })
-                        }
-                        composable(Screen.Progress.route) {
-                            // Provide MoodDao from application to the chart screen
-                            com.example.laboratoriodeldolor.MoodProgressScreen(moodDao = (application as MoodApplication).database.moodDao(), onOpenPainChart = {
-                                navController.navigate("pain_chart")
-                            })
-                        }
-                        composable("pain_chart") {
-                            // Placeholder - implemented in PainChartScreen.kt
-                            PainChartScreen(painDao = (application as MoodApplication).database.painPointDao(), onBack = { navController.popBackStack() })
-                        }
-                        composable("recommended_techniques") {
-                            // Read recommended routines list from savedStateHandle
-                            val list = navController.currentBackStackEntry?.savedStateHandle?.get<List<String>>("recommended_routines") ?: emptyList()
-                            RecommendedTechniquesScreen(routines = list, onSelectRoutine = { routineName ->
-                                // Map routineName to route heuristically by checking known strings
-                                when (routineName) {
-                                    this@MainActivity.getString(R.string.region_face_head) -> navController.navigate(Screen.FrontUpperBody.route)
-                                    this@MainActivity.getString(R.string.region_neck_shoulders) -> navController.navigate(Screen.FrontUpperBody.route)
-                                    this@MainActivity.getString(R.string.region_upper_back) -> navController.navigate(Screen.BackUpperBody.route)
-                                    this@MainActivity.getString(R.string.region_mid_back_stomach) -> navController.navigate(Screen.FrontMiddleBody.route)
-                                    this@MainActivity.getString(R.string.region_fingers_wrist_forearm) -> navController.navigate(Screen.FrontMiddleBody.route)
-                                    this@MainActivity.getString(R.string.region_lower_back) -> navController.navigate(Screen.BackLowerBody.route)
-                                    this@MainActivity.getString(R.string.region_ankles_feet_toes) -> navController.navigate(Screen.FrontLowerBody.route)
-                                    else -> navController.navigate(Screen.Exercises.route)
+                                "dolor_real" -> {
+                                    val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+
+                                    val maleFrontPainterLocal = runCatching { painterResource(id = R.drawable.boy_front) }.getOrNull()
+                                    val maleBackPainterLocal = runCatching { painterResource(id = R.drawable.boy_back) }.getOrNull()
+                                    val femaleFrontPainterLocal = runCatching { painterResource(id = R.drawable.girl_front) }.getOrNull()
+                                    val femaleBackPainterLocal = runCatching { painterResource(id = R.drawable.girl_back) }.getOrNull()
+
+                                    var stage by remember { mutableStateOf(0) }
+
+                                    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+                                        Column(modifier = Modifier.padding(16.dp).padding(innerPadding)) {
+                                            MText(text = stringResource(id = R.string.pain_tracker_title), style = MaterialTheme.typography.titleLarge)
+                                            Row {
+                                                Button(onClick = { stage = 1 }, modifier = Modifier.padding(end = 8.dp)) { MText(text = "Stage 1: Images") }
+                                                Button(onClick = { stage = 2 }, modifier = Modifier.padding(end = 8.dp)) { MText(text = "Stage 2: Canvas") }
+                                                Button(onClick = { stage = 3 }) { MText(text = "Stage 3: Full") }
+                                            }
+
+                                            when (stage) {
+                                                0 -> MText(text = stringResource(id = R.string.pain_tracker_placeholder_notice))
+                                                1 -> {
+                                                    Column {
+                                                        if (maleFrontPainterLocal != null) Image(painter = maleFrontPainterLocal, contentDescription = stringResource(id = R.string.body_outline_desc), modifier = Modifier.size(200.dp))
+                                                        if (femaleFrontPainterLocal != null) Image(painter = femaleFrontPainterLocal, contentDescription = stringResource(id = R.string.body_outline_desc), modifier = Modifier.size(200.dp))
+                                                    }
+                                                }
+                                                2 -> {
+                                                    Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { /* no-op */ } }) {
+                                                        Canvas(modifier = Modifier.size(300.dp)) {
+                                                            drawRect(Color.LightGray)
+                                                        }
+                                                    }
+                                                }
+                                                3 -> {
+                                                    android.util.Log.d("MainActivity", "Composing PainTrackerScreen (diagnostic)")
+                                                    PainTrackerScreen(
+                                                        maleFrontPainter = maleFrontPainterLocal,
+                                                        maleBackPainter = maleBackPainterLocal,
+                                                        femaleFrontPainter = femaleFrontPainterLocal,
+                                                        femaleBackPainter = femaleBackPainterLocal,
+                                                        onSave = { points ->
+                                                            lifecycleScope.launch {
+                                                                val targetRoute = try { painTrackerViewModel.savePoints(points) } catch (e: Exception) { null }
+                                                                if (!targetRoute.isNullOrEmpty()) {
+                                                                    navController.navigate(targetRoute)
+                                                                } else {
+                                                                    val combined = points
+                                                                    val detectedAreas = detectBodyAreas(combined.map { androidx.compose.ui.geometry.Offset(it.xNorm, it.yNorm) })
+                                                                    val routineNames = mutableListOf<String>()
+                                                                    if (detectedAreas.contains(BodyArea.UPPER)) {
+                                                                        routineNames.add(this@MainActivity.getString(R.string.region_face_head))
+                                                                        routineNames.add(this@MainActivity.getString(R.string.region_neck_shoulders))
+                                                                        routineNames.add(this@MainActivity.getString(R.string.region_upper_back))
+                                                                    }
+                                                                    if (detectedAreas.contains(BodyArea.MIDDLE)) {
+                                                                        routineNames.add(this@MainActivity.getString(R.string.region_mid_back_stomach))
+                                                                        routineNames.add(this@MainActivity.getString(R.string.region_fingers_wrist_forearm))
+                                                                    }
+                                                                    if (detectedAreas.contains(BodyArea.LOWER)) {
+                                                                        routineNames.add(this@MainActivity.getString(R.string.region_lower_back))
+                                                                        routineNames.add(this@MainActivity.getString(R.string.region_ankles_feet_toes))
+                                                                    }
+
+                                                                    val entry = navController.currentBackStackEntry
+                                                                    entry?.savedStateHandle?.set("recommended_routines", routineNames)
+                                                                    navController.navigate("recommended_techniques")
+                                                                }
+                                                            }
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                            }, onBack = { navController.popBackStack() })
-                        }
-                        // Techniques library
-                        composable("techniques") {
-                            TechniquesLibraryScreen(techniqueDao = (application as MoodApplication).database.techniqueDao()) { id ->
-                                navController.navigate("technique/$id")
+                                Screen.Ajustes.route -> {
+                                    val settingsVm: SettingsViewModel = viewModel()
+                                    SettingsScreen(viewModel = settingsVm, onNavigateToAbout = { navController.navigate("about") })
+                                }
+                                Screen.Diary.route -> {
+                                    val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).database.moodDao()))
+                                    DiaryScreen(diaryViewModel = diaryViewModel, onBack = { navController.popBackStack() })
+                                }
+                                "about" -> {
+                                    AboutScreen(onBack = { navController.popBackStack() })
+                                }
+                                Screen.Exercises.route -> {
+                                    ExerciseHubScreen(
+                                        onNavigateToFrontUpper = { navController.navigate(Screen.FrontUpperBody.route) },
+                                        onNavigateToBackUpper = { navController.navigate(Screen.BackUpperBody.route) },
+                                        onNavigateToFrontMiddle = { navController.navigate(Screen.FrontMiddleBody.route) },
+                                        onNavigateToBackMiddle = { navController.navigate(Screen.BackMiddleBody.route) },
+                                        onNavigateToFrontLower = { navController.navigate(Screen.FrontLowerBody.route) },
+                                        onNavigateToBackLower = { navController.navigate(Screen.BackLowerBody.route) }
+                                    )
+                                }
+                                Screen.Respiracion.route -> {
+                                    val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
+                                    BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { _ -> /* TODO: navigate to instructions */ })
+                                }
+                                Screen.Progress.route -> {
+                                    com.example.laboratoriodeldolor.MoodProgressScreen(moodDao = (application as MoodApplication).database.moodDao(), onOpenPainChart = {
+                                        navController.navigate("pain_chart")
+                                    })
+                                }
+                                "pain_chart" -> {
+                                    PainChartScreen(painDao = (application as MoodApplication).database.painPointDao(), onBack = { navController.popBackStack() })
+                                }
+                                "recommended_techniques" -> {
+                                    val list = navController.currentBackStackEntry?.savedStateHandle?.get<List<String>>("recommended_routines") ?: emptyList()
+                                    RecommendedTechniquesScreen(routines = list, onSelectRoutine = { routineName ->
+                                        when (routineName) {
+                                            this@MainActivity.getString(R.string.region_face_head) -> navController.navigate(Screen.FrontUpperBody.route)
+                                            this@MainActivity.getString(R.string.region_neck_shoulders) -> navController.navigate(Screen.FrontUpperBody.route)
+                                            this@MainActivity.getString(R.string.region_upper_back) -> navController.navigate(Screen.BackUpperBody.route)
+                                            this@MainActivity.getString(R.string.region_mid_back_stomach) -> navController.navigate(Screen.FrontMiddleBody.route)
+                                            this@MainActivity.getString(R.string.region_fingers_wrist_forearm) -> navController.navigate(Screen.FrontMiddleBody.route)
+                                            this@MainActivity.getString(R.string.region_lower_back) -> navController.navigate(Screen.BackLowerBody.route)
+                                            this@MainActivity.getString(R.string.region_ankles_feet_toes) -> navController.navigate(Screen.FrontLowerBody.route)
+                                            else -> navController.navigate(Screen.Exercises.route)
+                                        }
+                                    }, onBack = { navController.popBackStack() })
+                                }
+                                "techniques" -> {
+                                    TechniquesLibraryScreen(techniqueDao = (application as MoodApplication).database.techniqueDao()) { id ->
+                                        navController.navigate("technique/$id")
+                                    }
+                                }
+                                "routines" -> {
+                                    val routinesVm: RoutinesListViewModel = viewModel(factory = RoutinesListViewModelFactory((application as MoodApplication).database.routineDao()))
+                                    RoutinesListScreen(viewModel = routinesVm) { id -> navController.navigate("pain_region/$id") }
+                                }
+                                "technique/{id}" -> {
+                                    val id = navController.currentBackStackEntry?.arguments?.getString("id")?.toLongOrNull() ?: 0L
+                                    TechniqueDetailScreen(techniqueId = id, techniqueDao = (application as MoodApplication).database.techniqueDao(), onBack = { navController.popBackStack() })
+                                }
+                                "pain_region/{routineId}" -> {
+                                    val rid = navController.currentBackStackEntry?.arguments?.getString("routineId")?.toLongOrNull() ?: 0L
+                                    PainRegionScreen(routineId = rid, routineDao = (application as MoodApplication).database.routineDao(), techniqueDao = (application as MoodApplication).database.techniqueDao(), onNavigateToTechnique = { tid -> navController.navigate("technique/$tid") })
+                                }
+                                "history" -> {
+                                    val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
+                                    MoodHistoryScreen(viewModel = moodHistoryViewModel)
+                                }
+                                Screen.FrontUpperBody.route -> { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                                Screen.BackUpperBody.route -> { BackUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                                Screen.FrontMiddleBody.route -> { FrontMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                                Screen.BackMiddleBody.route -> { BackMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                                Screen.FrontLowerBody.route -> { FrontLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                                Screen.BackLowerBody.route -> { BackLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
+                                else -> {
+                                    // Fallback - render home
+                                    HomeScreen(
+                                        routineDao = (application as MoodApplication).database.routineDao(),
+                                        onOpenPainRegion = { rid -> navController.navigate("pain_region/$rid") },
+                                        onOpenPainTracker = { navController.navigate(Screen.Dolor.route) },
+                                        onOpenTechniques = { navController.navigate("techniques") },
+                                        onOpenSettings = { navController.navigate(Screen.Ajustes.route) }
+                                    )
+                                }
                             }
                         }
-                        composable("routines") {
-                            val routinesVm: RoutinesListViewModel = viewModel(factory = RoutinesListViewModelFactory((application as MoodApplication).database.routineDao()))
-                            RoutinesListScreen(viewModel = routinesVm) { id -> navController.navigate("pain_region/$id") }
-                        }
-                        composable("technique/{id}") { backStack ->
-                            val id = backStack.arguments?.getString("id")?.toLongOrNull() ?: 0L
-                            TechniqueDetailScreen(techniqueId = id, techniqueDao = (application as MoodApplication).database.techniqueDao(), onBack = { navController.popBackStack() })
-                        }
-                        composable("pain_region/{routineId}") { backStack ->
-                            val rid = backStack.arguments?.getString("routineId")?.toLongOrNull() ?: 0L
-                            PainRegionScreen(routineId = rid, routineDao = (application as MoodApplication).database.routineDao(), techniqueDao = (application as MoodApplication).database.techniqueDao(), onNavigateToTechnique = { tid -> navController.navigate("technique/$tid") })
-                        }
-                        composable("history") {
-                            val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
-                            MoodHistoryScreen(viewModel = moodHistoryViewModel)
-                        }
-                        // New specific front/back exercise screens
-                        composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                        composable(Screen.BackUpperBody.route) { BackUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                        composable(Screen.FrontMiddleBody.route) { FrontMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                        composable(Screen.BackMiddleBody.route) { BackMiddleBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                        composable(Screen.FrontLowerBody.route) { FrontLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
-                        composable(Screen.BackLowerBody.route) { BackLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
                     }
-                }
-            }
         }
     }
 
 }
+
+
+
 
 // Extra closing brace added above to ensure the class and coroutine blocks are balanced
 sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector) {
@@ -448,4 +479,8 @@ fun DebugDataScreen(
         }
     }
 }
+
+
+
+        }
 

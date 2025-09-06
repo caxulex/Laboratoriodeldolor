@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Backup of strings moved out of res/values to avoid duplicate resource errors during build. -->
+    <string name="pain_tracker_button">Registrar Dolor</string>
+
+    <string name="delete_confirm_title">Confirmar eliminación</string>
+    <string name="delete_confirm_message">¿Estás seguro de que deseas eliminar este punto de dolor?</string>
+    <string name="delete_confirm_yes">Sí, eliminar</string>
+    <string name="delete_confirm_no">Cancelar</string>
+    <string name="mood_question">¿Cómo te sientes hoy?</string>
+
+    <string name="streak_mark_button">Marcar</string>
+    <string name="streak_update_button">Actualizar</string>
+
+    <string name="recommendation_no_data_title">Aún no hay recomendaciones</string>
+    <string name="recommendation_no_data_subtitle">Registra tu estado de ánimo y puntos de dolor de forma regular para recibir recomendaciones personalizadas.</string>
+    <string name="recommendation_action_button">Ver ejercicios sugeridos</string>
+
+    <string name="upper_body_exercises_button">Ejercicios para Zona Superior</string>
+    <string name="middle_body_exercises_button">Ejercicios para Zona Media</string>
+    <string name="lower_body_exercises_button">Ejercicios para Zona Inferior</string>
+
+    <string name="checkin_mood_next">Siguiente</string>
+
+    <string name="save_diary_entry_button">Guardar Entrada</string>
+
+    <string name="view_exercises">Ver Ejercicios</string>
+
+    <string name="exercise_marked_snackbar">Ejercicios marcados como completos</string>
+    <string name="undo_action">Deshacer</string>
+
+    <string name="routines_title">Rutinas</string>
+    <string name="pain_region_title">Región de Dolor</string>
+
+    <string name="pain_point_label_format">#%1$d: %2$s</string>
+
+    <string name="about_description_short">Cero Dolor ayuda con ejercicios y técnicas para manejar el dolor.</string>
+    <string name="about_release_version">Versión</string>
+
+    <string name="confirm_delete_title">Eliminar Entrada</string>
+    <string name="confirm_delete_message">¿Estás seguro de que quieres eliminar esta entrada? Esta acción no se puede deshacer.</string>
+    <string name="confirm_delete_positive">Eliminar</string>
+    <string name="confirm_delete_negative">Cancelar</string>
+
+    <string name="diary_date_label">Fecha</string>
+    <string name="diary_empty_state">Tu diario está vacío. Registra tu primer estado de ánimo para comenzar a seguir tu progreso.</string>
+    <string name="diary_entry_placeholder">Describe tu día, tu nivel de dolor o cualquier pensamiento que quieras registrar…</string>
+    <string name="diary_mood_prompt">¿Cómo te sientes hoy? Elige tu estado de ánimo.</string>
+    <string name="diary_save">Guardar Entrada</string>
+
+    <string name="error_no_network">Sin conexión a internet. No se pueden cargar los datos.</string>
+    <string name="error_save">Error al guardar. Por favor, revisa tu conexión e inténtalo de nuevo.</string>
+
+    <string name="home_empty_routines">Aún no tienes rutinas. Ve a tu Mapa de Dolor para registrar tus puntos y empezar tu camino hacia el bienestar.</string>
+
+    <string name="pain_map_instructions">Toca el área en la figura para marcar un punto de dolor.</string>
+    <string name="pain_map_gender_male">Masculino</string>
+    <string name="pain_map_gender_female">Femenino</string>
+    <string name="pain_save">Guardar Puntos de Dolor</string>
+    <string name="pain_save_confirmation">¡Mapa de dolor guardado con éxito!</string>
+
+    <string name="progress_empty_state">Registra tu estado de ánimo en el diario para ver tu progreso aquí.</string>
+    <plurals name="progress_streak_label">
+        <item quantity="one">Racha actual: %d día</item>
+        <item quantity="other">Racha actual: %d días</item>
+    </plurals>
+
+    <string name="region_elbows">Codos</string>
+    <string name="routine_no_steps">Esta rutina todavía no tiene pasos. Explora las técnicas para esta región y comienza a construir tu plan de alivio.</string>
+
+    <string name="settings_language">Idioma</string>
+    <string name="settings_notifications">Recordatorios y Notificaciones</string>
+    <string name="settings_privacy">Política de Privacidad</string>
+
+    <string name="technique_desc_amasamientos">Usa tu mano completa para realizar movimientos de amasamiento profundos y rítmicos sobre el músculo.</string>
+    <string name="technique_desc_fricciones">Realiza fricciones cortas y firmes sobre la zona para aumentar la circulación.</string>
+    <string name="technique_desc_garrita">Usa los nudillos para presionar puntos locales con una presión controlada.</string>
+    <string name="technique_video_label">Mira cómo se hace</string>
+    <string name="technique_video_placeholder">Toca para reproducir el video de la técnica.</string>
+    <string name="technique_video_cd">Video mostrando la técnica aplicada con la mano sobre la zona objetivo.</string>
+</resources>

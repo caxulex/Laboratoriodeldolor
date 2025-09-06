@@ -15,12 +15,12 @@ apply(plugin = "org.jetbrains.kotlin.kapt")
 
 android {
     namespace = "com.example.laboratoriodeldolor"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.laboratoriodeldolor"
         minSdk = 24
-    targetSdk = 34
+    targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 

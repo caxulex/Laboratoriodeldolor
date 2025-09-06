@@ -30,7 +30,7 @@ fun MiddleBodyExerciseScreen(onBack: () -> Unit = {}) {
             )
 
             LazyColumn(modifier = Modifier.padding(top = 12.dp)) {
-                itemsIndexed(steps) { index, item ->
+                itemsIndexed<Triple<Int, Int, Int>>(items = steps) { index, item ->
                     ExerciseStepCard(stepNumber = index + 1, titleRes = item.first, descRes = item.second, repsTextRes = item.third)
                 }
             }

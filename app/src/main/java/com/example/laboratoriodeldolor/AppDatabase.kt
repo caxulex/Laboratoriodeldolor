@@ -79,6 +79,7 @@ abstract class AppDatabase : RoomDatabase() {
                 // Provide a deferred so the seeding callback can await the fully-built AppDatabase
                 val dbDeferred = kotlinx.coroutines.CompletableDeferred<AppDatabase>()
 
+                android.util.Log.d("AppDatabase", "Building Room database on thread=${Thread.currentThread().name}")
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
