@@ -40,26 +40,19 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
- * PainTrackerScreen - clean implementation with press-duration preview.
- * - Tap/press on the silhouette to record pain points.
- * - While holding, a preview dot appears and escalates color by duration:
- *   quick tap -> yellow (1), ~1s -> orange (2), ~2s -> red (3).
+ * Data model for saved pain points.
  */
-
 data class LocalPainPoint(
 	val xNorm: Float,
 	val yNorm: Float,
@@ -68,6 +61,9 @@ data class LocalPainPoint(
 	val timestamp: Long = System.currentTimeMillis()
 )
 
+/**
+ * Transient preview shown while the user presses on the silhouette.
+ */
 data class PreviewPoint(
 	val xNorm: Float,
 	val yNorm: Float,
@@ -75,6 +71,14 @@ data class PreviewPoint(
 	val view: String = "front"
 )
 
+/**
+ * PainTrackerScreen
+ * - Tap = immediate intensity 1
+ * - Press: hold 0..1s => intensity 1 (yellow)
+ *          1..2s => intensity 2 (orange)
+ *          2s+   => intensity 3 (red)
+ * - On release the final intensity is saved to the points list
+ */
 @Composable
 fun PainTrackerScreen(
 	modifier: Modifier = Modifier,
@@ -87,42 +91,35 @@ fun PainTrackerScreen(
 	val genderMale = remember { mutableStateOf(true) }
 	val frontView = remember { mutableStateOf(true) }
 	val points = remember { mutableStateListOf<LocalPainPoint>() }
-	// Use a small event queue to defer additions so we don't mutate the composition tree
-	// while AnimatedContent/nav transitions may be in progress.
-	val addPointFlow = remember { MutableSharedFlow<LocalPainPoint>(extraBufferCapacity = 16) }
 	val boxSize = remember { mutableStateOf(IntSize(300, 600)) }
 	val scope = rememberCoroutineScope()
-	val preview = remember { mutableStateOf<PreviewPoint?>(null) }
-	val haptic = LocalHapticFeedback.current
-
-	// Collector coroutine: perform point additions off the immediate composition callbacks
-	androidx.compose.runtime.LaunchedEffect(Unit) {
-		addPointFlow.collect { p ->
-			points.add(p)
-		}
-	}
 
 	Column(modifier = modifier.padding(16.dp)) {
-		// Controls: gender + front/back - balanced two-column layout for improved visual balance
-		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-			// Gender selector
-			Column(modifier = Modifier.weight(1f)) {
-				Text(text = stringResource(id = R.string.gender_label), style = MaterialTheme.typography.titleMedium)
-				Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-					OutlinedButton(onClick = { genderMale.value = true }, modifier = Modifier.weight(1f)) {
-						Text(text = stringResource(id = R.string.gender_male))
-					}
-					OutlinedButton(onClick = { genderMale.value = false }, modifier = Modifier.weight(1f)) {
-						Text(text = stringResource(id = R.string.gender_female))
-					}
+		val preview = remember { mutableStateOf<PreviewPoint?>(null) }
+
+		// Controls: gender + front/back
+		Row(
+			horizontalArrangement = Arrangement.SpaceBetween,
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier.fillMaxWidth()
+		) {
+			Column {
+				Text(text = "Selecciona género", style = MaterialTheme.typography.titleMedium)
+				Row(verticalAlignment = Alignment.CenterVertically) {
+					RadioButton(selected = genderMale.value, onClick = { genderMale.value = true })
+					Spacer(modifier = Modifier.size(6.dp))
+					Text(text = stringResource(id = R.string.gender_male), modifier = Modifier.padding(end = 12.dp))
+					RadioButton(selected = !genderMale.value, onClick = { genderMale.value = false })
+					Spacer(modifier = Modifier.size(6.dp))
+					Text(text = stringResource(id = R.string.gender_female))
 				}
 			}
 
-			// View (Front / Back) selector
-			Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-				Text(text = stringResource(id = R.string.view_front), style = MaterialTheme.typography.titleMedium)
-				Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+			Column(horizontalAlignment = Alignment.End) {
+				Text(text = "Vista", style = MaterialTheme.typography.titleMedium)
+				Row(verticalAlignment = Alignment.CenterVertically) {
 					OutlinedButton(onClick = { frontView.value = true }) { Text(text = stringResource(id = R.string.view_front)) }
+					Spacer(modifier = Modifier.size(8.dp))
 					OutlinedButton(onClick = { frontView.value = false }) { Text(text = stringResource(id = R.string.view_back)) }
 				}
 			}
@@ -152,90 +149,82 @@ fun PainTrackerScreen(
 					.fillMaxSize()
 					.padding(12.dp)
 					.onSizeChanged { size -> boxSize.value = size }
-							.pointerInput(Unit) {
-						detectTapGestures(onPress = { offset ->
-							val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
-							val currentView = if (frontView.value) "front" else "back"
+					// draw a subtle background behind the silhouette so the image isn't obscured by the Canvas
+					.background(if (frontView.value) Color(0xFFEFEFEF) else Color(0xFFF0F0F8))
+					.pointerInput(Unit) {
+						detectTapGestures(
+							onTap = { offset ->
+								// quick tap -> intensity 1
+								val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
+								val currentView = if (frontView.value) "front" else "back"
+								points.add(LocalPainPoint(xNorm, yNorm, 1, currentView))
+							},
+							onPress = { offset ->
+								val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
+								val currentView = if (frontView.value) "front" else "back"
 
-							// Start preview at intensity 1 and update while pressed
-							val start = System.currentTimeMillis()
-							preview.value = PreviewPoint(xNorm, yNorm, 1, currentView)
-							val job = scope.launch {
-								var lastIntensity = 1
-								while (true) {
-									val elapsed = System.currentTimeMillis() - start
-									val newIntensity = when {
-										elapsed > 2000L -> 3
-										elapsed > 1000L -> 2
-										else -> 1
-									}
-									if (newIntensity != lastIntensity) {
-										// Haptic feedback when crossing thresholds upward
-										if (newIntensity > lastIntensity) {
-											try {
-												haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-											} catch (_: Exception) {
-												// ignore on platforms without haptic
+								// start preview
+								val start = System.currentTimeMillis()
+								preview.value = PreviewPoint(xNorm, yNorm, 1, currentView)
+
+								// periodically update preview intensity while pressed
+								val job = scope.launch {
+									try {
+										while (isActive) {
+											val elapsed = System.currentTimeMillis() - start
+											val newIntensity = when {
+												elapsed > 2000L -> 3
+												elapsed > 1000L -> 2
+												else -> 1
 											}
+											val cur = preview.value
+											if (cur != null && cur.intensity != newIntensity) {
+												preview.value = cur.copy(intensity = newIntensity)
+											}
+											delay(100L)
 										}
-										lastIntensity = newIntensity
-										val current = preview.value
-										if (current != null && current.intensity != newIntensity) {
-											preview.value = current.copy(intensity = newIntensity)
-										}
+									} catch (_: Exception) {
+										// canceled
 									}
-									delay(100L)
 								}
-							}
 
-							var released = false
-							try {
-								tryAwaitRelease()
-								released = true
-							} catch (_: Exception) {
-								// cancelled or interrupted
-							} finally {
-								job.cancel()
-								val finalIntensity = preview.value?.intensity ?: 1
-								if (released) {
-									// enqueue the point so the actual mutation happens in the collector
-									addPointFlow.tryEmit(LocalPainPoint(xNorm, yNorm, finalIntensity, currentView))
+								try {
+									tryAwaitRelease()
+									// on release, record final intensity
+									val finalIntensity = preview.value?.intensity ?: 1
+									points.add(LocalPainPoint(xNorm, yNorm, finalIntensity, currentView))
+								} finally {
+									job.cancel()
+									preview.value = null
 								}
-								preview.value = null
 							}
-						})
+						)
 					}
 			) {
-				// Keep a stable composition: always render an Image composable (use a transparent ColorPainter when
-				// there is no actual painter) and always render the Canvas. This avoids changing the number of
-				// children during navigation AnimatedContent transitions which can trigger internal node-insertion
-				// mismatches in some Compose versions.
-				Image(
-					painter = selectedPainter ?: ColorPainter(Color.Transparent),
-					contentDescription = stringResource(id = R.string.body_outline_desc),
-					modifier = Modifier.fillMaxSize()
-				)
+					// Draw silhouette if available (image sits above the background).
+					// If the painter is a real bitmap painter, render it. Otherwise show a
+					// visible fallback so it's obvious the image failed to load.
+					if (selectedPainter != null && selectedPainter is androidx.compose.ui.graphics.painter.BitmapPainter) {
+						Image(
+							painter = selectedPainter,
+							contentDescription = "Silhouette",
+							modifier = Modifier.fillMaxSize(),
+							contentScale = ContentScale.Fit
+						)
+					} else {
+						// Fallback visible box when no bitmap is available. This helps debug
+						// missing/corrupt drawable resources by showing a clear label.
+						Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+							Text(text = "Imagen no disponible", color = Color.Red)
+						}
+					}
 
+				// Unified Canvas: draw saved points and preview overlay on top of the silhouette
 				Canvas(modifier = Modifier.fillMaxSize()) {
 					val w = size.width
 					val h = size.height
 
-					// If no painter provided, draw a subtle background/body placeholder
-					if (selectedPainter == null) {
-						val bgColor = if (frontView.value) Color(0xFFEFEFEF) else Color(0xFFF0F0F8)
-						val cornerRadius = CornerRadius(24f, 24f)
-						drawRoundRect(
-							color = bgColor,
-							topLeft = Offset.Zero,
-							size = size,
-							cornerRadius = cornerRadius
-						)
-						val circleColor = Color(0xFFD0D0D0)
-						val headRadius = w.coerceAtMost(h) * 0.08f
-						val headCenter = Offset(w * 0.5f, h * 0.15f)
-						drawCircle(color = circleColor, radius = headRadius, center = headCenter)
-					}
-
+					// saved points
 					points.forEach { p ->
 						val cx = p.xNorm * w
 						val cy = p.yNorm * h
@@ -248,7 +237,7 @@ fun PainTrackerScreen(
 						drawCircle(color = color, radius = radius, center = Offset(cx, cy))
 					}
 
-					// Preview marker while pressing (scoped where w/h exist)
+					// preview (on top)
 					preview.value?.let { pv ->
 						val pcx = pv.xNorm * w
 						val pcy = pv.yNorm * h
@@ -269,7 +258,7 @@ fun PainTrackerScreen(
 		// Recorded points list
 		Text(text = stringResource(id = R.string.recorded_points_title), style = MaterialTheme.typography.titleMedium)
 		LazyColumn(modifier = Modifier.fillMaxHeight(0.25f)) {
-			itemsIndexed(items = points, key = { index, point -> "${point.timestamp}_${index}" }) { index, point ->
+			itemsIndexed(points) { index, point ->
 				Row(
 					modifier = Modifier
 						.fillMaxWidth()
@@ -313,3 +302,4 @@ private fun offsetToNormalized(offset: Offset, size: IntSize): Pair<Float, Float
 	val y = (offset.y / h).coerceIn(0f, 1f)
 	return Pair(x, y)
 }
+

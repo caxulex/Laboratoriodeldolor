@@ -53,6 +53,11 @@ fun TechniquesLibraryScreen(techniqueDao: TechniqueDao, onTechniqueSelected: (Lo
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         LazyColumn(modifier = Modifier.padding(12.dp)) {
+            item {
+                // Screen header/title
+                Text(text = stringResource(id = R.string.techniques_library_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
+            }
+
             items(techniques) { t ->
                 androidx.compose.material3.Card(modifier = Modifier.padding(vertical = 6.dp).clickable { onTechniqueSelected(t.id) }) {
                     Column(modifier = Modifier.padding(12.dp)) {

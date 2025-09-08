@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="onboarding_title">Tu camino hacia una vida sin dolor comienza aquí.</string>
-    <string name="mood_tracker_title">Bienvenido a tu App CeroDolor</string>
     <string name="onboarding_intro">Bienvenido al Laboratorio del Dolor. Las técnicas y ejercicios en esta aplicación están diseñados para ayudarte a mejorar tu condición muscular, nerviosa, física y emocional para reducir y tratar el dolor. Para obtener los mejores resultados, aplica el Smärtgel en la región de dolor antes de cada sesión para relajar la zona y facilitar el movimiento. El éxito de tu tratamiento depende de tu constancia; el trabajo continuo te ayudará a reparar la zona y evitar que el dolor regrese. Sigue siempre las indicaciones basadas en tu mapa y diario de dolor para un tratamiento personalizado.</string>
     <string name="onboarding_warnings">Evita el contacto del Smärtgel con los ojos, ya que puede causar molestia e irritación.\n\nSi el dolor aumenta después de una técnica, detén las maniobras, aplica solo el Smärtgel en la zona por una semana y retoma las técnicas en la segunda semana.\n\nAl encontrar un punto de dolor, respira lenta y profundamente para no tensionar los músculos.</string>
 
@@ -65,7 +64,6 @@
     <string name="confirm_delete_negative">Cancelar</string>
 
     <string name="app_name">Laboratorio del dolor</string>
-    <string name="app_title_cero_dolor">Cero Dolor App</string>
     <string name="pain_tracker_button">Registrar Dolor</string>
     <string name="body_outline_desc">Contorno del cuerpo para registrar el dolor</string>
     <string name="save_pain_button">Guardar</string>
@@ -121,8 +119,6 @@
     <string name="streak_subtitle">Sigue así: los pequeños pasos crean hábitos</string>
     <string name="streak_mark_button">Marcar</string>
     <string name="streak_update_button">Actualizar</string>
-    <string name="streak_mark_button_today">Ya los hice hoy</string>
-    <string name="streak_marked_today">Completado</string>
 
     <string name="empty_mood_title">Aún no hay registros</string>
     <string name="empty_mood_subtitle">Cuando registres tu estado de ánimo, aquí verás tu historial y patrones a lo largo del tiempo.</string>
@@ -222,7 +218,7 @@
     <string name="progress_tab_monthly">Mensual</string>
     <string name="view_pain_chart_button">Ver Gráfico de Dolor</string>
 
-    <string name="techniques_library_title">Biblioteca de Técnicas</string>
+    <string name="techniques_library_title">Biblioteca de Maniobras</string>
     <string name="techniques_library_subtitle">Aprende cada maniobra en detalle</string>
     <string name="technique_detail_title">Técnica</string>
     <string name="technique_play_video">Ver video</string>
@@ -235,7 +231,7 @@
     <string name="onboarding_skip">Omitir</string>
 
     <string name="home_register_pain">Registrar mi Dolor de Hoy</string>
-    <string name="home_title">Inicio</string>
+    <string name="home_title">Técnicas de reducción del dolor</string>
     <string name="more_options">Más opciones</string>
 
     <string name="mirror_technique_label">Técnica Espejo</string>
@@ -247,7 +243,6 @@
     <string name="intensity_severe">Severo</string>
     <string name="intensity_high">Alto</string>
     <string name="intensity_moderate">Moderado</string>
-    <string name="recorded_point_format">Punto %1$d: Intensidad = %2$s</string>
 
     <!-- Pain Chart Screen strings -->
     <string name="pain_intensity_chart_title">Evolución de la Intensidad del Dolor</string>
