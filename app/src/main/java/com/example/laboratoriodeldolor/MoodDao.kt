@@ -15,4 +15,7 @@ interface MoodDao {
 
     @Query("SELECT * FROM mood_entries ORDER BY timestamp DESC LIMIT :limit")
     suspend fun getRecent(limit: Int): List<MoodEntry>
+
+    @Query("DELETE FROM mood_entries WHERE timestamp <= :cutoffMillis")
+    suspend fun deleteOlderThan(cutoffMillis: Long)
 }

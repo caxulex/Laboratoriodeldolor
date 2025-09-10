@@ -2,7 +2,6 @@ package com.example.laboratoriodeldolor
 
 import android.app.Application
 import kotlinx.coroutines.CompletableDeferred
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -11,10 +10,7 @@ import kotlinx.coroutines.launch
 
 class MoodApplication : Application() {
     // Using lazy so the database is only created when it's first needed
-    val database: AppDatabase by lazy {
-        Log.d("MoodApplication", "Lazy database init called on thread=${Thread.currentThread().name}")
-        AppDatabase.getDatabase(this)
-    }
+    val database: AppDatabase by lazy { AppDatabase.getDatabase(this) }
     // Preferences repository for lightweight persisted user choices
     val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository by lazy { com.example.laboratoriodeldolor.data.UserPreferencesRepository(this) }
 
@@ -33,11 +29,10 @@ class MoodApplication : Application() {
         super.onCreate()
         instance = this
 
-    // Warm up the Room database on a background coroutine so any migrations or
-    // initialization work doesn't run on the main thread and cause an ANR
-    // when ViewModels request DAOs during initial composition.
-    Log.d("MoodApplication", "Starting DB warmup coroutine on thread=${Thread.currentThread().name}")
-    CoroutineScope(Dispatchers.IO).launch {
+        // Warm up the Room database on a background coroutine so any migrations or
+        // initialization work doesn't run on the main thread and cause an ANR
+        // when ViewModels request DAOs during initial composition.
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Force DB creation on the IO dispatcher
                 val dbInstance = database
@@ -56,7 +51,12 @@ class MoodApplication : Application() {
             } finally {
                 // Signal that DB warmup finished (success or failure)
                 if (!_databaseReady.isCompleted) _databaseReady.complete(Unit)
-                Log.d("MoodApplication", "DB warmup finished - signalled databaseReady on thread=${Thread.currentThread().name}")
+                // Schedule daily data retention cleanup (reads prefs to determine cutoff)
+                try {
+                    DataRetentionWorker.scheduleDaily(this@MoodApplication)
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                }
             }
         }
     }

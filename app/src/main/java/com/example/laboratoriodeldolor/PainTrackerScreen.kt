@@ -3,9 +3,16 @@
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -86,41 +93,40 @@ fun PainTrackerScreen(
 	maleBackPainter: Painter? = null,
 	femaleFrontPainter: Painter? = null,
 	femaleBackPainter: Painter? = null,
-	onSave: (List<LocalPainPoint>) -> Unit = {}
+	isMale: Boolean = true,
+	onSave: (List<LocalPainPoint>) -> Unit = {},
+	onOpenTechniques: () -> Unit = {}
 ) {
-	val genderMale = remember { mutableStateOf(true) }
 	val frontView = remember { mutableStateOf(true) }
 	val points = remember { mutableStateListOf<LocalPainPoint>() }
 	val boxSize = remember { mutableStateOf(IntSize(300, 600)) }
 	val scope = rememberCoroutineScope()
+	val savedAt = remember { mutableStateOf<Long?>(null) }
 
-	Column(modifier = modifier.padding(16.dp)) {
-		val preview = remember { mutableStateOf<PreviewPoint?>(null) }
+	com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+	Column(modifier = modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState())) {
+			val preview = remember { mutableStateOf<PreviewPoint?>(null) }
 
-		// Controls: gender + front/back
+		// Controls: view toggle (gender moved to Settings)
 		Row(
-			horizontalArrangement = Arrangement.SpaceBetween,
-			verticalAlignment = Alignment.CenterVertically,
-			modifier = Modifier.fillMaxWidth()
+			modifier = Modifier.fillMaxWidth(),
+			verticalAlignment = Alignment.CenterVertically
 		) {
-			Column {
-				Text(text = "Selecciona género", style = MaterialTheme.typography.titleMedium)
-				Row(verticalAlignment = Alignment.CenterVertically) {
-					RadioButton(selected = genderMale.value, onClick = { genderMale.value = true })
-					Spacer(modifier = Modifier.size(6.dp))
-					Text(text = stringResource(id = R.string.gender_male), modifier = Modifier.padding(end = 12.dp))
-					RadioButton(selected = !genderMale.value, onClick = { genderMale.value = false })
-					Spacer(modifier = Modifier.size(6.dp))
-					Text(text = stringResource(id = R.string.gender_female))
-				}
-			}
+			// Spacer to push view controls to the right without forcing a minimum width
+			Spacer(modifier = Modifier.weight(1f))
 
+			// Right: view selector
 			Column(horizontalAlignment = Alignment.End) {
-				Text(text = "Vista", style = MaterialTheme.typography.titleMedium)
+				Text(text = stringResource(id = R.string.view_label), style = MaterialTheme.typography.titleMedium)
+				Spacer(modifier = Modifier.height(6.dp))
 				Row(verticalAlignment = Alignment.CenterVertically) {
-					OutlinedButton(onClick = { frontView.value = true }) { Text(text = stringResource(id = R.string.view_front)) }
-					Spacer(modifier = Modifier.size(8.dp))
-					OutlinedButton(onClick = { frontView.value = false }) { Text(text = stringResource(id = R.string.view_back)) }
+					OutlinedButton(onClick = { frontView.value = true }, modifier = Modifier.width(100.dp)) {
+						Text(text = stringResource(id = R.string.view_front))
+					}
+					Spacer(modifier = Modifier.width(8.dp))
+					OutlinedButton(onClick = { frontView.value = false }, modifier = Modifier.width(100.dp)) {
+						Text(text = stringResource(id = R.string.view_back))
+					}
 				}
 			}
 		}
@@ -129,18 +135,18 @@ fun PainTrackerScreen(
 		Divider()
 		Spacer(modifier = Modifier.height(12.dp))
 
-		// Body area with gestures
+		// Body area with gestures and gradient background to match app theme
 		Box(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(420.dp)
 				.border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-				.background(Color(0xFFF9F9F9))
+				.background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)))
 		) {
 			val selectedPainter = when {
-				genderMale.value && frontView.value -> maleFrontPainter
-				genderMale.value && !frontView.value -> maleBackPainter
-				!genderMale.value && frontView.value -> femaleFrontPainter
+				isMale && frontView.value -> maleFrontPainter
+				isMale && !frontView.value -> maleBackPainter
+				!isMale && frontView.value -> femaleFrontPainter
 				else -> femaleBackPainter
 			}
 
@@ -201,23 +207,24 @@ fun PainTrackerScreen(
 						)
 					}
 			) {
-					// Draw silhouette if available (image sits above the background).
-					// If the painter is a real bitmap painter, render it. Otherwise show a
-					// visible fallback so it's obvious the image failed to load.
-					if (selectedPainter != null && selectedPainter is androidx.compose.ui.graphics.painter.BitmapPainter) {
-						Image(
-							painter = selectedPainter,
-							contentDescription = "Silhouette",
-							modifier = Modifier.fillMaxSize(),
-							contentScale = ContentScale.Fit
-						)
-					} else {
-						// Fallback visible box when no bitmap is available. This helps debug
-						// missing/corrupt drawable resources by showing a clear label.
-						Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-							Text(text = "Imagen no disponible", color = Color.Red)
+						// Draw the silhouette painter (any Painter).
+						if (selectedPainter != null) {
+							Image(
+								painter = selectedPainter,
+								contentDescription = stringResource(id = R.string.body_outline_desc),
+								modifier = Modifier.fillMaxSize(),
+								contentScale = ContentScale.Fit
+							)
+						} else {
+							// Fallback placeholder when image resource failed to load or is null.
+							Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+								Column(horizontalAlignment = Alignment.CenterHorizontally) {
+									Box(modifier = Modifier.size(220.dp).background(Color(0xFFBDBDBD), RoundedCornerShape(8.dp)))
+									Spacer(modifier = Modifier.height(8.dp))
+									Text(text = "Imagen no disponible", color = Color.White)
+								}
+							}
 						}
-					}
 
 				// Unified Canvas: draw saved points and preview overlay on top of the silhouette
 				Canvas(modifier = Modifier.fillMaxSize()) {
@@ -253,12 +260,12 @@ fun PainTrackerScreen(
 			}
 		}
 
-		Spacer(modifier = Modifier.height(12.dp))
+	Spacer(modifier = Modifier.height(12.dp))
 
-		// Recorded points list
+		// Recorded points list (simple column to avoid nested LazyColumn + outer scroll)
 		Text(text = stringResource(id = R.string.recorded_points_title), style = MaterialTheme.typography.titleMedium)
-		LazyColumn(modifier = Modifier.fillMaxHeight(0.25f)) {
-			itemsIndexed(points) { index, point ->
+		Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+			points.forEachIndexed { index, point ->
 				Row(
 					modifier = Modifier
 						.fillMaxWidth()
@@ -273,7 +280,7 @@ fun PainTrackerScreen(
 					Text(text = stringResource(id = R.string.recorded_point_format, index + 1, intensityLabel))
 					Spacer(modifier = Modifier.weight(1f))
 					IconButton(onClick = { points.removeAt(index) }) {
-						Icon(imageVector = Icons.Filled.Delete, contentDescription = "Eliminar")
+						Icon(imageVector = Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete_confirm_title))
 					}
 				}
 				Divider()
@@ -282,15 +289,31 @@ fun PainTrackerScreen(
 
 		Spacer(modifier = Modifier.height(12.dp))
 
-		// Actions
+		// Actions (clear / techniques / save)
 		Row(
 			horizontalArrangement = Arrangement.SpaceBetween,
 			modifier = Modifier.fillMaxWidth()
 		) {
 			Button(onClick = { points.clear() }) { Text(text = stringResource(id = R.string.clear_button)) }
 
-			Button(onClick = { scope.launch { onSave(points.toList()) } }) { Text(text = stringResource(id = R.string.save_pain_button)) }
+			ElevatedButton(onClick = { onOpenTechniques() }, colors = ButtonDefaults.elevatedButtonColors()) {
+				Text(text = stringResource(id = R.string.techniques_library_title))
+			}
+
+			Button(onClick = {
+				scope.launch {
+					onSave(points.toList())
+					savedAt.value = System.currentTimeMillis()
+				}
+			}) { Text(text = stringResource(id = R.string.save_pain_button)) }
 		}
+
+		// Small confirmation when saved
+		savedAt.value?.let { ts ->
+			Spacer(modifier = Modifier.height(8.dp))
+			Text(text = stringResource(id = R.string.pain_save_confirmation), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+		}
+	}
 	}
 }
 

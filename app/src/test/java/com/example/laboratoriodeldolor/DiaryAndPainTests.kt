@@ -24,6 +24,7 @@ class DiaryAndPainTests {
             override suspend fun insert(moodEntry: MoodEntry) { inserted = moodEntry }
             override fun getAllEntries() = kotlinx.coroutines.flow.flowOf(emptyList<MoodEntry>())
             override suspend fun getRecent(limit: Int) = emptyList<MoodEntry>()
+            override suspend fun deleteOlderThan(cutoffMillis: Long) { /* no-op for unit test */ }
         }
 
         val vm = DiaryViewModel(spyDao)

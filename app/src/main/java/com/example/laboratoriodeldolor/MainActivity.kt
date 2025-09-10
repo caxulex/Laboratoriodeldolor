@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                val items = listOf(Screen.Home, Screen.Diario, Screen.Progress)
+                val items = listOf(Screen.Home, Screen.Diario, Screen.Progress, Screen.Ajustes)
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -145,6 +145,7 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToHistory = { navController.navigate("history") },
                                 onNavigateToBreath = { navController.navigate(Screen.Respiracion.route) },
                                 onNavigateToDiary = { navController.navigate(Screen.Diary.route) },
+                                onNavigateToHome = { navController.navigate(Screen.Home.route) },
                                 onOpenPainChart = { navController.navigate("pain_chart") },
                                 onOpenTechniquesLibrary = { navController.navigate("techniques") },
                                 onOpenExerciseHub = { navController.navigate(Screen.Exercises.route) }
@@ -182,7 +183,12 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(Screen.Dolor.route) {
                                 val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+                                // Read persisted gender preference and pass into the PainTrackerScreen
+                                val settingsVmForPain: SettingsViewModel = viewModel()
+                                val genderPref by settingsVmForPain.gender.collectAsState()
+
                                 PainTrackerScreen(
+                                    isMale = genderPref,
                                     maleFrontPainter = safePainter(R.drawable.boy_front),
                                     maleBackPainter = safePainter(R.drawable.boy_back),
                                     femaleFrontPainter = safePainter(R.drawable.girl_front),
@@ -270,10 +276,14 @@ class MainActivity : ComponentActivity() {
                                 BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { _ -> /* TODO: navigate to instructions */ })
                             }
                             composable(Screen.Progress.route) {
-                                // Provide MoodDao from application to the chart screen
-                                com.example.laboratoriodeldolor.MoodProgressScreen(moodDao = (application as MoodApplication).database.moodDao(), onOpenPainChart = {
-                                    navController.navigate("pain_chart")
-                                })
+                                // Provide MoodDao and PainDao from application to the chart screen
+                                com.example.laboratoriodeldolor.MoodProgressScreen(
+                                    moodDao = (application as MoodApplication).database.moodDao(),
+                                    painDao = (application as MoodApplication).database.painPointDao(),
+                                    onOpenPainChart = {
+                                        navController.navigate("pain_chart")
+                                    }
+                                )
                             }
                             composable("pain_chart") {
                                 // Placeholder - implemented in PainChartScreen.kt

@@ -1,26 +1,22 @@
-import java.util.Properties
-import java.io.FileInputStream
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    // (KSP removed — using KAPT instead)
-    // Enable KAPT for annotation processing fallback if needed
+    // KSP plugin resolution failed in this environment; fall back to KAPT
+    // which Room also supports. Apply the Kotlin KAPT plugin instead.
+    id("org.jetbrains.kotlin.kapt")
 }
 
-// Apply KAPT via the legacy apply-style so Gradle will use the Kotlin plugin's
-// existing classpath/version instead of trying to resolve a second version
-// (avoids the "plugin is already on the classpath with an unknown version" error).
-apply(plugin = "org.jetbrains.kotlin.kapt")
+import java.util.Properties
+import java.io.FileInputStream
 
 android {
     namespace = "com.example.laboratoriodeldolor"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.laboratoriodeldolor"
         minSdk = 24
-    targetSdk = 35
+    targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -129,6 +125,8 @@ dependencies {
     // Core App Dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    // Lifecycle-aware Compose helpers (collectAsStateWithLifecycle)
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -136,32 +134,33 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.lifecycle.viewmodel.compose)
-
-    // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    // Use explicit add("kapt", ...) so the script doesn't require the kapt extension at compile-time.
-    add("kapt", libs.room.compiler)
+    // Use kapt for Room annotation processing when KSP plugin isn't available
+    kapt(libs.room.compiler)
 
-    // Other libraries
+    // Navigation, Work, DataStore, Lottie, and Chart dependencies
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.work)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.airbnb.lottie.compose)
     implementation(libs.mpandroidchart)
+
+    // Material icons extended for MenuBook and BarChart
     implementation("androidx.compose.material:material-icons-extended:1.6.8")
 
-    // Core library desugaring
+    // Enable core library desugaring dependency to match compileOptions.isCoreLibraryDesugaringEnabled
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
 
-    // Local unit test dependencies
+    // Local Unit Tests (testImplementation)
     testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.turbine)
-    testImplementation(libs.mockito.kotlin)
-    testImplementation(libs.mockito.inline)
+    // Provide ApplicationProvider and testing utilities for local unit tests
+    testImplementation("androidx.test:core:1.5.0")
+    // Turbine for Flow testing helpers (awaitItem, cancelAndIgnoreRemainingEvents)
+    testImplementation("app.cash.turbine:turbine:0.12.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
-    // Android instrumented test dependencies
+    // Instrumentation Tests (androidTestImplementation)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -172,7 +171,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.automator)
     androidTestImplementation(libs.kotlinx.coroutines.core)
     androidTestImplementation(libs.kotlinx.coroutines.android)
-    androidTestImplementation(libs.androidx.test.core)
+
+    // Fallback explicit coordinates for known testing artifacts (ensures availability if catalog alias resolution fails)
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0")
 
     // Debug Dependencies
     debugImplementation(libs.androidx.ui.tooling)

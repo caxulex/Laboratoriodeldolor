@@ -10,6 +10,7 @@
     <string name="gender_female">Femenino</string>
     <string name="view_front">Frente</string>
     <string name="view_back">Atrás</string>
+    <string name="view_label">Vista</string>
     <string name="save_pain_button">Guardar</string>
     <string name="clear_button">Limpiar</string>
     <string name="delete_confirm_title">Confirmar eliminación</string>
@@ -180,6 +181,8 @@
 
     <!-- Chart / formatting keys used in code -->
     <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
+    <string name="mood_chart_explanation_title">Sobre la gráfica de ánimo</string>
+    <string name="mood_chart_explanation_body">La gráfica muestra el puntaje promedio de tu estado de ánimo por día. Usa las pestañas Semanal/Mensual para cambiar el periodo; interpreta subidas como mejorías y bajadas como posibles señales de empeoramiento emocional.</string>
     <string name="date_format_short">dd/MM</string>
     <!-- Fallback/defaults for localized keys added in values-es -->
     <string name="about_description_short">Cero Dolor ayuda con ejercicios y técnicas para manejar el dolor.</string>
@@ -219,6 +222,14 @@
     <string name="settings_language">Idioma</string>
     <string name="settings_notifications">Recordatorios y Notificaciones</string>
     <string name="settings_privacy">Política de Privacidad</string>
+    <!-- Data retention for diary and pain records -->
+    <string name="settings_retention_title">Retención de Datos</string>
+    <string name="settings_retention_summary">La aplicación guardará %1$d meses de tus entradas del diario y registros de dolor. Esto requiere almacenamiento local en el dispositivo; los datos más antiguos se eliminarán automáticamente cuando superen el periodo seleccionado.</string>
+    <plurals name="settings_retention_months">
+        <item quantity="one">%d mes</item>
+        <item quantity="other">%d meses</item>
+    </plurals>
+    <string name="settings_retention_option_year">año</string>
 
     <string name="technique_desc_amasamientos">Usa tu mano completa para realizar movimientos de amasamiento profundos y rítmicos sobre el músculo.</string>
     <string name="technique_desc_fricciones">Realiza fricciones cortas y firmes sobre la zona para aumentar la circulación.</string>

@@ -28,7 +28,7 @@
         <!-- Receiver for scheduled reminders triggered by AlarmManager -->
         <receiver
             android:name=".ReminderReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.example.laboratoriodeldolor.ACTION_REMIND" />
             </intent-filter>

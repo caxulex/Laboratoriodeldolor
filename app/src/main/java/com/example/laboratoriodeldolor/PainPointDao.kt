@@ -24,4 +24,7 @@ interface PainPointDao {
     
     @Query("SELECT * FROM pain_points WHERE logId = :logId ORDER BY timestamp DESC")
     suspend fun getByLogId(logId: Long): List<PainPoint>
+
+    @Query("DELETE FROM pain_points WHERE timestamp <= :cutoffMillis")
+    suspend fun deleteOlderThan(cutoffMillis: Long)
 }

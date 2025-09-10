@@ -54,8 +54,8 @@ fun HomeScreen(routineDao: RoutineDao, onOpenPainRegion: (Long) -> Unit, onOpenP
                     Icon(imageVector = Icons.Filled.MoreVert, contentDescription = stringResource(id = R.string.more_options))
                 }
                 DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                    // Menu intentionally left minimal; settings is now available in the bottom navigation.
                     // Techniques moved to a prominent card on the Home screen.
-                    DropdownMenuItem(text = { Text(text = stringResource(id = R.string.settings_title)) }, onClick = { menuExpanded = false; onOpenSettings() })
                 }
             })
 

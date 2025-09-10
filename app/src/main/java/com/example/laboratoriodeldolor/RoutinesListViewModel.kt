@@ -14,8 +14,7 @@ import kotlinx.coroutines.flow.catch
 
 class RoutinesListViewModel(
     private val routineDao: RoutineDao,
-    // Testable: allow injection of a coroutine scope and dispatcher. By default use the ViewModel's scope.
-    private val externalScope: kotlinx.coroutines.CoroutineScope? = null,
+    // dispatcher is injected for testability; default to IO to ensure DB collection doesn't block UI
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
@@ -23,15 +22,13 @@ class RoutinesListViewModel(
     val error: StateFlow<String?> = _error
 
     // Collect Room Flow and expose as StateFlow; use viewModelScope with IO dispatcher to avoid blocking UI
-    private val collectionScope = externalScope ?: viewModelScope
-
     val routines: StateFlow<List<Routine>> = routineDao.getAll()
         .catch { e ->
             _error.value = e.message ?: "db_error"
             emit(emptyList())
         }
         .stateIn(
-            scope = collectionScope,
+            scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )

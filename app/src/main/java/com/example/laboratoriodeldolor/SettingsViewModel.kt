@@ -6,6 +6,7 @@ import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -29,9 +30,13 @@ import android.os.Build
  * schedules an exact Alarm via AlarmManager. Uses SharedPreferences for synchronous
  * reads from the BroadcastReceiver.
  */
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+class SettingsViewModel(
+    application: Application,
+    // Optional injected SharedPreferences for tests (plain-JVM). If null, use application's prefs.
+    private val injectedPrefs: SharedPreferences? = null
+) : AndroidViewModel(application) {
     // Keep the legacy SharedPreferences for reminder/alarm settings
-    private val prefs = application.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = injectedPrefs ?: application.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     // DataStore for modern preference (theme)
     companion object {
@@ -41,17 +46,31 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val PREF_HOUR = "reminder_hour"
     private val PREF_MINUTE = "reminder_minute"
     private val PREF_RECURRING = "reminder_recurring"
+    private val PREF_GENDER_MALE = "pref_gender_male"
+    // How many months of diary/pain data to retain (default = 3 months = ~90 days)
+    private val PREF_RETENTION_MONTHS = "pref_retention_months"
 
     private val _reminderTime = MutableStateFlow<Pair<Int, Int>>(getStoredTime())
     val reminderTime: StateFlow<Pair<Int, Int>> = _reminderTime
     private val _recurring = MutableStateFlow(getRecurringEnabled())
     val recurring: StateFlow<Boolean> = _recurring
 
+    // Retention period for diary and pain records (in months)
+    private val _retentionMonths = MutableStateFlow(getRetentionMonths())
+    val retentionMonths: StateFlow<Int> = _retentionMonths
+
+    // Persisted gender preference: true = male, false = female
+    private val _gender = MutableStateFlow(getGenderEnabled())
+    val gender: StateFlow<Boolean> = _gender
+
     // Expose a Flow-backed boolean for dark mode (default = false => Light mode)
-    val isDarkMode = application.dataStore.data
-        .catch { emit(emptyPreferences()) }
-        .map { prefs -> prefs[KEY_DARK_MODE] ?: false }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    // Make lazy so DataStore isn't accessed during constructor in unit tests.
+    val isDarkMode: StateFlow<Boolean> by lazy {
+        application.dataStore.data
+            .catch { emit(emptyPreferences()) }
+            .map { prefs -> prefs[KEY_DARK_MODE] ?: false }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    }
 
     init {
     // Do not schedule alarms from the ViewModel constructor - scheduling can throw
@@ -85,6 +104,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // Retention helpers: how many months of diary/pain data to keep
+    private fun getRetentionMonths(): Int {
+        // default = 3 months (~90 days)
+        return prefs.getInt(PREF_RETENTION_MONTHS, 3)
+    }
+
+    fun setRetentionMonths(months: Int) {
+        val safe = if (months <= 0) 3 else months
+        prefs.edit().putInt(PREF_RETENTION_MONTHS, safe).apply()
+        _retentionMonths.value = safe
+    }
+
     // Toggle and persist dark mode preference using DataStore
     fun setDarkModeEnabled(enabled: Boolean) {
         // launch a coroutine to write to DataStore
@@ -93,6 +124,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 prefs[KEY_DARK_MODE] = enabled
             }
         }
+    }
+
+    // Gender preference helpers
+    private fun getGenderEnabled(): Boolean {
+        return prefs.getBoolean(PREF_GENDER_MALE, true)
+    }
+
+    fun setGenderMale(isMale: Boolean) {
+        prefs.edit().putBoolean(PREF_GENDER_MALE, isMale).apply()
+        _gender.value = isMale
     }
 
     private fun scheduleAlarmIfNeeded(context: Context) {

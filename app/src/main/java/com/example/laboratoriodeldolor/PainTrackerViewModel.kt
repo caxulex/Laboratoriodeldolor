@@ -80,9 +80,7 @@ class PainTrackerViewModel(
     fun deleteAllPersisted() {
         val dao = painPointDao ?: return
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) { dao.deleteAll() }
-            } catch (e: Exception) { println("deleteAllPersisted failed: ${'$'}e") }
+            try { dao.deleteAll() } catch (e: Exception) { println("deleteAllPersisted failed: ${'$'}e") }
         }
     }
 
@@ -92,9 +90,7 @@ class PainTrackerViewModel(
     fun deletePersistedById(id: Long) {
         val dao = painPointDao ?: return
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) { dao.deleteById(id) }
-            } catch (e: Exception) { println("deletePersistedById failed: ${'$'}e") }
+            try { dao.deleteById(id) } catch (e: Exception) { println("deletePersistedById failed: ${'$'}e") }
         }
     }
 
@@ -167,35 +163,6 @@ class PainTrackerViewModel(
             return analyzePainPointsForNavigation(toSaveWithLog)
         } catch (e: Exception) {
             println("PainTrackerViewModel: savePainPoints failed: ${'$'}e")
-            null
-        }
-    }
-
-    /**
-     * Persist the provided list of LocalPainPoint without mutating the ViewModel's in-memory lists.
-     * Returns a target navigation route (or null) similar to savePainPoints().
-     */
-    suspend fun savePoints(points: List<LocalPainPoint>): String? {
-        val dao = painPointDao ?: return null
-        val frontToSave = points.filter { it.view == "front" }.map { lp -> PainPoint(x = lp.xNorm, y = lp.yNorm, view = "front", intensity = lp.intensity) }
-        val backToSave = points.filter { it.view == "back" }.map { lp -> PainPoint(x = lp.xNorm, y = lp.yNorm, view = "back", intensity = lp.intensity) }
-        val toSave = frontToSave + backToSave
-
-        return try {
-            val toSaveWithLog = withContext(Dispatchers.IO) {
-                val logId = try { painLogDao?.insertLog(PainLog()) ?: 0L } catch (_: Exception) { 0L }
-                toSave.map { it.copy(logId = logId) }
-            }
-
-            withContext(Dispatchers.IO) {
-                dao.insertAll(toSaveWithLog)
-            }
-
-            // Don't mutate the in-memory lists; keep computeSelectedAreasFromPoints working from existing lists.
-
-            return analyzePainPointsForNavigation(toSaveWithLog)
-        } catch (e: Exception) {
-            println("PainTrackerViewModel: savePoints failed: ${'$'}e")
             null
         }
     }

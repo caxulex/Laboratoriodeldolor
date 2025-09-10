@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -46,7 +48,8 @@ fun DailyMoodScreen(
     onNavigateToDiary: () -> Unit = {},
     onOpenPainChart: () -> Unit = {},
     onOpenTechniquesLibrary: () -> Unit = {},
-    onOpenExerciseHub: () -> Unit = {}
+    onOpenExerciseHub: () -> Unit = {},
+    onNavigateToHome: () -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -79,10 +82,15 @@ fun DailyMoodScreen(
                     val streakCount by viewModel.streak.collectAsState()
                     val streakText = LocalContext.current.resources.getQuantityString(R.plurals.streak_display, streakCount, streakCount)
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                        Column {
-                            Text(text = stringResource(id = R.string.appbar_title), color = Color.White, style = MaterialTheme.typography.titleLarge)
-                            Spacer(modifier = Modifier.size(6.dp))
-                            Text(text = streakText, color = Color.White.copy(alpha = 0.95f), style = MaterialTheme.typography.bodyMedium)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { onNavigateToHome() }) {
+                                Icon(imageVector = Icons.Filled.Home, contentDescription = stringResource(id = R.string.home_title), tint = Color.White)
+                            }
+                            Column {
+                                Text(text = stringResource(id = R.string.appbar_title), color = Color.White, style = MaterialTheme.typography.titleLarge)
+                                Spacer(modifier = Modifier.size(6.dp))
+                                Text(text = streakText, color = Color.White.copy(alpha = 0.95f), style = MaterialTheme.typography.bodyMedium)
+                            }
                         }
 
                         // Fire indicator sizing rules (assumption: show when streakCount > 0)
@@ -183,6 +191,18 @@ fun DailyMoodScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Text(text = stringResource(id = R.string.exercise_hub_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.bodyLarge)
+                    }
+
+                    // Navigation shortcut: regresar a la pantalla principal (icon + label)
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { onNavigateToHome() },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(imageVector = Icons.Filled.Home, contentDescription = stringResource(id = R.string.home_title), tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = stringResource(id = R.string.home_title), style = MaterialTheme.typography.bodyLarge)
+                        }
                     }
                 }
             }

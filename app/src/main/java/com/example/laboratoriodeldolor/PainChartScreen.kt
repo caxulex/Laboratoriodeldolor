@@ -266,7 +266,7 @@ private class ChartMarker(private val context: Context, private val labels: List
 // The previous Canvas-based chart implementation was replaced by MPAndroidChart AndroidView.
 
 @Composable
-private fun PainIntensityLegend(viewModel: PainChartViewModel) {
+    fun PainIntensityLegend(viewModel: PainChartViewModel) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -312,7 +312,7 @@ private fun PainIntensityLegend(viewModel: PainChartViewModel) {
 }
 
 @Composable
-private fun PainSummaryCard(entries: List<PainChartEntry>) {
+    fun PainSummaryCard(entries: List<PainChartEntry>) {
     val totalDaysWithPain = entries.count { it.maxIntensity > 0 }
     val avgIntensity = entries.filter { it.maxIntensity > 0 }
         .map { it.maxIntensity }

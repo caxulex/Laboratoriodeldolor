@@ -22,8 +22,8 @@ fun AppButtonPrimary(
     containerColor: androidx.compose.ui.graphics.Color? = null,
     contentColor: androidx.compose.ui.graphics.Color? = null,
     textStyle: TextStyle? = null,
-    shape: androidx.compose.ui.graphics.Shape? = null,
-    elevation: Dp? = null
+    _shape: androidx.compose.ui.graphics.Shape? = null,
+    _elevation: Dp? = null
 ) {
     val h = compactHeight ?: height
     com.example.laboratoriodeldolor.ui.components.PrimaryButton(
@@ -46,8 +46,8 @@ fun AppButtonSecondary(
     height: Dp = 48.dp,
     compactHeight: Dp? = null,
     textStyle: TextStyle? = null,
-    shape: androidx.compose.ui.graphics.Shape? = null,
-    elevation: Dp? = null
+    _shape: androidx.compose.ui.graphics.Shape? = null,
+    _elevation: Dp? = null
 ) {
     val h = compactHeight ?: height
     com.example.laboratoriodeldolor.ui.components.SecondaryButton(

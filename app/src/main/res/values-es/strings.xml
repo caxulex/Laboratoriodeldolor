@@ -35,6 +35,8 @@
         <item quantity="other">Racha actual: %d días</item>
     </plurals>
     <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
+    <string name="mood_chart_explanation_title">Sobre la gráfica de ánimo</string>
+    <string name="mood_chart_explanation_body">La gráfica muestra el puntaje promedio del ánimo por día. Utiliza Semanal/Mensual para cambiar el periodo; subidas indican mejoría y bajadas pueden ser señales de empeoramiento emocional o días con más dolor.</string>
     <string name="date_format_short">dd/MM</string>
     <string name="progress_empty_state">Registra tu estado de ánimo en el diario para ver tu progreso aquí.</string>
 
@@ -51,6 +53,15 @@
     <string name="settings_privacy">Política de Privacidad</string>
     <string name="settings_notifications">Recordatorios y Notificaciones</string>
     <string name="settings_language">Idioma</string>
+
+    <!-- Retención de datos -->
+    <string name="settings_retention_title">Retención de Datos</string>
+    <string name="settings_retention_summary">La aplicación guardará %1$d meses de tus entradas del diario y registros de dolor. Esto requiere almacenamiento local en el dispositivo; los datos más antiguos se eliminarán automáticamente cuando superen el periodo seleccionado.</string>
+    <plurals name="settings_retention_months">
+        <item quantity="one">%d mes</item>
+        <item quantity="other">%d meses</item>
+    </plurals>
+    <string name="settings_retention_option_year">año</string>
 
     <string name="about_title">Acerca de la App Cero Dolor</string>
     <string name="about_description_short">Cero Dolor te acompaña con ejercicios y técnicas que, con constancia, te ayudarán a mejorar tu condición muscular, nerviosa, física y emocional para la reducción y el tratamiento del dolor.</string>
@@ -108,6 +119,7 @@
 <!-- Added missing translations reported by lint -->
     <string name="view_front">Frente</string>
     <string name="view_back">Atrás</string>
+    <string name="view_label">Vista</string>
 
     <string name="exercise_reminder_title">Recordatorio de Ejercicios</string>
     <string name="exercise_reminder_text">Es hora de tu sesión diaria para manejar el dolor. ¡Tú puedes!</string>

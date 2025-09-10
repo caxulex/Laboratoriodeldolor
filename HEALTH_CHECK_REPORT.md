@@ -44,16 +44,16 @@ Successfully completed a comprehensive health check and optimization of the Labo
 **Status**: ✅ Complete | **Impact**: High
 
 #### Major Updates Applied
-- **Android Gradle Plugin**: 8.12.2 → 8.6.1 (latest stable)
+- **Android Gradle Plugin**: 8.12.2 → 8.13.1
 - **Kotlin**: 1.9.0 → 1.9.25 (latest stable)
 - **KSP**: 1.9.0-1.0.13 → 1.9.25-1.0.20
-- **Core KTX**: 1.10.1 → 1.13.1 (latest stable)
-- **Lifecycle Runtime**: 2.6.1 → 2.8.4 (latest stable)
-- **Activity Compose**: 1.7.2 → 1.9.1 (latest stable)
-- **Compose BOM**: 2023.08.00 → 2024.08.00 (latest stable)
+- **Core KTX**: 1.10.1 → 1.15.0 (major version jump)
+- **Lifecycle Runtime**: 2.6.1 → 2.8.7
+- **Activity Compose**: 1.7.2 → 1.9.3
+- **Compose BOM**: 2023.08.00 → 2024.12.01 (latest features)
 - **Room Database**: 2.5.2 → 2.6.1
-- **Navigation Compose**: 2.7.2 → 2.7.7 (latest stable)
-- **Coroutines**: 1.7.3 → 1.8.1 (latest stable)
+- **Navigation Compose**: 2.7.2 → 2.8.5
+- **Coroutines**: 1.7.3 → 1.9.0
 - **Testing Libraries**: All updated to latest versions
 
 #### Benefits Achieved
