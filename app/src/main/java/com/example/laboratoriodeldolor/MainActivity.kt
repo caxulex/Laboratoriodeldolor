@@ -194,56 +194,38 @@ class MainActivity : ComponentActivity() {
                                     femaleFrontPainter = safePainter(R.drawable.girl_front),
                                     femaleBackPainter = safePainter(R.drawable.girl_back),
                                     onSave = { points ->
-                                        // Save points using ViewModel and navigate to recommended exercise
+                                        // Save points using ViewModel, then show recommendations screen instead of auto-navigating
                                         lifecycleScope.launch {
                                             // Clear existing points in ViewModel
                                             painTrackerViewModel.clearPainPoints()
-                                            
+
                                             // Group points by view (front/back) and add them properly
                                             val frontPoints = points.filter { it.view == "front" }
                                             val backPoints = points.filter { it.view == "back" }
-                                            
-                                            // Add front view points
+
                                             if (frontPoints.isNotEmpty()) {
                                                 painTrackerViewModel.selectView("front")
                                                 frontPoints.forEach { lp ->
                                                     painTrackerViewModel.addPainPointNormalized(
-                                                        androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), 
+                                                        androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm),
                                                         lp.intensity
                                                     )
                                                 }
                                             }
-                                            
-                                            // Add back view points
+
                                             if (backPoints.isNotEmpty()) {
                                                 painTrackerViewModel.selectView("back")
                                                 backPoints.forEach { lp ->
                                                     painTrackerViewModel.addPainPointNormalized(
-                                                        androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), 
+                                                        androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm),
                                                         lp.intensity
                                                     )
                                                 }
                                             }
-                                            
-                                            // Save to database and get recommended exercise route
-                                            val recommendedRoute = painTrackerViewModel.savePainPoints()
-                                            
-                                            // Navigate to the recommended exercise screen using smart analysis
-                                            if (recommendedRoute != null) {
-                                                navController.navigate(recommendedRoute)
-                                            } else {
-                                                // Fallback: analyze points directly and navigate
-                                                val painPoints = (frontPoints + backPoints).map { lp ->
-                                                    PainPoint(
-                                                        x = lp.xNorm,
-                                                        y = lp.yNorm,
-                                                        view = lp.view,
-                                                        intensity = lp.intensity
-                                                    )
-                                                }
-                                                val smartRoute = analyzePainPointsForNavigation(painPoints)
-                                                navController.navigate(smartRoute)
-                                            }
+
+                                            // Persist and then show recommendation summary
+                                            painTrackerViewModel.savePainPoints()
+                                            navController.navigate("recommendations")
                                         }
                                     }
                                 )
@@ -310,6 +292,11 @@ class MainActivity : ComponentActivity() {
                             composable("history") {
                                 val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
                                 MoodHistoryScreen(viewModel = moodHistoryViewModel)
+                            }
+                            // Recommendation summary screen shown after saving pain points
+                            composable("recommendations") {
+                                val recVm: RecommendationViewModel = viewModel(factory = RecommendationViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.painPointDao()))
+                                RecommendationScreen(viewModel = recVm)
                             }
                             // New specific front/back exercise screens
                             composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
@@ -399,12 +386,13 @@ fun BottomBar(navController: NavHostController, items: List<Screen>) {
 @Composable
 fun safePainter(resId: Int): androidx.compose.ui.graphics.painter.Painter {
     val ctx = LocalContext.current
+    // Decode to a reasonably sized bitmap to avoid OOM with huge vectors; avoid try/catch around composables
     val bmp = remember(resId) {
         try {
             val dr = ResourcesCompat.getDrawable(ctx.resources, resId, ctx.theme)
-            dr?.toBitmap()
-        } catch (t: Throwable) {
-            // try a secondary fallback using BitmapFactory (handles malformed pngs differently)
+            // Cap the bitmap to 512px on the longest side if possible
+            dr?.toBitmap(width = 512, height = 512)
+        } catch (_: Throwable) {
             try {
                 val input = ctx.resources.openRawResource(resId)
                 BitmapFactory.decodeStream(input)

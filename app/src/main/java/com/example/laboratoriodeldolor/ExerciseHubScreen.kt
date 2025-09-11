@@ -26,7 +26,7 @@ fun ExerciseHubScreen(
     onNavigateToBackMiddle: () -> Unit = {},
     onNavigateToFrontLower: () -> Unit = {},
     onNavigateToBackLower: () -> Unit = {},
-    onBack: () -> Unit = {}
+    _onBack: () -> Unit = {}
 ) {
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {

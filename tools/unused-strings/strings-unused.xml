@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placeholder to prevent XML parser errors. -->
+<!--
+	Placeholder for unused/generated strings. Kept valid to avoid
+	XML parser errors in tooling that scans the repository.
+-->
 <resources>
-    <!-- intentionally empty -->
+	<!-- intentionally empty placeholder for tooling -->
 </resources>

@@ -13,6 +13,7 @@ import androidx.compose.ui.text.TextStyle
  */
 @Deprecated("Use PrimaryButton in AppButtons.kt")
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun AppButtonPrimary(
     text: String,
     onClick: () -> Unit,
@@ -39,6 +40,7 @@ fun AppButtonPrimary(
 
 @Deprecated("Use SecondaryButton in AppButtons.kt")
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun AppButtonSecondary(
     text: String,
     onClick: () -> Unit,

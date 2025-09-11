@@ -6,10 +6,10 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 
 /**
  * Top-level enum describing body areas used by detection and UI.
@@ -105,7 +105,7 @@ class PainTrackerViewModel(
         // Clamp to [0,1] to be safe
         val nx = normalizedPoint.x.coerceIn(0f, 1f)
         val ny = normalizedPoint.y.coerceIn(0f, 1f)
-        val lp = LocalPainPoint(nx, ny, intensity.coerceIn(1, 3))
+        val lp = LocalPainPoint(nx, ny, intensity.coerceIn(1, 3), view = _selectedView.value)
         when (_selectedView.value) {
             "front" -> _frontPainPoints.value = _frontPainPoints.value + lp
             "back" -> _backPainPoints.value = _backPainPoints.value + lp
@@ -159,7 +159,7 @@ class PainTrackerViewModel(
             // After persisting, recompute areas from the in-memory lists
             computeSelectedAreasFromPoints()
 
-            // Use the enhanced navigation logic for smarter recommendations
+            // Use the enhanced navigation logic for smarter recommendations (front/back specific)
             return analyzePainPointsForNavigation(toSaveWithLog)
         } catch (e: Exception) {
             println("PainTrackerViewModel: savePainPoints failed: ${'$'}e")

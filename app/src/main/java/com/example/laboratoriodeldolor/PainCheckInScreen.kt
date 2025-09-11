@@ -60,7 +60,7 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
                     val genderPreview by settingsVmPreview.gender.collectAsState()
 
                     Box(modifier = Modifier.fillMaxWidth().height(420.dp)) {
-                        PainTrackerScreen(isMale = genderPreview, onSave = { points -> 
+                        PainTrackerScreen(isMale = genderPreview, onSave = { _points -> 
                             // Points are handled automatically by the PainTrackerScreen's internal state
                             // No additional action needed in preview mode
                         })

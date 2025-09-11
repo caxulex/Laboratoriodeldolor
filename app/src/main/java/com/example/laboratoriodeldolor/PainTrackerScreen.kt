@@ -131,9 +131,9 @@ fun PainTrackerScreen(
 			}
 		}
 
-		Spacer(modifier = Modifier.height(12.dp))
-		Divider()
-		Spacer(modifier = Modifier.height(12.dp))
+	Spacer(modifier = Modifier.height(12.dp))
+	androidx.compose.material3.HorizontalDivider()
+	Spacer(modifier = Modifier.height(12.dp))
 
 		// Body area with gestures and gradient background to match app theme
 		Box(
@@ -283,7 +283,7 @@ fun PainTrackerScreen(
 						Icon(imageVector = Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete_confirm_title))
 					}
 				}
-				Divider()
+				androidx.compose.material3.HorizontalDivider()
 			}
 		}
 

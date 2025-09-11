@@ -5,33 +5,51 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 
+/**
+ * ViewModel exposing the list of [Routine] items.
+ * Collection strategy is test-friendly: a custom dispatcher and optional external collection scope
+ * can be provided. Tests can also disable auto-collection and invoke [startCollecting] manually.
+ */
 class RoutinesListViewModel(
     private val routineDao: RoutineDao,
-    // dispatcher is injected for testability; default to IO to ensure DB collection doesn't block UI
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    // Retained for potential future use (previously part of a StateFlow.stateIn approach).
+    @Suppress("unused") private val started: SharingStarted = SharingStarted.WhileSubscribed(5000),
+    private val collectionScope: CoroutineScope? = null,
+    private val autoCollect: Boolean = true
 ) : ViewModel() {
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    // Collect Room Flow and expose as StateFlow; use viewModelScope with IO dispatcher to avoid blocking UI
-    val routines: StateFlow<List<Routine>> = routineDao.getAll()
-        .catch { e ->
-            _error.value = e.message ?: "db_error"
-            emit(emptyList())
+    private val _routines = MutableStateFlow<List<Routine>>(emptyList())
+    val routines: StateFlow<List<Routine>> = _routines
+
+    private suspend fun collectRoutines() {
+        routineDao.getAll()
+            .catch { e ->
+                _error.value = e.message ?: "db_error"
+                emit(emptyList())
+            }
+            .collect { list -> _routines.value = list }
+    }
+
+    init {
+        if (autoCollect) {
+            val scope = collectionScope ?: viewModelScope
+            scope.launch(dispatcher) { collectRoutines() }
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    }
+
+    /** Start collecting routines in the provided [scope] or [viewModelScope] if null. */
+    fun startCollecting(scope: CoroutineScope? = null) =
+        (scope ?: viewModelScope).launch(dispatcher) { collectRoutines() }
 
     fun clearError() { _error.value = null }
 }

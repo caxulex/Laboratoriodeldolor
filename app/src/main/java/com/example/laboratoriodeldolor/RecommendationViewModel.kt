@@ -72,19 +72,10 @@ class RecommendationViewModel(
                     }
                 },
                 build = { c ->
-                    val maxIntensity = c.pains
-                        .filter { pp ->
-                            val k = mapPainPointToLocationKey(pp)
-                            k == PainLocationKey.FRONT_UPPER || k == PainLocationKey.BACK_UPPER
-                        }
-                        .maxOfOrNull { it.intensity } ?: 1
-
-                    val descRes = R.string.recommendation_no_data_subtitle
-
                     Recommendation(
                         id = "upper_front_or_back",
                         titleResId = R.string.upper_body_routine_title,
-                        descriptionResId = descRes,
+                        descriptionResId = R.string.recommendation_no_data_subtitle,
                         iconResName = null
                     )
                 }
@@ -96,13 +87,6 @@ class RecommendationViewModel(
                     k == PainLocationKey.FRONT_MIDDLE || k == PainLocationKey.BACK_MIDDLE
                 } },
                 build = { c ->
-                    val maxIntensity = c.pains
-                        .filter { pp ->
-                            val k = mapPainPointToLocationKey(pp)
-                            k == PainLocationKey.FRONT_MIDDLE || k == PainLocationKey.BACK_MIDDLE
-                        }
-                        .maxOfOrNull { it.intensity } ?: 1
-
                     Recommendation(
                         id = "middle",
                         titleResId = R.string.middle_body_routine_title,
@@ -118,13 +102,6 @@ class RecommendationViewModel(
                     k == PainLocationKey.FRONT_LOWER || k == PainLocationKey.BACK_LOWER
                 } },
                 build = { c ->
-                    val maxIntensity = c.pains
-                        .filter { pp ->
-                            val k = mapPainPointToLocationKey(pp)
-                            k == PainLocationKey.FRONT_LOWER || k == PainLocationKey.BACK_LOWER
-                        }
-                        .maxOfOrNull { it.intensity } ?: 1
-
                     Recommendation(
                         id = "lower",
                         titleResId = R.string.lower_body_routine_title,

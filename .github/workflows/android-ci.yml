@@ -29,10 +29,13 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
 
       - name: Build (assembleDebug)
-        run: ./gradlew assembleDebug --no-daemon --warning-mode all
+        run: ./gradlew :app:assembleDebug --no-daemon --warning-mode all
 
       - name: Run unit tests
-        run: ./gradlew test --no-daemon --warning-mode all
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --warning-mode all
+
+      - name: Run lint
+        run: ./gradlew :app:lint --no-daemon --warning-mode all
 
   instrumentation:
     name: Instrumentation tests (emulator)

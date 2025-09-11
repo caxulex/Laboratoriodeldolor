@@ -35,6 +35,8 @@ class SettingsViewModel(
     // Optional injected SharedPreferences for tests (plain-JVM). If null, use application's prefs.
     private val injectedPrefs: SharedPreferences? = null
 ) : AndroidViewModel(application) {
+    // Secondary constructor required by AndroidViewModelFactory (must match single Application signature)
+    constructor(application: Application) : this(application, null)
     // Keep the legacy SharedPreferences for reminder/alarm settings
     private val prefs: SharedPreferences = injectedPrefs ?: application.getSharedPreferences("settings", Context.MODE_PRIVATE)
 

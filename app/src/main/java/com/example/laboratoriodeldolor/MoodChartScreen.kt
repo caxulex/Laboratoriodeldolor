@@ -281,9 +281,8 @@ fun MoodProgressScreen(moodDao: MoodDao, painDao: PainPointDao, onOpenPainChart:
         Spacer(modifier = Modifier.height(16.dp))
 
         // Group pain preview + legend + summary inside a Card so layout doesn't overlap
-        val painViewModel: PainChartViewModel = viewModel(factory = PainChartViewModelFactory(painDao))
-        val painState by painViewModel.uiState.collectAsState()
-        val painChartDesc = stringResource(id = R.string.pain_chart_description)
+    val painViewModel: PainChartViewModel = viewModel(factory = PainChartViewModelFactory(painDao))
+    val painState by painViewModel.uiState.collectAsState()
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {

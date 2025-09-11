@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    // KSP plugin resolution failed in this environment; fall back to KAPT
-    // which Room also supports. Apply the Kotlin KAPT plugin instead.
+    // Temporarily revert to KAPT due to KSP plugin resolution failures. Once KSP version mismatch is resolved,
+    // you can switch back to the googleKsp alias.
     id("org.jetbrains.kotlin.kapt")
 }
 
@@ -136,7 +136,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    // Use kapt for Room annotation processing when KSP plugin isn't available
+    // Annotation processing via KAPT (temporary fallback until KSP plugin version issue fixed)
     kapt(libs.room.compiler)
 
     // Navigation, Work, DataStore, Lottie, and Chart dependencies
@@ -158,7 +158,8 @@ dependencies {
     testImplementation("androidx.test:core:1.5.0")
     // Turbine for Flow testing helpers (awaitItem, cancelAndIgnoreRemainingEvents)
     testImplementation("app.cash.turbine:turbine:0.12.3")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    // Keep kotlinx-coroutines-test aligned with the runtime coroutines version declared in the catalog
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 
     // Instrumentation Tests (androidTestImplementation)
     androidTestImplementation(libs.androidx.junit)
@@ -174,7 +175,8 @@ dependencies {
 
     // Fallback explicit coordinates for known testing artifacts (ensures availability if catalog alias resolution fails)
     androidTestImplementation("androidx.room:room-testing:2.6.1")
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0")
+    // Use the version defined in the version catalog for uiautomator (avoid 2.4.0 which may not be resolvable in some environments)
+    // androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0")
 
     // Debug Dependencies
     debugImplementation(libs.androidx.ui.tooling)
@@ -247,4 +249,20 @@ tasks.registering(JavaExec::class) {
     mainClass.set("com.android.tools.lint.Main")
     args = listOf("--create-baseline", "--baseline", outBaseline.absolutePath, projectDir.absolutePath)
     isIgnoreExitValue = false
+}
+
+// Pre-resource-merge cleanup: remove any stray placeholder files with extension .removed
+// that cause aapt/resource merger failures ("file name must end with .xml or .png").
+tasks.matching { it.name.matches(Regex("merge.*Resources")) }.configureEach {
+    doFirst {
+        val removed = fileTree("src/main/res") { include("**/*.removed") }.files
+        if (removed.isNotEmpty()) {
+            logger.lifecycle("[resource-cleanup] Deleting ${removed.size} '*.removed' placeholder resource file(s)...")
+            removed.forEach { f ->
+                if (!f.delete()) {
+                    logger.warn("[resource-cleanup] Failed to delete ${f.absolutePath}; please remove manually.")
+                }
+            }
+        }
+    }
 }

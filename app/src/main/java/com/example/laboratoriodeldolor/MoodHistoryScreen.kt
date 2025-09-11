@@ -187,8 +187,8 @@ fun EmptyMoodState() {
 class EmojiMarkerView(context: Context, private val timestamps: List<Long>, private val emojis: List<String>) : MarkerView(context, android.R.layout.simple_list_item_1) {
     // Secondary constructors so tools and layout inflation can instantiate the view if needed
     constructor(context: Context) : this(context, emptyList(), emptyList())
-    constructor(context: Context, attrs: AttributeSet?) : this(context, emptyList(), emptyList())
-    constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : this(context, emptyList(), emptyList())
+    constructor(context: Context, _attrs: AttributeSet?) : this(context, emptyList(), emptyList())
+    constructor(context: Context, _attrs: AttributeSet?, _defStyle: Int) : this(context, emptyList(), emptyList())
     private val tv: TextView = findViewById(android.R.id.text1)
     private val fmt = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
 

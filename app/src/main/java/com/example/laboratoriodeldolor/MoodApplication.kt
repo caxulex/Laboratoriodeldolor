@@ -35,7 +35,7 @@ class MoodApplication : Application() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Force DB creation on the IO dispatcher
-                val dbInstance = database
+                database
 
                 // Use suspendable APIs for DataStore and DAO calls (safe on IO)
                 try {
