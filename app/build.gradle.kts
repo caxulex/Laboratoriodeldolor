@@ -64,10 +64,16 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Allow forcing debug signing for release via -PuseDebugSigningForRelease=true
+            val forceDebugSigning = project.findProperty("useDebugSigningForRelease")?.toString()?.toBoolean() == true
             // Use release keystore if available; otherwise fall back to debug signing for local builds
             val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null ||
                 rootProject.file("keystore/release.keystore").exists()
-            signingConfig = if (hasReleaseKeystore) signingConfigs["release"] else signingConfigs.getByName("debug")
+            signingConfig = if (!forceDebugSigning && hasReleaseKeystore) {
+                signingConfigs["release"]
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
     compileOptions {
