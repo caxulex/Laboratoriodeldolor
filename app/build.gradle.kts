@@ -93,6 +93,18 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    // Generate APK splits for smaller downloads in local releases (AAB already splits on Play)
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = false
+        }
+        // Note: density splits are deprecated and removed in AGP 10. Prefer App Bundles for density-specific delivery.
+        // density { isEnable = true }
+    }
 }
 
 // Debug helper: when running updateLintBaseline tasks, print the configured
