@@ -53,6 +53,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            // Remove unused resources in release to reduce APK/AAB size
+            isShrinkResources = true
+            // Crunch PNGs in release for better compression (no effect on vector drawables)
+            isCrunchPngs = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
