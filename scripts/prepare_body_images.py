@@ -17,79 +17,84 @@ Requirements:
 from __future__ import annotations
 import os
 import sys
+import argparse
 from pathlib import Path
+from PIL import Image
 
-try:
-    from PIL import Image
-except Exception as e:
-    print("[ERROR] Pillow is required. Install with: pip install pillow", file=sys.stderr)
-    raise
-
-ROOT = Path(__file__).resolve().parents[1]
-RES_DIR = ROOT / 'app' / 'src' / 'main' / 'res'
-SRC_DIR = RES_DIR / 'drawable-nodpi'
-FILES = ['boy_front.png', 'boy_back.png', 'girl_front.png', 'girl_back.png']
-
-# Assume current nodpi PNGs are xxxhdpi base (scale 4.0 vs mdpi)
-BASE_SCALE = 4.0
-DENSITIES = {
-    'mdpi': 1.0 / BASE_SCALE,
-    'hdpi': 1.5 / BASE_SCALE,
-    'xhdpi': 2.0 / BASE_SCALE,
-    'xxhdpi': 3.0 / BASE_SCALE,
-    'xxxhdpi': 4.0 / BASE_SCALE,
+DENSITY_SCALE = {
+    "mdpi": 1.0,
+    "hdpi": 1.5,
+    "xhdpi": 2.0,
+    "xxhdpi": 3.0,
+    "xxxhdpi": 4.0,
 }
+
+NAMES = ["boy_front", "boy_back", "girl_front", "girl_back"]
 
 def ensure_dir(p: Path):
     p.mkdir(parents=True, exist_ok=True)
 
+def ensure_res_dir(root: Path, bucket: str) -> Path:
+    p = root / f"drawable-{bucket}"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
 
-def generate_variants(src_file: Path):
-    name = src_file.stem  # e.g., boy_front
-    with Image.open(src_file) as im:
-        im = im.convert('RGBA')  # ensure alpha preserved
-        w0, h0 = im.size
-        # Using xxxhdpi as base; no upscaling beyond original
-        for dens, scale in DENSITIES.items():
-            target_w = int(round(w0 * scale))
-            target_h = int(round(h0 * scale))
-            if target_w <= 0 or target_h <= 0:
-                print(f"[SKIP] {name} -> {dens}: invalid size {target_w}x{target_h}")
-                continue
-            # Avoid unnecessary upscaling (should not happen with BASE_SCALE=4.0)
-            if target_w > w0 or target_h > h0:
-                print(f"[SKIP] {name} -> {dens}: would upscale beyond source; skipping")
-                continue
-            out_dir = RES_DIR / f'drawable-{dens}'
-            ensure_dir(out_dir)
-            out_path = out_dir / f'{name}.webp'
-            # Use high-quality downscale with LANCZOS
-            resized = im.resize((target_w, target_h), Image.LANCZOS)
-            # Save as lossless WebP to preserve line art crispness
-            try:
-                resized.save(out_path, format='WEBP', lossless=True, quality=100, method=6)
-                print(f"[OK] {name} -> {dens}: {target_w}x{target_h} -> {out_path.relative_to(ROOT)}")
-            except Exception as e:
-                # Fallback to PNG if webp not supported in environment
-                fallback = out_dir / f'{name}.png'
-                resized.save(fallback, format='PNG', optimize=True)
-                print(f"[FALLBACK PNG] {name} -> {dens}: {target_w}x{target_h} -> {fallback.relative_to(ROOT)} ({e})")
-
+def resize_to_density(img: Image.Image, base_scale: float, target_scale: float) -> Image.Image:
+    ratio = target_scale / base_scale
+    w = max(1, int(round(img.width * ratio)))
+    h = max(1, int(round(img.height * ratio)))
+    return img.resize((w, h), Image.Resampling.LANCZOS)
 
 def main():
-    if not SRC_DIR.exists():
-        print(f"[ERROR] Source dir missing: {SRC_DIR}", file=sys.stderr)
+    ap = argparse.ArgumentParser(description="Generate density-specific WebP variants for body images.")
+    ap.add_argument("--module", default="app", help="Module dir (default: app)")
+    ap.add_argument("--source-dir", default="app/src/main/res/drawable-nodpi", help="Source images directory")
+    ap.add_argument("--base-density", default="xxhdpi", choices=list(DENSITY_SCALE.keys()), help="Assume source PNGs are this density")
+    ap.add_argument("--lossless", action="store_true", help="Save WebP lossless")
+    ap.add_argument("--delete-source-png", action="store_true", help="Delete original PNGs after conversion")
+    args = ap.parse_args()
+
+    project = Path(".").resolve()
+    res_root = project / args.module / "src" / "main" / "res"
+    src_dir = project / args.source_dir
+
+    if not src_dir.exists():
+        print(f"[ERR] Source dir not found: {src_dir}", file=sys.stderr)
         sys.exit(1)
-    missing = [f for f in FILES if not (SRC_DIR / f).exists()]
-    if missing:
-        print(f"[ERROR] Missing source files: {missing}", file=sys.stderr)
-        sys.exit(2)
 
-    for fname in FILES:
-        generate_variants(SRC_DIR / fname)
+    base_scale = DENSITY_SCALE[args.base_density]
+    total = 0
 
-    print("\n[INFO] Done. You can remove nodpi PNGs to rely on density-specific variants.")
+    for name in NAMES:
+        # find PNG or WebP source by name in src_dir
+        src = None
+        for ext in (".png", ".PNG", ".webp", ".WEBP"):
+            cand = src_dir / f"{name}{ext}"
+            if cand.exists():
+                src = cand
+                break
+        if not src:
+            print(f"[WARN] Source not found for {name} in {src_dir}, skipping.")
+            continue
 
+        with Image.open(src) as im:
+            im = im.convert("RGBA")
+            for bucket, scale in DENSITY_SCALE.items():
+                out_dir = ensure_res_dir(res_root, bucket)
+                out_path = out_dir / f"{name}.webp"
+                out_img = resize_to_density(im, base_scale, scale)
+                out_img.save(out_path, format="WEBP", lossless=args.lossless, method=6, quality=95)
+                print(f"[OK] Wrote {out_path} ({out_img.width}x{out_img.height})")
+                total += 1
 
-if __name__ == '__main__':
+        if args.delete_source_png and src.suffix.lower() == ".png":
+            try:
+                src.unlink()
+                print(f"[OK] Deleted source {src}")
+            except Exception as e:
+                print(f"[WARN] Could not delete {src}: {e}")
+
+    print(f"[DONE] Wrote {total} WebP assets.")
+
+if __name__ == "__main__":
     main()
