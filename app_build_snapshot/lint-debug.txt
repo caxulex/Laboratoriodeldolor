@@ -1,0 +1,3 @@
+CONFIG: project property android.lint.baseline=lint-baseline.xml
+CONFIG: rootProject lint-baseline exists=true
+CONFIG: module-local app/lint-baseline exists=true
