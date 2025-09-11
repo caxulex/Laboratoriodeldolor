@@ -43,7 +43,10 @@ android {
             val keyAliasProp = keystoreProperties.getProperty("keyAlias")
             val keyPasswordProp = keystoreProperties.getProperty("keyPassword")
 
-            storeFile = if (storeFileProp != null) file(storeFileProp) else file("keystore/release.keystore")
+            // Use provided keystore path if present; otherwise, fall back to a repo-root keystore path.
+            // Note: file(...) is relative to the module; use rootProject.file(...) for repo-root paths.
+            val fallbackStore = rootProject.file("keystore/release.keystore")
+            storeFile = if (storeFileProp != null) file(storeFileProp) else fallbackStore
             storePassword = storePasswordProp ?: "changeit"
             keyAlias = keyAliasProp ?: "release_key"
             keyPassword = keyPasswordProp ?: "changeit"
@@ -61,8 +64,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Use safe access to the signing config created above
-            signingConfig = signingConfigs["release"]
+            // Use release keystore if available; otherwise fall back to debug signing for local builds
+            val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null ||
+                rootProject.file("keystore/release.keystore").exists()
+            signingConfig = if (hasReleaseKeystore) signingConfigs["release"] else signingConfigs.getByName("debug")
         }
     }
     compileOptions {
