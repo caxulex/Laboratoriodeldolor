@@ -17,8 +17,8 @@ android {
         applicationId = "com.example.laboratoriodeldolor"
         minSdk = 24
     targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -34,8 +34,8 @@ android {
     if (keystorePropsFile.exists()) {
         keystoreProperties.load(FileInputStream(keystorePropsFile))
     } else {
-        // No key.properties found locally. The build will still work with the placeholder keystore
-        // file path, but you must create a local key.properties for real signing.
+        // No key.properties found locally. The build will still work using the debug signing config
+        // for local release builds, but you must create a local key.properties for real Play uploads.
     }
 
     signingConfigs {
@@ -64,17 +64,20 @@ android {
             isMinifyEnabled = true
             // Remove unused resources in release to reduce APK/AAB size
             isShrinkResources = true
-            // Crunch PNGs in release for better compression (no effect on vector drawables)
-            isCrunchPngs = true
+            // Do not crunch PNGs; some source PNGs may be incompatible with the cruncher and fail AAPT compile
+            // AAB/App Delivery will handle optimized delivery; prefer webp manually if needed
+            isCrunchPngs = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             // Allow forcing debug signing for release via -PuseDebugSigningForRelease=true
             val forceDebugSigning = project.findProperty("useDebugSigningForRelease")?.toString()?.toBoolean() == true
-            // Use release keystore if available; otherwise fall back to debug signing for local builds
-            val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null ||
-                rootProject.file("keystore/release.keystore").exists()
+            // Use release signing ONLY if a proper key.properties is present and the referenced keystore exists.
+            val storeFileProp = keystoreProperties.getProperty("storeFile")
+            val hasReleaseKeystore = keystorePropsFile.exists() &&
+                !storeFileProp.isNullOrBlank() &&
+                rootProject.file(storeFileProp).exists()
             signingConfig = if (!forceDebugSigning && hasReleaseKeystore) {
                 signingConfigs["release"]
             } else {
@@ -111,17 +114,7 @@ android {
         }
     }
 
-    // Generate APK splits for smaller downloads in local releases (AAB already splits on Play)
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = false
-        }
-        // Note: density splits are deprecated and removed in AGP 10. Prefer App Bundles for density-specific delivery.
-        // density { isEnable = true }
-    }
+    // Do NOT configure legacy APK splits when producing App Bundles. Google Play will handle dynamic delivery.
 }
 
 // Debug helper: when running updateLintBaseline tasks, print the configured
