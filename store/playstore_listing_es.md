@@ -22,6 +22,6 @@ Screenshots sugeridas (tomar en dispositivo):
 
 Feature Graphic (1024x500): Use a clear, flat illustration of a person and the app name.
 
-Política de privacidad: https://example.com/politica-de-privacidad (reemplazar con URL real)
+Política de privacidad: https://www.laboratoriodeldolor.com/politica-de-privacidad
 
-Contacto para soporte: support@example.com
+Contacto para soporte: soporte@laboratoriodeldolor.com

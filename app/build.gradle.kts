@@ -14,7 +14,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.laboratoriodeldolor"
+    applicationId = "com.laboratoriodeldolor.app"
         minSdk = 24
     targetSdk = 36
         versionCode = 2

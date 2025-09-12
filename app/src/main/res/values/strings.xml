@@ -140,8 +140,8 @@ Sostén (4 segundos): Mantén los pulmones vacíos, sin inhalar, mientras cuenta
     <string name="about_title">Acerca de la aplicación</string>
     <string name="about_version">Versión: %1$s</string>
     <string name="about_privacy">Política de privacidad</string>
-    <!-- Replace with your publicly hosted privacy policy URL before publishing -->
-    <string name="about_privacy_url">https://example.com/politica-de-privacidad</string>
+    <!-- Hosted privacy policy URL on custom domain -->
+    <string name="about_privacy_url">https://www.laboratoriodeldolor.com/politica-de-privacidad</string>
     <string name="about_terms">Términos de servicio (próximamente)</string>
     <string name="about_acknowledgments">Agradecimientos y créditos</string>
     <string name="about_close">Cerrar</string>

@@ -209,7 +209,7 @@
 
     <string name="about_version">Versión: %1$s</string>
     <string name="about_privacy">Política de privacidad</string>
-    <string name="about_privacy_url">https://example.com/política-de-privacidad</string>
+    <string name="about_privacy_url">https://www.laboratoriodeldolor.com/política-de-privacidad</string>
     <string name="about_terms">Términos de servicio (próximamente)</string>
     <string name="about_acknowledgments">Agradecimientos y créditos</string>
     <string name="about_close">Cerrar</string>
