@@ -56,6 +56,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
         release {
             isMinifyEnabled = true
             // Remove unused resources in release to reduce APK/AAB size

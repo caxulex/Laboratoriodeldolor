@@ -1,7 +1,4 @@
 package com.example.laboratoriodeldolor
-
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -44,6 +43,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
+    val haptics = LocalHapticFeedback.current
     val (title, body) = when (id.lowercase()) {
         "enamorado" -> stringResource(id = R.string.breath_enamorado_title) to stringResource(id = R.string.breath_enamorado_body)
         "chilindrina" -> stringResource(id = R.string.breath_chilindrina_title) to stringResource(id = R.string.breath_chilindrina_body)
@@ -63,15 +63,13 @@ fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
         stringResource(id = R.string.phase_hold)
     )
 
-    // Gentle haptic each phase change
+    // Gentle haptic each phase change (Compose haptics, no permission required)
     LaunchedEffect(running, phaseIndex, id) {
         if (id.lowercase() == "cuadrado" && running) {
             try {
-                val vib = ctx.getSystemService(Vibrator::class.java)
-                vib?.vibrate(VibrationEffect.createOneShot(25, VibrationEffect.DEFAULT_AMPLITUDE))
-            } catch (_: SecurityException) {
-                // If no permission or vibrator service denied, just ignore to avoid crash
+                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
             } catch (_: Throwable) {
+                // no-op
             }
         }
     }

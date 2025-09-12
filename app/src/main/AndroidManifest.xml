@@ -5,7 +5,6 @@
     <!-- Required on Android 12+/S to request the ability to set exact alarms. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- Required for short haptic feedback in breathing timer -->
-    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".MoodApplication"
