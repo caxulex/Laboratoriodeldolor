@@ -24,6 +24,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        // Package only Spanish resources to enforce Spanish-only UI
+        resourceConfigurations.add("es")
     }
 
     // Load signing properties from key.properties at the project root (do NOT commit your real file).

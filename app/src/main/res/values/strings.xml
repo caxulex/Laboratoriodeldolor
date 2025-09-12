@@ -47,6 +47,30 @@
     <string name="breath_chilindrina_title">La chilindrina</string>
     <string name="breath_cuadrado_title">El cuadrado</string>
     <string name="breath_recommended_label">Recomendado para ti</string>
+        <!-- Breath instruction bodies -->
+        <string name="breath_enamorado_body">Respira profundo, inhala y suelta la exhalación por la boca imitando el sonido que hacemos cuando suspiramos, es muy importante que realices el sonido al exhalar, ya que este sonido envía información de relajación al sistema nervioso. Repite 5 veces.</string>
+        <string name="breath_chilindrina_body">Esta es una respiración profunda dividida en tres, primero saca todo el aire que tengas, debes repartir la respiración completa en 3 inhalaciones cortas por la nariz, en la primera y en la segunda respiración llena de aire parcialmente el estómago, en la tercera completa lo que falta de aire, realiza una pausa corta en cada inhalación, al final de la tercera, retén la respiración unos segundos y exhala por la boca. Esta es una respiración que imita la &quot;pataleta&quot; que hace la chilindrina cuando llora, en donde hace pausas sin respirar, antes de empezar a llorar.</string>
+    <string name="breath_cuadrado_body">La belleza de la respiración 4-4-4-4 reside en su simplicidad. Se puede realizar en cualquier lugar y en cualquier momento que se necesite un momento de calma. Sigue estos pasos:
+
+Encuentra una posición cómoda: Siéntate con la espalda recta o acuéstate. Cierra suavemente los ojos si te resulta cómodo.
+
+Inhala (4 segundos): Inhala lenta y profundamente por la nariz mientras cuentas mentalmente hasta cuatro. Siente cómo el aire llena tus pulmones y tu abdomen se expande.
+
+Sostén (4 segundos): Mantén la respiración, sin forzar, mientras cuentas mentalmente hasta cuatro.
+
+Exhala (4 segundos): Exhala lenta y completamente por la boca o la nariz mientras cuentas mentalmente hasta cuatro. Siente cómo tu abdomen se contrae a medida que el aire sale de tus pulmones.
+
+Sostén (4 segundos): Mantén los pulmones vacíos, sin inhalar, mientras cuentas mentalmente hasta cuatro.</string>
+        <!-- Timer labels for box breathing -->
+        <string name="box_breath_timer_title">Temporizador 4-4-4-4</string>
+    <string name="box_breath_phase_duration_title">Duración por fase</string>
+        <string name="start_timer">Iniciar</string>
+        <string name="pause_timer">Pausar</string>
+        <string name="reset_timer">Reiniciar</string>
+        <string name="phase_inhale">Inhala</string>
+        <string name="phase_hold">Sostén</string>
+        <string name="phase_exhale">Exhala</string>
+        <string name="seconds_abbrev">%1$ds</string>
     <string name="upper_body_exercises_title">Ejercicios para la Zona Superior</string>
     <string name="middle_body_exercises_title">Ejercicios para la Zona Media</string>
     <string name="lower_body_exercises_title">Ejercicios para la Zona Inferior</string>
@@ -135,8 +159,10 @@
     <string name="progress_title">Progreso</string>
     <string name="progress_tab_weekly">Semanal</string>
     <string name="progress_tab_monthly">Mensual</string>
+    <string name="progress_tab_quarterly">Trimestral</string>
     <string name="view_pain_chart_button">Ver Gráfico de Dolor</string>
     <string name="open_diary_button">Abrir Diario</string>
+    <string name="smoothing_label">Suavizado</string>
     <!-- Techniques / Routines strings -->
     <string name="techniques_library_title">Biblioteca de Maniobras</string>
     <string name="techniques_library_subtitle">Aprende cada maniobra en detalle</string>
@@ -182,7 +208,7 @@
     <!-- Chart / formatting keys used in code -->
     <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
     <string name="mood_chart_explanation_title">Sobre la gráfica de ánimo</string>
-    <string name="mood_chart_explanation_body">La gráfica muestra el puntaje promedio de tu estado de ánimo por día. Usa las pestañas Semanal/Mensual para cambiar el periodo; interpreta subidas como mejorías y bajadas como posibles señales de empeoramiento emocional.</string>
+    <string name="mood_chart_explanation_body">La gráfica muestra el puntaje de tu estado de ánimo en el tiempo. Usa las pestañas Semanal/Mensual/Trimestral para cambiar el periodo; Semanal/Mensual muestran el último registro por día y Trimestral agrupa por semana con promedio. Interpreta subidas como mejorías y bajadas como posibles señales de empeoramiento.</string>
     <string name="date_format_short">dd/MM</string>
     <!-- Fallback/defaults for localized keys added in values-es -->
     <string name="about_description_short">Cero Dolor ayuda con ejercicios y técnicas para manejar el dolor.</string>
@@ -273,22 +299,26 @@
     <string name="no_pain_areas">No hay áreas de dolor registradas</string>
 
     <!-- Smart Navigation Messages -->
-    <string name="navigating_to_front_upper">Taking you to upper body (front) techniques</string>
-    <string name="navigating_to_back_upper">Taking you to upper body (back) techniques</string>
-    <string name="navigating_to_front_middle">Taking you to middle body (front) techniques</string>
-    <string name="navigating_to_back_middle">Taking you to middle body (back) techniques</string>
-    <string name="navigating_to_front_lower">Taking you to lower body (front) techniques</string>
-    <string name="navigating_to_back_lower">Taking you to lower body (back) techniques</string>
-    <string name="navigating_to_exercises">Taking you to exercise techniques</string>
-    <string name="navigating_to_techniques">Taking you to available techniques</string>
+    <string name="navigating_to_front_upper">Llevándote a las técnicas del cuerpo superior (frontal)</string>
+    <string name="navigating_to_back_upper">Llevándote a las técnicas del cuerpo superior (espalda)</string>
+    <string name="navigating_to_front_middle">Llevándote a las técnicas del cuerpo medio (frontal)</string>
+    <string name="navigating_to_back_middle">Llevándote a las técnicas del cuerpo medio (espalda)</string>
+    <string name="navigating_to_front_lower">Llevándote a las técnicas del cuerpo inferior (frontal)</string>
+    <string name="navigating_to_back_lower">Llevándote a las técnicas del cuerpo inferior (espalda)</string>
+    <string name="navigating_to_exercises">Llevándote a las técnicas de ejercicio</string>
+    <string name="navigating_to_techniques">Llevándote a las técnicas disponibles</string>
 
     <!-- Screen Titles -->
-    <string name="front_upper_body_title">Upper Body (Front)</string>
-    <string name="back_upper_body_title">Upper Body (Back)</string>
-    <string name="front_middle_body_title">Middle Body (Front)</string>
-    <string name="back_middle_body_title">Middle Body (Back)</string>
-    <string name="front_lower_body_title">Lower Body (Front)</string>
-    <string name="back_lower_body_title">Lower Body (Back)</string>
-    <string name="exercises_label">Exercises</string>
-    <string name="techniques_label">Techniques</string>
+    <string name="front_upper_body_title">Parte superior (frontal)</string>
+    <string name="back_upper_body_title">Parte superior (espalda)</string>
+    <string name="front_middle_body_title">Parte media (frontal)</string>
+    <string name="back_middle_body_title">Parte media (espalda)</string>
+    <string name="front_lower_body_title">Parte inferior (frontal)</string>
+    <string name="back_lower_body_title">Parte inferior (espalda)</string>
+    <string name="exercises_label">Ejercicios</string>
+    <string name="techniques_label">Técnicas</string>
+    <!-- Recommendation categories/techniques UI -->
+    <string name="suggested_categories_title">Categorías sugeridas</string>
+    <string name="suggested_techniques_title">Técnicas sugeridas</string>
+    <string name="view_technique_button">Ver técnica</string>
 </resources>

@@ -82,11 +82,18 @@ class MainActivity : ComponentActivity() {
                         (application as? MoodApplication)?.awaitDatabaseReady()
                         val prefs = (application as MoodApplication).preferencesRepository
                         val seen = prefs.hasSeenOnboardingFlow.first()
-                        // If user has seen onboarding, set Diario as start; otherwise onboarding
-                        startDestinationState.value = if (seen) Screen.Diario.route else "onboarding"
+                        // If onboarding not seen, show onboarding
+                        if (!seen) {
+                            startDestinationState.value = "onboarding"
+                        } else {
+                            // Show check-in once per day
+                            val lastDay = prefs.lastCheckinEpochDayFlow.first()
+                            val today = java.time.LocalDate.now(java.time.ZoneId.systemDefault()).toEpochDay()
+                            startDestinationState.value = if (lastDay != today) Screen.CheckinMood.route else Screen.Diario.route
+                        }
                     } catch (t: Throwable) {
-                        // keep startup resilient; fallback to checkin mood if anything fails
-                        startDestinationState.value = Screen.CheckinMood.route
+                        // keep startup resilient; fallback to Diario if anything fails
+                        startDestinationState.value = Screen.Diario.route
                     }
                 }
 
@@ -102,15 +109,23 @@ class MainActivity : ComponentActivity() {
                     bottomBar = { if (showBottomBar) BottomBar(navController = navController, items = items) }
                 ) { innerPadding ->
                     // NavHost sits inside the app-level scaffold; individual screens draw AppScaffold which renders the gradient
-                    // Use startDestinationState if available; otherwise default to the checkin flow while we wait
-                    val startDest = startDestinationState.value ?: Screen.CheckinMood.route
+                    // Use startDestinationState if available; otherwise default to Diario while we wait to avoid flicker
+                    val startDest = startDestinationState.value ?: Screen.Diario.route
                     NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(innerPadding)) {
                         // Check-in flow
                         composable(Screen.CheckinMood.route) {
                             val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
                             MoodCheckInScreen(moodViewModel,
                                 onNext = { navController.navigate(Screen.CheckinPain.route) },
-                                onSkip = { navController.navigate(Screen.CheckinPain.route) },
+                                onSkip = {
+                                    // Skip the entire check-in and go to Diario
+                                    lifecycleScope.launch {
+                                        (application as MoodApplication).preferencesRepository.markCheckedInToday()
+                                    }
+                                    navController.navigate(Screen.Diario.route) {
+                                        popUpTo(Screen.CheckinMood.route) { inclusive = true }
+                                    }
+                                },
                                 onSaved = { emoji ->
                                     if (emoji == "😞") {
                                         moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.BREATH)
@@ -126,11 +141,17 @@ class MainActivity : ComponentActivity() {
                             PainCheckInScreen(painTrackerViewModel, onFinish = {
                                 // user saved pain -> prioritize PAIN module
                                 moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.PAIN)
+                                lifecycleScope.launch {
+                                    (application as MoodApplication).preferencesRepository.markCheckedInToday()
+                                }
                                 navController.navigate(Screen.Diario.route) {
                                     popUpTo(Screen.CheckinMood.route) { inclusive = true }
                                 }
                             }, onSkip = {
                                 // didn't save pain: fallback to DIARY by default (or mood-based prioritization handled in mood save)
+                                lifecycleScope.launch {
+                                    (application as MoodApplication).preferencesRepository.markCheckedInToday()
+                                }
                                 navController.navigate(Screen.Diario.route) {
                                     popUpTo(Screen.CheckinMood.route) { inclusive = true }
                                 }
@@ -240,7 +261,10 @@ class MainActivity : ComponentActivity() {
                                 DiaryScreen(diaryViewModel = diaryViewModel, onBack = { navController.popBackStack() })
                             }
                             composable("about") {
-                                AboutScreen(onBack = { navController.popBackStack() })
+                                AboutScreen(
+                                    onBack = { navController.popBackStack() },
+                                    onOpenPrivacy = { navController.navigate("privacy_policy") }
+                                )
                             }
                             composable(Screen.Exercises.route) {
                                 ExerciseHubScreen(
@@ -255,7 +279,13 @@ class MainActivity : ComponentActivity() {
                             // Recommendation screen removed - users are navigated directly to technique pages after saving pain points
                             composable(Screen.Respiracion.route) {
                                 val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
-                                BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { _ -> /* TODO: navigate to instructions */ })
+                                BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { id ->
+                                    navController.navigate("breath_instruction/$id")
+                                })
+                            }
+                            composable("breath_instruction/{id}") { backStack ->
+                                val id = backStack.arguments?.getString("id") ?: ""
+                                BreathInstructionScreen(id = id, onBack = { navController.popBackStack() })
                             }
                             composable(Screen.Progress.route) {
                                 // Provide MoodDao and PainDao from application to the chart screen
@@ -266,6 +296,9 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("pain_chart")
                                     }
                                 )
+                            }
+                            composable("privacy_policy") {
+                                PrivacyPolicyScreen(onBack = { navController.popBackStack() })
                             }
                             composable("pain_chart") {
                                 // Placeholder - implemented in PainChartScreen.kt
@@ -295,8 +328,17 @@ class MainActivity : ComponentActivity() {
                             }
                             // Recommendation summary screen shown after saving pain points
                             composable("recommendations") {
-                                val recVm: RecommendationViewModel = viewModel(factory = RecommendationViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.painPointDao()))
-                                RecommendationScreen(viewModel = recVm)
+                                val app = (application as MoodApplication)
+                                val recVm: RecommendationViewModel = viewModel(
+                                    factory = RecommendationViewModelFactory(
+                                        app.database.moodDao(),
+                                        app.database.painPointDao(),
+                                        app.database.routineDao(),
+                                        app.database.routineStepDao(),
+                                        app.database.techniqueDao()
+                                    )
+                                )
+                                RecommendationScreen(viewModel = recVm, onOpenTechnique = { id -> navController.navigate("technique/$id") }, onOpenTechniquesLibrary = { navController.navigate("techniques") })
                             }
                             // New specific front/back exercise screens
                             composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }

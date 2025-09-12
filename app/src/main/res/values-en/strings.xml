@@ -1,0 +1,34 @@
+<resources>
+    <string name="breath_title">Guided Breathing</string>
+    <string name="breath_enamorado_title">The Lover</string>
+    <string name="breath_chilindrina_title">The Chilindrina</string>
+    <string name="breath_cuadrado_title">Box Breathing</string>
+    <string name="breath_recommended_label">Recommended for you</string>
+
+    <!-- Breath instruction bodies -->
+    <string name="breath_enamorado_body">Take a deep breath in, then exhale through your mouth making the gentle sighing sound we use when we relax. It’s important to make the sound as you exhale—it signals relaxation to your nervous system. Repeat 5 times.</string>
+    <string name="breath_chilindrina_body">This is a deep breath split into three parts. First, empty your lungs completely. Then take three short inhales through your nose: with the first and second, partially fill your belly; with the third, top it off. Pause briefly after each inhale. After the third inhale, hold for a couple of seconds and then exhale through your mouth. This mimics the "Chilindrina" style sobbing pattern where short pauses happen before crying.</string>
+    <string name="breath_cuadrado_body">Follow a calm 4-4-4-4 rhythm:
+
+Find a comfortable position.
+
+Inhale (4s): breathe in through your nose counting to four.
+Hold (4s): gently hold your breath counting to four.
+Exhale (4s): breathe out through your nose or mouth counting to four.
+Hold (4s): keep your lungs empty counting to four.
+</string>
+
+    <!-- Timer labels for box breathing -->
+    <string name="box_breath_timer_title">4-4-4-4 Timer</string>
+    <string name="box_breath_phase_duration_title">Per-phase duration</string>
+    <string name="start_timer">Start</string>
+    <string name="pause_timer">Pause</string>
+    <string name="reset_timer">Reset</string>
+    <string name="phase_inhale">Inhale</string>
+    <string name="phase_hold">Hold</string>
+    <string name="phase_exhale">Exhale</string>
+    <string name="seconds_abbrev">%1$ds</string>
+
+    <!-- Other referenced strings that may appear in this screen -->
+    <string name="back_button">Back</string>
+</resources>

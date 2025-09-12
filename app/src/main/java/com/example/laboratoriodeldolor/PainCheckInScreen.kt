@@ -60,10 +60,30 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
                     val genderPreview by settingsVmPreview.gender.collectAsState()
 
                     Box(modifier = Modifier.fillMaxWidth().height(420.dp)) {
-                        PainTrackerScreen(isMale = genderPreview, onSave = { _points -> 
-                            // Points are handled automatically by the PainTrackerScreen's internal state
-                            // No additional action needed in preview mode
-                        })
+                        // Use the same optimized painters as the main PainTracker route to avoid broken images
+                        PainTrackerScreen(
+                            isMale = genderPreview,
+                            maleFrontPainter = safePainter(R.drawable.boy_front),
+                            maleBackPainter = safePainter(R.drawable.boy_back),
+                            femaleFrontPainter = safePainter(R.drawable.girl_front),
+                            femaleBackPainter = safePainter(R.drawable.girl_back),
+                            compact = true,
+                            onPointsChanged = { pts ->
+                                // Keep the ViewModel in sync so save uses normalized points correctly
+                                painViewModel.clearPainPoints()
+                                val front = pts.filter { it.view == "front" }
+                                val back = pts.filter { it.view == "back" }
+                                if (front.isNotEmpty()) {
+                                    painViewModel.selectView("front")
+                                    front.forEach { lp -> painViewModel.addPainPointNormalized(androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), lp.intensity) }
+                                }
+                                if (back.isNotEmpty()) {
+                                    painViewModel.selectView("back")
+                                    back.forEach { lp -> painViewModel.addPainPointNormalized(androidx.compose.ui.geometry.Offset(lp.xNorm, lp.yNorm), lp.intensity) }
+                                }
+                            },
+                            onSave = { /* saving handled by external Finish button */ }
+                        )
                     }
 
                 Spacer(modifier = Modifier.height(16.dp))

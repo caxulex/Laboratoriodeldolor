@@ -20,7 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 
 @Composable
-fun AboutScreen(onBack: () -> Unit = {}) {
+fun AboutScreen(onBack: () -> Unit = {}, onOpenPrivacy: () -> Unit = {}) {
     val ctx = LocalContext.current
     val version = remember {
         try {
@@ -38,15 +38,10 @@ fun AboutScreen(onBack: () -> Unit = {}) {
 
                 Card(modifier = Modifier.padding(top = 16.dp)) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        val ctx = LocalContext.current
-                        val privacyUrl = stringResource(id = R.string.about_privacy_url)
                         com.example.laboratoriodeldolor.ui.components.SecondaryButton(
                             text = stringResource(id = R.string.about_privacy),
                             onClick = {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl))
-                                    ctx.startActivity(intent)
-                                } catch (_: Exception) { /* ignore */ }
+                                onOpenPrivacy()
                             },
                             modifier = Modifier.padding(top = 0.dp)
                         )

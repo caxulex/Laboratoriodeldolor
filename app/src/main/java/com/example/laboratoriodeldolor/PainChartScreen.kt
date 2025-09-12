@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.laboratoriodeldolor.ui.AppScaffold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,10 +52,12 @@ fun PainChartScreen(
     val intensityLabelText = stringResource(id = R.string.pain_intensity_label)
     val dateAxisText = stringResource(id = R.string.date_axis_label)
 
+    AppScaffold { innerPadding ->
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .padding(innerPadding)
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
@@ -208,6 +211,7 @@ fun PainChartScreen(
         ) {
             Text(text = stringResource(id = R.string.back_button))
         }
+    }
     }
 }
 

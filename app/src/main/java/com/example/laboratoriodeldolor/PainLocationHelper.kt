@@ -129,3 +129,72 @@ fun getDominantPainAreaDescription(painPoints: List<PainPoint>): Int {
     
     return painLocationKeyToStringRes(dominantLocation)
 }
+
+/**
+ * Map a PainLocationKey to one or more Techniques Library region keys (Routine.bodyRegion).
+ * These keys correspond to the routines seeded in the database and to strings:
+ *  - face_head -> R.string.region_face_head
+ *  - neck_shoulders -> R.string.region_neck_shoulders
+ *  - upper_back -> R.string.region_upper_back
+ *  - abdomen_pelvis -> R.string.region_mid_back_stomach
+ *  - lower_back -> R.string.region_lower_back
+ *  - arms_hands -> R.string.region_fingers_wrist_forearm
+ *  - legs_feet -> R.string.region_ankles_feet_toes
+ */
+fun painLocationKeyToRegionKeys(key: PainLocationKey): List<String> {
+    return when (key) {
+        // Upper body pains relate to head/neck/upper back work
+        PainLocationKey.FRONT_UPPER -> listOf("face_head", "neck_shoulders", "upper_back")
+        PainLocationKey.BACK_UPPER -> listOf("upper_back", "neck_shoulders")
+        // Middle area ties to abdomen/pelvis and sometimes upper back support
+        PainLocationKey.FRONT_MIDDLE -> listOf("abdomen_pelvis", "upper_back")
+        PainLocationKey.BACK_MIDDLE -> listOf("upper_back", "abdomen_pelvis")
+        // Lower area maps to lumbar/pelvis and legs/feet
+        PainLocationKey.FRONT_LOWER -> listOf("lower_back", "legs_feet")
+        PainLocationKey.BACK_LOWER -> listOf("lower_back", "legs_feet")
+        PainLocationKey.UNKNOWN -> emptyList()
+    }
+}
+
+/** Map a Techniques Library region key to its string resource id. */
+fun regionKeyToStringRes(key: String): Int {
+    return when (key) {
+        "face_head" -> R.string.region_face_head
+        "neck_shoulders" -> R.string.region_neck_shoulders
+        "upper_back" -> R.string.region_upper_back
+        "abdomen_pelvis" -> R.string.region_mid_back_stomach
+        "lower_back" -> R.string.region_lower_back
+        "arms_hands" -> R.string.region_fingers_wrist_forearm
+        "legs_feet" -> R.string.region_ankles_feet_toes
+        else -> R.string.pain_region_title
+    }
+}
+
+/**
+ * Analyze pain points and return a weighted list of region keys (most relevant first).
+ * We map dominant pain areas to region keys and rank by summed intensity.
+ */
+fun analyzePainPointsToRegionKeys(painPoints: List<PainPoint>, maxRegions: Int = 3): List<String> {
+    if (painPoints.isEmpty()) return emptyList()
+
+    val locationWeight = painPoints
+        .groupBy { mapPainPointToLocationKey(it) }
+        .mapValues { (_, pts) -> pts.sumOf { it.intensity } }
+        .filterKeys { it != PainLocationKey.UNKNOWN }
+
+    if (locationWeight.isEmpty()) return emptyList()
+
+    // Expand into region keys with inherited weights and aggregate
+    val regionWeights = mutableMapOf<String, Int>()
+    for ((loc, weight) in locationWeight) {
+        val regions = painLocationKeyToRegionKeys(loc)
+        for (rk in regions) {
+            regionWeights[rk] = (regionWeights[rk] ?: 0) + weight
+        }
+    }
+
+    return regionWeights.entries
+        .sortedByDescending { it.value }
+        .map { it.key }
+        .take(maxRegions)
+}

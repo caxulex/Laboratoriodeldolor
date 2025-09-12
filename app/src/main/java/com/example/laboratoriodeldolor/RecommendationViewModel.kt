@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.firstOrNull
 
 /**
  * RecommendationViewModel
@@ -18,11 +19,22 @@ import kotlinx.coroutines.launch
  */
 class RecommendationViewModel(
     private val moodDao: MoodDao,
-    private val painDao: PainPointDao
+    private val painDao: PainPointDao,
+    private val routineDao: RoutineDao,
+    private val routineStepDao: RoutineStepDao,
+    private val techniqueDao: TechniqueDao
 ) : ViewModel() {
 
     private val _recommendation = MutableStateFlow<Recommendation?>(null)
     val recommendation: StateFlow<Recommendation?> = _recommendation
+
+    // Derived: region keys suggested from pain points (Techniques categories)
+    private val _regionKeys = MutableStateFlow<List<String>>(emptyList())
+    val regionKeys: StateFlow<List<String>> = _regionKeys
+
+    // Derived: techniques recommended (de-duplicated) from routines of those regions
+    private val _techniques = MutableStateFlow<List<Technique>>(emptyList())
+    val techniques: StateFlow<List<Technique>> = _techniques
 
     init {
         refresh()
@@ -30,14 +42,38 @@ class RecommendationViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            val (recentMoods, recentPains) = withContext(Dispatchers.IO) {
-                val m = moodDao.getRecent(14)
-                val p = painDao.getAllSnapshot()
-                Pair(m, p)
+            val recentMoods: List<MoodEntry>
+            val recentPains: List<PainPoint>
+            withContext(Dispatchers.IO) {
+                recentMoods = moodDao.getRecent(14)
+                recentPains = painDao.getAllSnapshot()
             }
 
             val rec = withContext(Dispatchers.Default) { computeRecommendation(recentMoods, recentPains) }
             _recommendation.value = rec
+
+            // Also compute region recommendations and techniques
+            val regionKeys = withContext(Dispatchers.Default) { analyzePainPointsToRegionKeys(recentPains, maxRegions = 3) }
+            _regionKeys.value = regionKeys
+
+            // Load routines for those regions and collect referenced techniques (by id)
+            val techniques = withContext(Dispatchers.IO) {
+                // Fetch all routines once, filter by bodyRegion
+                val routinesSnapshot = routineDao.getAll().firstOrNull().orEmpty()
+                val routineIds = routinesSnapshot.filter { rk -> regionKeys.contains(rk.bodyRegion) }.map { it.id }
+                val techniqueIds = mutableSetOf<Long>()
+                for (rid in routineIds) {
+                    val steps = routineStepDao.getForRoutine(rid).firstOrNull().orEmpty()
+                    for (s in steps) {
+                        val tid = s.techniqueId
+                        if (tid != null) techniqueIds.add(tid)
+                    }
+                }
+                // Resolve Technique records for ids, keep insertion order
+                val allTech = techniqueDao.getAll().firstOrNull().orEmpty()
+                allTech.filter { techniqueIds.contains(it.id) }
+            }
+            _techniques.value = techniques
         }
     }
 

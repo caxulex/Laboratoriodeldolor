@@ -95,7 +95,9 @@ fun PainTrackerScreen(
 	femaleBackPainter: Painter? = null,
 	isMale: Boolean = true,
 	onSave: (List<LocalPainPoint>) -> Unit = {},
-	onOpenTechniques: () -> Unit = {}
+	onOpenTechniques: () -> Unit = {},
+	compact: Boolean = false,
+	onPointsChanged: (List<LocalPainPoint>) -> Unit = {}
 ) {
 	val frontView = remember { mutableStateOf(true) }
 	val points = remember { mutableStateListOf<LocalPainPoint>() }
@@ -103,8 +105,8 @@ fun PainTrackerScreen(
 	val scope = rememberCoroutineScope()
 	val savedAt = remember { mutableStateOf<Long?>(null) }
 
-	com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
-	Column(modifier = modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState())) {
+	val content: @Composable () -> Unit = {
+		Column(modifier = (if (compact) modifier else modifier.padding(16.dp)).verticalScroll(rememberScrollState())) {
 			val preview = remember { mutableStateOf<PreviewPoint?>(null) }
 
 		// Controls: view toggle (gender moved to Settings)
@@ -164,6 +166,7 @@ fun PainTrackerScreen(
 								val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
 								val currentView = if (frontView.value) "front" else "back"
 								points.add(LocalPainPoint(xNorm, yNorm, 1, currentView))
+								onPointsChanged(points.toList())
 							},
 							onPress = { offset ->
 								val (xNorm, yNorm) = offsetToNormalized(offset, boxSize.value)
@@ -199,6 +202,7 @@ fun PainTrackerScreen(
 									// on release, record final intensity
 									val finalIntensity = preview.value?.intensity ?: 1
 									points.add(LocalPainPoint(xNorm, yNorm, finalIntensity, currentView))
+									onPointsChanged(points.toList())
 								} finally {
 									job.cancel()
 									preview.value = null
@@ -260,63 +264,71 @@ fun PainTrackerScreen(
 			}
 		}
 
-	Spacer(modifier = Modifier.height(12.dp))
+		if (!compact) {
+			Spacer(modifier = Modifier.height(12.dp))
 
-		// Recorded points list (simple column to avoid nested LazyColumn + outer scroll)
-		Text(text = stringResource(id = R.string.recorded_points_title), style = MaterialTheme.typography.titleMedium)
-		Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-			points.forEachIndexed { index, point ->
-				Row(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(vertical = 6.dp),
-					verticalAlignment = Alignment.CenterVertically
-				) {
-					val intensityLabel = when (point.intensity) {
-						3 -> stringResource(id = R.string.intensity_severe)
-						2 -> stringResource(id = R.string.intensity_high)
-						else -> stringResource(id = R.string.intensity_moderate)
+			// Recorded points list
+			Text(text = stringResource(id = R.string.recorded_points_title), style = MaterialTheme.typography.titleMedium)
+			Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+				points.forEachIndexed { index, point ->
+					Row(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(vertical = 6.dp),
+						verticalAlignment = Alignment.CenterVertically
+					) {
+						val intensityLabel = when (point.intensity) {
+							3 -> stringResource(id = R.string.intensity_severe)
+							2 -> stringResource(id = R.string.intensity_high)
+							else -> stringResource(id = R.string.intensity_moderate)
+						}
+						Text(text = stringResource(id = R.string.recorded_point_format, index + 1, intensityLabel))
+						Spacer(modifier = Modifier.weight(1f))
+						IconButton(onClick = { points.removeAt(index); onPointsChanged(points.toList()) }) {
+							Icon(imageVector = Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete_confirm_title))
+						}
 					}
-					Text(text = stringResource(id = R.string.recorded_point_format, index + 1, intensityLabel))
-					Spacer(modifier = Modifier.weight(1f))
-					IconButton(onClick = { points.removeAt(index) }) {
-						Icon(imageVector = Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete_confirm_title))
-					}
+					androidx.compose.material3.HorizontalDivider()
 				}
-				androidx.compose.material3.HorizontalDivider()
-			}
-		}
-
-		Spacer(modifier = Modifier.height(12.dp))
-
-		// Actions (clear / techniques / save)
-		Row(
-			horizontalArrangement = Arrangement.SpaceBetween,
-			modifier = Modifier.fillMaxWidth()
-		) {
-			Button(onClick = { points.clear() }) { Text(text = stringResource(id = R.string.clear_button)) }
-
-			ElevatedButton(onClick = { onOpenTechniques() }, colors = ButtonDefaults.elevatedButtonColors()) {
-				Text(text = stringResource(id = R.string.techniques_library_title))
 			}
 
-			Button(onClick = {
-				scope.launch {
-					onSave(points.toList())
-					savedAt.value = System.currentTimeMillis()
-				}
-			}) { Text(text = stringResource(id = R.string.save_pain_button)) }
-		}
+			Spacer(modifier = Modifier.height(12.dp))
 
-		// Small confirmation when saved
-		savedAt.value?.let { ts ->
-			Spacer(modifier = Modifier.height(8.dp))
-			Text(text = stringResource(id = R.string.pain_save_confirmation), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+			// Actions (clear / techniques / save)
+			Row(
+				horizontalArrangement = Arrangement.SpaceBetween,
+				modifier = Modifier.fillMaxWidth()
+			) {
+				Button(onClick = { points.clear(); onPointsChanged(points.toList()) }) { Text(text = stringResource(id = R.string.clear_button)) }
+
+				ElevatedButton(onClick = { onOpenTechniques() }, colors = ButtonDefaults.elevatedButtonColors()) {
+					Text(text = stringResource(id = R.string.techniques_library_title))
+				}
+
+				Button(onClick = {
+					scope.launch {
+						onSave(points.toList())
+						savedAt.value = System.currentTimeMillis()
+					}
+				}) { Text(text = stringResource(id = R.string.save_pain_button)) }
+			}
+
+			// Small confirmation when saved
+			savedAt.value?.let { ts ->
+				Spacer(modifier = Modifier.height(8.dp))
+				Text(text = stringResource(id = R.string.pain_save_confirmation), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+			}
 		}
 	}
+	}
+	if (compact) {
+		content()
+	} else {
+		com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+			Box(modifier = Modifier.padding(innerPadding)) { content() }
+		}
 	}
 }
-
 /** Convert pointer offset to normalized 0..1 coords using captured box size. */
 private fun offsetToNormalized(offset: Offset, size: IntSize): Pair<Float, Float> {
 	val w = size.width.takeIf { it > 0 } ?: 1

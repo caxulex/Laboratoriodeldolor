@@ -36,7 +36,7 @@
     </plurals>
     <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
     <string name="mood_chart_explanation_title">Sobre la gráfica de ánimo</string>
-    <string name="mood_chart_explanation_body">La gráfica muestra el puntaje promedio del ánimo por día. Utiliza Semanal/Mensual para cambiar el periodo; subidas indican mejoría y bajadas pueden ser señales de empeoramiento emocional o días con más dolor.</string>
+    <string name="mood_chart_explanation_body">La gráfica muestra tu ánimo en el tiempo. Usa Semanal/Mensual/Trimestral para cambiar el periodo; Semanal/Mensual muestran el último registro por día y Trimestral agrupa por semana con promedio. Subidas indican mejoría y bajadas pueden ser señales de empeoramiento emocional o días con más dolor.</string>
     <string name="date_format_short">dd/MM</string>
     <string name="progress_empty_state">Registra tu estado de ánimo en el diario para ver tu progreso aquí.</string>
 
@@ -228,7 +228,9 @@
     <string name="progress_title">Progreso</string>
     <string name="progress_tab_weekly">Semanal</string>
     <string name="progress_tab_monthly">Mensual</string>
+    <string name="progress_tab_quarterly">Trimestral</string>
     <string name="view_pain_chart_button">Ver Gráfico de Dolor</string>
+    <string name="smoothing_label">Suavizado</string>
 
     <string name="techniques_library_title">Biblioteca de Maniobras</string>
     <string name="techniques_library_subtitle">Aprende cada maniobra en detalle</string>
@@ -302,4 +304,8 @@
     <string name="back_lower_body_title">Parte Inferior (Espalda)</string>
     <string name="exercises_label">Ejercicios</string>
     <string name="techniques_label">Técnicas</string>
+    <!-- Recommendation categories/techniques UI -->
+    <string name="suggested_categories_title">Categorías sugeridas</string>
+    <string name="suggested_techniques_title">Técnicas sugeridas</string>
+    <string name="view_technique_button">Ver técnica</string>
 </resources>

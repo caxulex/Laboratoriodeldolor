@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
@@ -23,9 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 
 @Composable
-fun RecommendationScreen(viewModel: RecommendationViewModel) {
+fun RecommendationScreen(viewModel: RecommendationViewModel, onOpenTechnique: (Long) -> Unit = {}, onOpenTechniquesLibrary: () -> Unit = {}) {
     val recState by viewModel.recommendation.collectAsState()
     val rec = recState
+    val regionKeys by viewModel.regionKeys.collectAsState()
+    val techniques by viewModel.techniques.collectAsState()
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
         Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), verticalArrangement = Arrangement.Top) {
@@ -46,8 +50,38 @@ fun RecommendationScreen(viewModel: RecommendationViewModel) {
                     Text(text = stringResource(id = rec.titleResId), style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = stringResource(id = rec.descriptionResId), style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.recommendation_action_button), onClick = { /* TODO: open exercise/workshop details */ }, modifier = Modifier.height(48.dp))
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Show suggested categories (region labels)
+            if (regionKeys.isNotEmpty()) {
+                Text(text = stringResource(id = R.string.suggested_categories_title), style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                for (rk in regionKeys) {
+                    androidx.compose.material3.AssistChip(onClick = { onOpenTechniquesLibrary() }, label = { Text(text = stringResource(id = regionKeyToStringRes(rk))) }, modifier = Modifier.padding(end = 8.dp, bottom = 8.dp))
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // List of recommended techniques from those categories
+            if (techniques.isNotEmpty()) {
+                Text(text = stringResource(id = R.string.suggested_techniques_title), style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f, fill = false)) {
+                    items(techniques) { t ->
+                        Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(text = t.title, style = MaterialTheme.typography.titleMedium)
+                                if (t.description.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(text = t.description, style = MaterialTheme.typography.bodySmall)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.view_technique_button), onClick = { onOpenTechnique(t.id) }, modifier = Modifier.height(44.dp))
+                            }
+                        }
+                    }
                 }
             }
         
