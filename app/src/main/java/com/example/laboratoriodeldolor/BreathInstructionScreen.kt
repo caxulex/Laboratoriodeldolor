@@ -2,6 +2,8 @@ package com.example.laboratoriodeldolor
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -129,9 +131,18 @@ fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
                     val activeColorCanvas = MaterialTheme.colorScheme.primary
 
                     // Simple animated square: highlights current side based on phase
+                    val targetStroke = if (running) 16f + (phaseIndex % 2) * 2f else 12f
+                    val animatedStroke by androidx.compose.animation.core.animateFloatAsState(
+                        targetValue = targetStroke,
+                        animationSpec = androidx.compose.animation.core.tween(durationMillis = 240),
+                        label = "BreathStroke"
+                    )
+
                     Canvas(modifier = Modifier
                         .padding(8.dp)
-                        .size(160.dp)
+                        .fillMaxSize()
+                        .aspectRatio(1f)
+                        .sizeIn(maxWidth = 220.dp)
                         .align(Alignment.CenterHorizontally)) {
                         val w = size.width
                         val h = size.height
@@ -150,10 +161,10 @@ fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
 
                         // Highlight current side
                         when (phaseIndex) {
-                            0 -> drawLine(color = activeColorCanvas, start = Offset(left, top), end = Offset(right, top), strokeWidth = stroke)
-                            1 -> drawLine(color = activeColorCanvas, start = Offset(right, top), end = Offset(right, bottom), strokeWidth = stroke)
-                            2 -> drawLine(color = activeColorCanvas, start = Offset(right, bottom), end = Offset(left, bottom), strokeWidth = stroke)
-                            3 -> drawLine(color = activeColorCanvas, start = Offset(left, bottom), end = Offset(left, top), strokeWidth = stroke)
+                            0 -> drawLine(color = activeColorCanvas, start = Offset(left, top), end = Offset(right, top), strokeWidth = animatedStroke)
+                            1 -> drawLine(color = activeColorCanvas, start = Offset(right, top), end = Offset(right, bottom), strokeWidth = animatedStroke)
+                            2 -> drawLine(color = activeColorCanvas, start = Offset(right, bottom), end = Offset(left, bottom), strokeWidth = animatedStroke)
+                            3 -> drawLine(color = activeColorCanvas, start = Offset(left, bottom), end = Offset(left, top), strokeWidth = animatedStroke)
                         }
                     }
 
@@ -206,7 +217,7 @@ fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = onBack) { Text(text = stringResource(id = R.string.back_button)) }
+                com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = stringResource(id = R.string.back_button), onClick = onBack)
             }
         }
     }
@@ -215,12 +226,8 @@ fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
 @Composable
 private fun RowControls(running: Boolean, onStartPause: () -> Unit, onReset: () -> Unit) {
     androidx.compose.foundation.layout.Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Button(onClick = onStartPause) {
-            Text(text = if (running) stringResource(id = R.string.pause_timer) else stringResource(id = R.string.start_timer))
-        }
-        Button(onClick = onReset) {
-            Text(text = stringResource(id = R.string.reset_timer))
-        }
+        com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = if (running) stringResource(id = R.string.pause_timer) else stringResource(id = R.string.start_timer), onClick = onStartPause)
+        com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = stringResource(id = R.string.reset_timer), onClick = onReset)
     }
 }
 
@@ -229,9 +236,9 @@ private fun DurationControls(seconds: Int, onChange: (Int) -> Unit) {
     Column {
         Text(text = stringResource(id = R.string.box_breath_phase_duration_title), style = MaterialTheme.typography.titleSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { onChange(seconds - 1) }, enabled = seconds > 3) { Text(text = "-1") }
+            com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = "-1", onClick = { onChange(seconds - 1) })
             Text(text = stringResource(id = R.string.seconds_abbrev, seconds), style = MaterialTheme.typography.titleMedium)
-            Button(onClick = { onChange(seconds + 1) }, enabled = seconds < 6) { Text(text = "+1") }
+            com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = "+1", onClick = { onChange(seconds + 1) })
         }
     }
 }

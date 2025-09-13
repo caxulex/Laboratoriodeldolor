@@ -100,20 +100,22 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateToAbout: () -> Unit =
                 Text(text = stringResource(id = R.string.gender_label), modifier = Modifier.padding(top = 8.dp))
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
+                    val selectedBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                    val unselectedBg = MaterialTheme.colorScheme.surface
+                    com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                        text = stringResource(id = R.string.gender_male),
                         onClick = { viewModel.setGenderMale(true) },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(containerColor = if (gender) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent)
-                    ) {
-                        Text(text = stringResource(id = R.string.gender_male))
-                    }
-                    OutlinedButton(
+                        containerColor = if (gender) selectedBg else unselectedBg,
+                        contentColor = if (gender) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                    )
+                    com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                        text = stringResource(id = R.string.gender_female),
                         onClick = { viewModel.setGenderMale(false) },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(containerColor = if (!gender) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent)
-                    ) {
-                        Text(text = stringResource(id = R.string.gender_female))
-                    }
+                        containerColor = if (!gender) selectedBg else unselectedBg,
+                        contentColor = if (!gender) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                    )
                 }
 
                 // Dark mode toggle

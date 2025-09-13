@@ -103,18 +103,19 @@ fun TechniqueDetailScreen(techniqueId: Long, techniqueDao: TechniqueDao, onBack:
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(text = stringResource(id = R.string.technique_play_video), style = MaterialTheme.typography.titleMedium)
                             Text(text = video, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
-                            androidx.compose.material3.Button(onClick = {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(video))
-                                    // Use FLAG_ACTIVITY_NEW_TASK when launching from non-activity context
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(intent)
-                                } catch (t: Throwable) {
-                                    t.printStackTrace()
-                                }
-                            }, modifier = Modifier.padding(top = 8.dp)) {
-                                Text(text = "Ver Video")
-                            }
+                            com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                                text = "Ver Video",
+                                onClick = {
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(video))
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        context.startActivity(intent)
+                                    } catch (t: Throwable) {
+                                        t.printStackTrace()
+                                    }
+                                },
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
                         }
                     }
                 }
@@ -162,7 +163,10 @@ fun PainRegionScreen(routineId: Long, routineDao: RoutineDao, techniqueDao: Tech
                                             }
                                             if (showMirrorInfo) {
                                                 AlertDialog(onDismissRequest = { showMirrorInfo = false }, confirmButton = {
-                                                    Button(onClick = { showMirrorInfo = false }) { MText(text = stringResource(id = R.string.back_button)) }
+                                                    com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                                                        text = stringResource(id = R.string.back_button),
+                                                        onClick = { showMirrorInfo = false }
+                                                    )
                                                 }, text = {
                                                     MText(text = stringResource(id = R.string.mirror_technique_instruction))
                                                 })

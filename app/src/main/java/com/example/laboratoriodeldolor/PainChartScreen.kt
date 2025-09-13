@@ -205,12 +205,11 @@ fun PainChartScreen(
         }
         
         // Back button
-        Button(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(id = R.string.back_button))
-        }
+            com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                text = stringResource(id = R.string.back_button),
+                onClick = onBack,
+                modifier = Modifier.fillMaxWidth()
+            )
     }
     }
 }

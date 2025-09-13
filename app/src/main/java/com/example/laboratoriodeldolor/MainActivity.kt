@@ -126,13 +126,18 @@ class MainActivity : ComponentActivity() {
                 // Hide the BottomBar during the check-in flow
                 val showBottomBar = currentRoute != Screen.CheckinMood.route && currentRoute != Screen.CheckinPain.route
 
-                Scaffold(
-                    bottomBar = { if (showBottomBar) BottomBar(navController = navController, items = items) }
-                ) { innerPadding ->
-                    // NavHost sits inside the app-level scaffold; individual screens draw AppScaffold which renders the gradient
-                    // Use startDestinationState if available; otherwise default to Diario while we wait to avoid flicker
-                    val startDest = startDestinationState.value ?: Screen.Diario.route
-                    NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(innerPadding)) {
+                androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
+                    // Draw gradient behind the entire app so the bottom bar can appear transparent over it
+                    com.example.laboratoriodeldolor.ui.GradientBackground()
+
+                    Scaffold(
+                        containerColor = Color.Transparent,
+                        bottomBar = { if (showBottomBar) BottomBar(navController = navController, items = items) }
+                    ) { innerPadding ->
+                        // NavHost sits inside the app-level scaffold; individual screens draw AppScaffold which renders the gradient
+                        // Use startDestinationState if available; otherwise default to Diario while we wait to avoid flicker
+                        val startDest = startDestinationState.value ?: Screen.Diario.route
+                        NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(innerPadding)) {
                         // Check-in flow
                         composable(Screen.CheckinMood.route) {
                             val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
@@ -369,6 +374,7 @@ class MainActivity : ComponentActivity() {
                             composable(Screen.FrontLowerBody.route) { FrontLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
                             composable(Screen.BackLowerBody.route) { BackLowerBodyExerciseScreen(onBack = { navController.popBackStack() }) }
                         }
+                        }
                     }
                 }
             }
@@ -419,7 +425,7 @@ fun BottomBar(navController: NavHostController, items: List<Screen>) {
 
     val colorScheme = MaterialTheme.colorScheme
     if (screenWidthDp >= 600) {
-        NavigationRail(containerColor = colorScheme.surface) {
+        NavigationRail(containerColor = Color.Transparent) {
             for (screen in items) {
                 NavigationRailItem(
                     selected = currentRoute == screen.route,
@@ -431,7 +437,11 @@ fun BottomBar(navController: NavHostController, items: List<Screen>) {
             }
         }
     } else {
-        NavigationBar(containerColor = colorScheme.surface, modifier = Modifier.navigationBarsPadding()) {
+        NavigationBar(
+            containerColor = Color.Transparent,
+            tonalElevation = 0.dp,
+            modifier = Modifier.navigationBarsPadding()
+        ) {
             for (screen in items) {
                 NavigationBarItem(
                     selected = currentRoute == screen.route,

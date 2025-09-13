@@ -121,14 +121,18 @@ fun PainTrackerScreen(
 			Column(horizontalAlignment = Alignment.End) {
 				Text(text = stringResource(id = R.string.view_label), style = MaterialTheme.typography.titleMedium)
 				Spacer(modifier = Modifier.height(6.dp))
-				Row(verticalAlignment = Alignment.CenterVertically) {
-					OutlinedButton(onClick = { frontView.value = true }, modifier = Modifier.width(100.dp)) {
-						Text(text = stringResource(id = R.string.view_front))
-					}
-					Spacer(modifier = Modifier.width(8.dp))
-					OutlinedButton(onClick = { frontView.value = false }, modifier = Modifier.width(100.dp)) {
-						Text(text = stringResource(id = R.string.view_back))
-					}
+				Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+					val options = listOf(
+						stringResource(id = R.string.view_front),
+						stringResource(id = R.string.view_back)
+					)
+					val selectedIdx = if (frontView.value) 0 else 1
+					com.example.laboratoriodeldolor.ui.components.NeumorphicSegmentedControl(
+						options = options,
+						selectedIndex = selectedIdx,
+						onSelectedIndexChange = { idx -> frontView.value = (idx == 0) },
+						modifier = Modifier.widthIn(min = 220.dp)
+					)
 				}
 			}
 		}
@@ -290,18 +294,16 @@ fun PainTrackerScreen(
 				horizontalArrangement = Arrangement.SpaceBetween,
 				modifier = Modifier.fillMaxWidth()
 			) {
-				Button(onClick = { points.clear(); onPointsChanged(points.toList()) }) { Text(text = stringResource(id = R.string.clear_button)) }
+				com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = stringResource(id = R.string.clear_button), onClick = { points.clear(); onPointsChanged(points.toList()) })
 
-				ElevatedButton(onClick = { onOpenTechniques() }, colors = ButtonDefaults.elevatedButtonColors()) {
-					Text(text = stringResource(id = R.string.techniques_library_title))
-				}
+				com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = stringResource(id = R.string.techniques_library_title), onClick = { onOpenTechniques() })
 
-				Button(onClick = {
+				com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(text = stringResource(id = R.string.save_pain_button), onClick = {
 					scope.launch {
 						onSave(points.toList())
 						savedAt.value = System.currentTimeMillis()
 					}
-				}) { Text(text = stringResource(id = R.string.save_pain_button)) }
+				})
 			}
 
 			// Small confirmation when saved

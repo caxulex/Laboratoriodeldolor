@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.example.laboratoriodeldolor.ui.AppScaffold
 
 @Composable
@@ -164,9 +165,11 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
-                Button(onClick = onBack, modifier = Modifier.padding(top = 24.dp)) {
-                    Text(text = "Cerrar")
-                }
+                    com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                        text = stringResource(id = R.string.back_button),
+                        onClick = onBack,
+                        modifier = Modifier.padding(top = 24.dp)
+                    )
             }
         }
     }

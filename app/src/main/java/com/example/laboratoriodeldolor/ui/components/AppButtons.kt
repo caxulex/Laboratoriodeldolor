@@ -1,19 +1,15 @@
 package com.example.laboratoriodeldolor.ui.components
 
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Dp
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-// using fully-qualified OutlinedButtonDefaults to avoid ambiguous imports
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun PrimaryButton(
@@ -21,14 +17,19 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 48.dp,
-    containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
-    contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onPrimary,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     textStyle: TextStyle? = null
 ) {
     val shape = RoundedCornerShape(12.dp)
-    val colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor)
-    Button(onClick = onClick, modifier = modifier.height(height), colors = colors, shape = shape) {
-        Text(text = text, style = textStyle ?: MaterialTheme.typography.labelLarge)
+    NeumorphicButton(
+        onClick = onClick,
+        modifier = modifier.height(height),
+        shape = shape,
+        containerColor = containerColor,
+        contentColor = contentColor
+    ) {
+        Text(text = text, style = textStyle ?: MaterialTheme.typography.labelLarge, color = contentColor)
     }
 }
 
@@ -38,11 +39,18 @@ fun SecondaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 48.dp,
-    textStyle: TextStyle? = null
+    textStyle: TextStyle? = null,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     val shape = RoundedCornerShape(12.dp)
-    // Use default outlined button from Material3 so the color scheme is applied automatically
-    OutlinedButton(onClick = onClick, modifier = modifier.height(height), shape = shape) {
-        Text(text = text, style = textStyle ?: MaterialTheme.typography.labelLarge)
+    NeumorphicButton(
+        onClick = onClick,
+        modifier = modifier.height(height),
+        shape = shape,
+        containerColor = containerColor,
+        contentColor = contentColor
+    ) {
+        Text(text = text, style = textStyle ?: MaterialTheme.typography.labelLarge, color = contentColor)
     }
 }

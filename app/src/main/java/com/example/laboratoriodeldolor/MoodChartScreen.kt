@@ -161,30 +161,34 @@ fun MoodProgressScreen(moodDao: MoodDao, painDao: PainPointDao, onOpenPainChart:
             val weeklyLabel = stringResource(id = R.string.progress_tab_weekly)
             val monthlyLabel = stringResource(id = R.string.progress_tab_monthly)
             val quarterlyLabel = stringResource(id = R.string.progress_tab_quarterly)
-
-            Button(
-                onClick = { setPeriod(MoodPeriod.Weekly) },
-                colors = ButtonDefaults.buttonColors(containerColor = if (period == MoodPeriod.Weekly) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-            ) { Text(text = weeklyLabel) }
-
-            Button(
-                onClick = { setPeriod(MoodPeriod.Monthly) },
-                colors = ButtonDefaults.buttonColors(containerColor = if (period == MoodPeriod.Monthly) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-            ) { Text(text = monthlyLabel) }
-
-            Button(
-                onClick = { setPeriod(MoodPeriod.Quarterly) },
-                colors = ButtonDefaults.buttonColors(containerColor = if (period == MoodPeriod.Quarterly) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-            ) { Text(text = quarterlyLabel) }
+            val options = listOf(weeklyLabel, monthlyLabel, quarterlyLabel)
+            val selectedIdx = when (period) {
+                MoodPeriod.Weekly -> 0
+                MoodPeriod.Monthly -> 1
+                MoodPeriod.Quarterly -> 2
+            }
+            com.example.laboratoriodeldolor.ui.components.NeumorphicSegmentedControl(
+                options = options,
+                selectedIndex = selectedIdx,
+                onSelectedIndexChange = { idx ->
+                    when (idx) {
+                        0 -> setPeriod(MoodPeriod.Weekly)
+                        1 -> setPeriod(MoodPeriod.Monthly)
+                        2 -> setPeriod(MoodPeriod.Quarterly)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Button to open the Pain Chart (evolución de la intensidad del dolor)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button(onClick = onOpenPainChart) {
-                Text(text = stringResource(id = R.string.view_pain_chart_button))
-            }
+            com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                text = stringResource(id = R.string.view_pain_chart_button),
+                onClick = onOpenPainChart
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -192,10 +196,12 @@ fun MoodProgressScreen(moodDao: MoodDao, painDao: PainPointDao, onOpenPainChart:
         // Suavizado on/off
         val (smooth, setSmooth) = remember { mutableStateOf(true) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(
+            com.example.laboratoriodeldolor.ui.components.NeumorphicTextButton(
+                text = stringResource(id = R.string.smoothing_label),
                 onClick = { setSmooth(!smooth) },
-                colors = ButtonDefaults.buttonColors(containerColor = if (smooth) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-            ) { Text(text = stringResource(id = R.string.smoothing_label)) }
+                containerColor = if (smooth) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                contentColor = if (smooth) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+            )
         }
 
         // Mood chart with emoji markers
