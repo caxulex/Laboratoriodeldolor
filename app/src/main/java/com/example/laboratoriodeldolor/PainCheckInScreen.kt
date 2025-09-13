@@ -63,10 +63,11 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
                         // Use the same optimized painters as the main PainTracker route to avoid broken images
                         PainTrackerScreen(
                             isMale = genderPreview,
-                            maleFrontPainter = safePainter(R.drawable.boy_front),
-                            maleBackPainter = safePainter(R.drawable.boy_back),
-                            femaleFrontPainter = safePainter(R.drawable.girl_front),
-                            femaleBackPainter = safePainter(R.drawable.girl_back),
+                            // Pass nulls to let PainTrackerScreen lazily load only the currently needed painter
+                            maleFrontPainter = null,
+                            maleBackPainter = null,
+                            femaleFrontPainter = null,
+                            femaleBackPainter = null,
                             compact = true,
                             onPointsChanged = { pts ->
                                 // Keep the ViewModel in sync so save uses normalized points correctly

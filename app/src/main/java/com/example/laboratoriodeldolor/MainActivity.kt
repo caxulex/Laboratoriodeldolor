@@ -54,6 +54,9 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import android.util.LruCache
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory.Options
 import android.graphics.BitmapFactory
 import android.content.res.Resources
 import com.example.laboratoriodeldolor.ui.theme.LaboratorioDelDolorTheme
@@ -424,25 +427,75 @@ fun BottomBar(navController: NavHostController, items: List<Screen>) {
     }
 }
 
-// Safe painter loader: load drawable with ResourcesCompat and convert to BitmapPainter, fallback to ColorPainter
+// In-memory bitmap cache keyed by resId + maxDim to avoid repeated decodes across recompositions/screens
+private object BitmapCache {
+    private val maxKb = (Runtime.getRuntime().maxMemory() / 1024).toInt()
+    private val cacheSizeKb = maxKb / 16 // use ~6.25% of max heap for image cache
+    private val cache = object : LruCache<String, Bitmap>(cacheSizeKb) {
+        override fun sizeOf(key: String, value: Bitmap): Int {
+            return value.byteCount / 1024
+        }
+    }
+
+    fun get(key: String): Bitmap? = cache.get(key)
+    fun put(key: String, bmp: Bitmap) { cache.put(key, bmp) }
+}
+
+// Downsampled decode to cap memory; attempts efficient decode for bitmap resources, with drawable fallback.
+private fun decodeSampledBitmap(ctx: android.content.Context, resId: Int, maxDimPx: Int): Bitmap? {
+    val key = "$resId:$maxDimPx"
+    BitmapCache.get(key)?.let { return it }
+
+    return try {
+        // First decode with inJustDecodeBounds=true to check dimensions
+        val opts = Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeResource(ctx.resources, resId, opts)
+        var inSampleSize = 1
+        val outW = opts.outWidth
+        val outH = opts.outHeight
+        if (outW > 0 && outH > 0) {
+            var halfW = outW / 2
+            var halfH = outH / 2
+            while ((halfW / inSampleSize) > maxDimPx || (halfH / inSampleSize) > maxDimPx) {
+                inSampleSize *= 2
+            }
+        }
+        val decodeOpts = Options().apply {
+            inJustDecodeBounds = false
+            inSampleSize = inSampleSize
+            inPreferredConfig = Bitmap.Config.RGB_565 // half memory vs ARGB_8888, sufficient for silhouettes
+        }
+        val bmp = BitmapFactory.decodeResource(ctx.resources, resId, decodeOpts)
+        if (bmp != null) {
+            BitmapCache.put(key, bmp)
+        }
+        bmp
+    } catch (_: Throwable) {
+        // Fallback: render via Drawable onto a capped bitmap
+        try {
+            val dr = ResourcesCompat.getDrawable(ctx.resources, resId, ctx.theme)
+            if (dr != null) {
+                val w = maxDimPx
+                val h = maxDimPx
+                val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565)
+                val canvas = android.graphics.Canvas(bmp)
+                dr.setBounds(0, 0, w, h)
+                dr.draw(canvas)
+                BitmapCache.put(key, bmp)
+                bmp
+            } else null
+        } catch (_: Throwable) { null }
+    }
+}
+
+// Safe painter loader: downsample decode with cache and convert to BitmapPainter; fallback to ColorPainter
 @Composable
 fun safePainter(resId: Int): androidx.compose.ui.graphics.painter.Painter {
     val ctx = LocalContext.current
-    // Decode to a reasonably sized bitmap to avoid OOM with huge vectors; avoid try/catch around composables
-    val bmp = remember(resId) {
-        try {
-            val dr = ResourcesCompat.getDrawable(ctx.resources, resId, ctx.theme)
-            // Cap the bitmap to 512px on the longest side if possible
-            dr?.toBitmap(width = 512, height = 512)
-        } catch (_: Throwable) {
-            try {
-                val input = ctx.resources.openRawResource(resId)
-                BitmapFactory.decodeStream(input)
-            } catch (_: Throwable) {
-                null
-            }
-        }
-    }
+    // Target a reasonable maximum dimension in pixels (fits common phone screens without over-allocating)
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val maxDimPx = with(density) { 420.dp.roundToPx().coerceAtLeast(512) } // align with container height in UI
+    val bmp = remember(resId) { decodeSampledBitmap(ctx, resId, maxDimPx) }
     return if (bmp != null) BitmapPainter(bmp.asImageBitmap()) else ColorPainter(Color.Gray)
 }
 

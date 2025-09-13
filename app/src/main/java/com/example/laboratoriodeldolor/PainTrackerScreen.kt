@@ -145,11 +145,12 @@ fun PainTrackerScreen(
 				.border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
 				.background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)))
 		) {
+			// Lazily resolve painter only for the current selection if nulls were passed
 			val selectedPainter = when {
-				isMale && frontView.value -> maleFrontPainter
-				isMale && !frontView.value -> maleBackPainter
-				!isMale && frontView.value -> femaleFrontPainter
-				else -> femaleBackPainter
+				isMale && frontView.value -> maleFrontPainter ?: safePainter(R.drawable.boy_front)
+				isMale && !frontView.value -> maleBackPainter ?: safePainter(R.drawable.boy_back)
+				!isMale && frontView.value -> femaleFrontPainter ?: safePainter(R.drawable.girl_front)
+				else -> femaleBackPainter ?: safePainter(R.drawable.girl_back)
 			}
 
 			Box(
