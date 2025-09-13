@@ -212,24 +212,14 @@ fun PainTrackerScreen(
 						)
 					}
 			) {
-						// Draw the silhouette painter (any Painter).
-						if (selectedPainter != null) {
-							Image(
-								painter = selectedPainter,
-								contentDescription = stringResource(id = R.string.body_outline_desc),
-								modifier = Modifier.fillMaxSize(),
-								contentScale = ContentScale.Fit
-							)
-						} else {
-							// Fallback placeholder when image resource failed to load or is null.
-							Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-								Column(horizontalAlignment = Alignment.CenterHorizontally) {
-									Box(modifier = Modifier.size(220.dp).background(Color(0xFFBDBDBD), RoundedCornerShape(8.dp)))
-									Spacer(modifier = Modifier.height(8.dp))
-									Text(text = "Imagen no disponible", color = Color.White)
-								}
-							}
-						}
+						// Draw the silhouette painter (always non-null via safePainter or provided painter)
+						Image(
+							painter = selectedPainter,
+							contentDescription = stringResource(id = R.string.body_outline_desc),
+							modifier = Modifier.fillMaxSize(),
+							contentScale = ContentScale.Fit,
+							alignment = Alignment.BottomCenter
+						)
 
 				// Unified Canvas: draw saved points and preview overlay on top of the silhouette
 				Canvas(modifier = Modifier.fillMaxSize()) {
@@ -315,7 +305,7 @@ fun PainTrackerScreen(
 			}
 
 			// Small confirmation when saved
-			savedAt.value?.let { ts ->
+			savedAt.value?.let { _ ->
 				Spacer(modifier = Modifier.height(8.dp))
 				Text(text = stringResource(id = R.string.pain_save_confirmation), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
 			}

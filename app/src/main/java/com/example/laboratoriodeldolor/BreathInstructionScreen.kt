@@ -1,6 +1,7 @@
 package com.example.laboratoriodeldolor
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -129,7 +131,8 @@ fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
                     // Simple animated square: highlights current side based on phase
                     Canvas(modifier = Modifier
                         .padding(8.dp)
-                        .height(160.dp)) {
+                        .size(160.dp)
+                        .align(Alignment.CenterHorizontally)) {
                         val w = size.width
                         val h = size.height
                         val pad = 20f
@@ -185,7 +188,7 @@ fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
                             // Persist
                             val app = (ctx.applicationContext as? MoodApplication)
                             val repo = app?.preferencesRepository
-                            app?.let { application ->
+                            app?.let { _ ->
                                 kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                                     try { repo?.setBoxPhaseSeconds(v) } catch (_: Throwable) {}
                                 }

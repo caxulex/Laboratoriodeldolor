@@ -25,7 +25,8 @@ fun AppScaffold(content: @Composable (innerPadding: PaddingValues) -> Unit) {
 
         // Use a Scaffold with transparent container so the gradient remains visible.
         Scaffold(containerColor = Color.Transparent) { innerPadding ->
-            Surface(modifier = Modifier.fillMaxSize().padding(innerPadding), color = Color.Transparent) {
+            // Draw content edge-to-edge; screens that need safe area can opt-in with statusBarsPadding/navigationBarsPadding
+            Surface(modifier = Modifier.fillMaxSize(), color = Color.Transparent) {
                 content(innerPadding)
             }
         }

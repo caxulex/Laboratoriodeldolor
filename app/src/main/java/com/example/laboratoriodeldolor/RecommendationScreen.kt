@@ -32,43 +32,50 @@ fun RecommendationScreen(viewModel: RecommendationViewModel, onOpenTechnique: (L
     val techniques by viewModel.techniques.collectAsState()
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
-        Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), verticalArrangement = Arrangement.Top) {
-        Text(text = stringResource(id = R.string.recommendation_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("screen_title"))
-        Spacer(modifier = Modifier.height(16.dp))
-
-    if (rec == null) {
-            Card(modifier = Modifier.fillMaxWidth().height(180.dp), elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-                Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Text(text = stringResource(id = R.string.recommendation_no_data_title), style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = stringResource(id = R.string.recommendation_no_data_subtitle), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-    } else {
-            Card(modifier = Modifier.fillMaxWidth().padding(4.dp), elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = stringResource(id = rec.titleResId), style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = stringResource(id = rec.descriptionResId), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Show suggested categories (region labels)
-            if (regionKeys.isNotEmpty()) {
-                Text(text = stringResource(id = R.string.suggested_categories_title), style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                for (rk in regionKeys) {
-                    androidx.compose.material3.AssistChip(onClick = { onOpenTechniquesLibrary() }, label = { Text(text = stringResource(id = regionKeyToStringRes(rk))) }, modifier = Modifier.padding(end = 8.dp, bottom = 8.dp))
-                }
-                Spacer(modifier = Modifier.height(12.dp))
+    LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)) {
+            item {
+                Text(text = stringResource(id = R.string.recommendation_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("screen_title"))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // List of recommended techniques from those categories
-            if (techniques.isNotEmpty()) {
-                Text(text = stringResource(id = R.string.suggested_techniques_title), style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f, fill = false)) {
+            if (rec == null) {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth().height(180.dp), elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
+                        Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            Text(text = stringResource(id = R.string.recommendation_no_data_title), style = MaterialTheme.typography.titleLarge)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = stringResource(id = R.string.recommendation_no_data_subtitle), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            } else {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth().padding(4.dp), elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = stringResource(id = rec.titleResId), style = MaterialTheme.typography.titleLarge)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = stringResource(id = rec.descriptionResId), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (regionKeys.isNotEmpty()) {
+                    item {
+                        Text(text = stringResource(id = R.string.suggested_categories_title), style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    items(regionKeys) { rk ->
+                        androidx.compose.material3.AssistChip(onClick = { onOpenTechniquesLibrary() }, label = { Text(text = stringResource(id = regionKeyToStringRes(rk))) }, modifier = Modifier.padding(end = 8.dp, bottom = 8.dp))
+                    }
+                    item { Spacer(modifier = Modifier.height(12.dp)) }
+                }
+
+                if (techniques.isNotEmpty()) {
+                    item {
+                        Text(text = stringResource(id = R.string.suggested_techniques_title), style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                     items(techniques) { t ->
                         Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
                             Column(modifier = Modifier.padding(12.dp)) {
@@ -83,11 +90,6 @@ fun RecommendationScreen(viewModel: RecommendationViewModel, onOpenTechnique: (L
                         }
                     }
                 }
-            }
-        
-            // Push action button to bottom when content is sparse
-            Spacer(modifier = Modifier.weight(1f))
-
             }
         }
     }

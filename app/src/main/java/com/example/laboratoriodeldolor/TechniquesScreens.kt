@@ -2,6 +2,8 @@ package com.example.laboratoriodeldolor
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -52,7 +54,7 @@ fun TechniquesLibraryScreen(techniqueDao: TechniqueDao, onTechniqueSelected: (Lo
     val techniques by techniqueDao.getAll().collectAsState(initial = emptyList())
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
-        LazyColumn(modifier = Modifier.padding(12.dp)) {
+        LazyColumn(modifier = Modifier.padding(12.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)) {
             item {
                 // Screen header/title
                 Text(text = stringResource(id = R.string.techniques_library_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
@@ -128,7 +130,7 @@ fun PainRegionScreen(routineId: Long, routineDao: RoutineDao, techniqueDao: Tech
     val routineWithSteps by routineDao.getWithSteps(routineId).collectAsState(initial = null)
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
             if (routineWithSteps == null) {
                 Text(text = stringResource(id = R.string.error_load_data))
             } else {
@@ -216,7 +218,7 @@ fun RoutinesListScreen(routineDao: RoutineDao, onRoutineSelected: (Long) -> Unit
     val routines by routineDao.getAll().collectAsState(initial = emptyList())
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
-        LazyColumn(modifier = Modifier.padding(12.dp)) {
+    LazyColumn(modifier = Modifier.padding(12.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)) {
             items(routines) { r ->
                 androidx.compose.material3.Card(modifier = Modifier.padding(vertical = 6.dp).clickable { onRoutineSelected(r.id) }) {
                     Column(modifier = Modifier.padding(12.dp)) {
@@ -237,7 +239,7 @@ fun RoutinesListScreen(viewModel: RoutinesListViewModel, onRoutineSelected: (Lon
     val routines by viewModel.routines.collectAsState()
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
-        LazyColumn(modifier = Modifier.padding(12.dp)) {
+    LazyColumn(modifier = Modifier.padding(12.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)) {
             items(routines) { r ->
                 androidx.compose.material3.Card(modifier = Modifier.padding(vertical = 6.dp).clickable { onRoutineSelected(r.id) }) {
                     Column(modifier = Modifier.padding(12.dp)) {

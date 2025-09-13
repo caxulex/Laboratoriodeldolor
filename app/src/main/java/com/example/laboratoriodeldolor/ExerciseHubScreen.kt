@@ -2,6 +2,8 @@ package com.example.laboratoriodeldolor
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,11 +27,16 @@ fun ExerciseHubScreen(
     onNavigateToFrontMiddle: () -> Unit = {},
     onNavigateToBackMiddle: () -> Unit = {},
     onNavigateToFrontLower: () -> Unit = {},
-    onNavigateToBackLower: () -> Unit = {},
-    _onBack: () -> Unit = {}
+    onNavigateToBackLower: () -> Unit = {}
 ) {
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
-        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(text = stringResource(id = R.string.exercise_hub_title), style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(16.dp))
 

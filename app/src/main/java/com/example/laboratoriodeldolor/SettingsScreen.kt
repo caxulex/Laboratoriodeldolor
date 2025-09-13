@@ -2,6 +2,8 @@ package com.example.laboratoriodeldolor
 
 import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,7 +71,11 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateToAbout: () -> Unit =
     val retentionMonths by viewModel.retentionMonths.collectAsState()
 
     com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
+            .verticalScroll(rememberScrollState())) {
                 Text(text = stringResource(id = R.string.settings_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
 
                 // primary action button

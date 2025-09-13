@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -50,8 +51,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import android.util.LruCache
@@ -59,6 +62,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory.Options
 import android.graphics.BitmapFactory
 import android.content.res.Resources
+import androidx.core.view.WindowCompat
 import com.example.laboratoriodeldolor.ui.theme.LaboratorioDelDolorTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +80,20 @@ class MainActivity : ComponentActivity() {
             val isDark by settingsViewModel.isDarkMode.collectAsState()
 
             LaboratorioDelDolorTheme(isDark = isDark) {
+                // Edge-to-edge: make system bars transparent and set icon appearance based on theme
+                val view = LocalView.current
+                SideEffect {
+                    val window = this@MainActivity.window
+                    WindowCompat.setDecorFitsSystemWindows(window, false)
+                    @Suppress("DEPRECATION")
+                    run {
+                        window.statusBarColor = Color.Transparent.toArgb()
+                        window.navigationBarColor = Color.Transparent.toArgb()
+                    }
+                    val controller = WindowCompat.getInsetsController(window, view)
+                    controller.isAppearanceLightStatusBars = !isDark
+                    controller.isAppearanceLightNavigationBars = !isDark
+                }
                 val navController = rememberNavController()
 
                 // Determine start destination after DB warmup and preference check. Default to checkin flow
