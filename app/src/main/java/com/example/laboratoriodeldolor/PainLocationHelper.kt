@@ -18,9 +18,8 @@ enum class PainLocationKey {
 /** Map a PainPoint to a PainLocationKey according to simple band thresholds. */
 fun mapPainPointToLocationKey(pp: PainPoint): PainLocationKey {
     val y = pp.y.coerceIn(0f, 1f)
-    val x = pp.x.coerceIn(0f, 1f)
     
-    // More refined mapping based on both x and y coordinates
+    // More refined mapping based on vertical position only
     return when (pp.view) {
         "front" -> {
             when {

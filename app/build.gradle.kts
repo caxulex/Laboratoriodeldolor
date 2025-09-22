@@ -185,7 +185,7 @@ dependencies {
     // Turbine for Flow testing helpers (awaitItem, cancelAndIgnoreRemainingEvents)
     testImplementation("app.cash.turbine:turbine:0.12.3")
     // Keep kotlinx-coroutines-test aligned with the runtime coroutines version declared in the catalog
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     // Instrumentation Tests (androidTestImplementation)
     androidTestImplementation(libs.androidx.junit)
@@ -196,8 +196,6 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.ui.automator)
-    androidTestImplementation(libs.kotlinx.coroutines.core)
-    androidTestImplementation(libs.kotlinx.coroutines.android)
 
     // Fallback explicit coordinates for known testing artifacts (ensures availability if catalog alias resolution fails)
     androidTestImplementation("androidx.room:room-testing:2.6.1")
