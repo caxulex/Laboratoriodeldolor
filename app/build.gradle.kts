@@ -1,8 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    // Temporarily revert to KAPT due to KSP plugin resolution failures. Once KSP version mismatch is resolved,
-    // you can switch back to the googleKsp alias.
+    // Using KAPT temporarily until KSP version compatibility is resolved
     id("org.jetbrains.kotlin.kapt")
 }
 
@@ -86,19 +85,19 @@ android {
         }
     }
     compileOptions {
-        // Java 8 compatibility for source and target, and enable core library desugaring
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        // Java 17 compatibility for better performance and modern language features
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
     // Module-level lint baseline: setting this in the module DSL ensures AGP's
     // updateLintBaseline tasks see the baseline path at configuration time.
@@ -162,7 +161,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    // Annotation processing via KAPT (temporary fallback until KSP plugin version issue fixed)
+    // Annotation processing via KAPT (KSP compatibility being resolved)
     kapt(libs.room.compiler)
 
     // Navigation, Work, DataStore, Lottie, and Chart dependencies
