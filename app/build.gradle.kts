@@ -185,6 +185,10 @@ dependencies {
     testImplementation("app.cash.turbine:turbine:0.12.3")
     // Keep kotlinx-coroutines-test aligned with the runtime coroutines version declared in the catalog
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    // MockK for mocking in unit tests - essential for Repository Pattern testing
+    testImplementation("io.mockk:mockk:1.13.8")
+    // Room testing with in-memory database for repository tests
+    testImplementation("androidx.room:room-testing:2.6.1")
 
     // Instrumentation Tests (androidTestImplementation)
     androidTestImplementation(libs.androidx.junit)
