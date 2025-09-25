@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import com.example.laboratoriodeldolor.ui.accessibility.accessibleSelectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -40,17 +41,21 @@ fun MoodEmojiButton(
     if (selected) {
         Box(
             modifier = baseModifier
-                .semantics { if (!contentDesc.isNullOrEmpty()) this.contentDescription = contentDesc },
+                .accessibleSelectable(
+                    contentDescription = contentDesc ?: "Mood emoji $emoji",
+                    isSelected = selected,
+                    onClick = {
+                        pressedScale = 1.12f
+                        onClick()
+                        pressedScale = 1f
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
             // Use themed primary colors for selected state
                 PrimaryButton(
                 text = emoji,
-                onClick = {
-                    pressedScale = 1.12f
-                    onClick()
-                    pressedScale = 1f
-                },
+                onClick = {}, // Click handled by parent
                 modifier = Modifier
                     .size(touchSize)
                     .shadow(elevation = 6.dp, shape = CircleShape),
@@ -63,17 +68,21 @@ fun MoodEmojiButton(
     } else {
         Box(
             modifier = baseModifier
-                .semantics { if (!contentDesc.isNullOrEmpty()) this.contentDescription = contentDesc },
+                .accessibleSelectable(
+                    contentDescription = contentDesc ?: "Mood emoji $emoji",
+                    isSelected = selected,
+                    onClick = {
+                        pressedScale = 1.08f
+                        onClick()
+                        pressedScale = 1f
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
             // Use secondary/neutral styling for unselected state
             SecondaryButton(
                 text = emoji,
-                onClick = {
-                    pressedScale = 1.08f
-                    onClick()
-                    pressedScale = 1f
-                },
+                onClick = {}, // Click handled by parent
                 modifier = Modifier.size(touchSize),
                 height = touchSize,
                 textStyle = MaterialTheme.typography.labelLarge
