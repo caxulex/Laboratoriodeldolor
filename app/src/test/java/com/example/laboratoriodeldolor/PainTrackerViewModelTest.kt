@@ -19,7 +19,7 @@ class PainTrackerViewModelTest {
     val dispatcher = UnconfinedTestDispatcher(testScheduler)
     kotlinx.coroutines.Dispatchers.setMain(dispatcher)
         try {
-            val vm = PainTrackerViewModel(null)
+            val vm = PainTrackerViewModel(null, null)
 
             // start empty (front view is default)
             assertEquals(0, vm.frontPainPoints.value.size)
@@ -37,39 +37,39 @@ class PainTrackerViewModelTest {
     }
 
     @Test
-    fun savePainPoints_returnsFalseWhenNoDao() = runTest {
-        val vm = PainTrackerViewModel(null)
+    fun savePainPoints_returnsFalseWhenNoRepository() = runTest {
+        val vm = PainTrackerViewModel(null, null)
     val result = vm.savePainPoints()
-    // savePainPoints returns String?; when no DAO it's null
+    // savePainPoints returns String?; when no repository it's null
     assertNull(result)
     }
 
     @Test
-    fun savePainPoints_returnsTrueWhenDaoProvided() = runTest {
-        // Provide a fake DAO that records calls but does not require Room
-        val fakeDao = object : PainPointDao {
+    fun savePainPoints_returnsTrueWhenRepositoryProvided() = runTest {
+        // Provide a fake repository that records calls but does not require Room
+        val fakeRepository = object : com.example.laboratoriodeldolor.repository.PainPointRepository {
             var saved: List<PainPoint>? = null
-            override fun getAll() = kotlinx.coroutines.flow.flowOf(emptyList<PainPoint>())
-            override suspend fun getAllSnapshot(): List<PainPoint> = emptyList()
-            override suspend fun insertAll(points: List<PainPoint>) {
-                saved = points
+            override fun getAllPainPoints() = kotlinx.coroutines.flow.flowOf(emptyList<PainPoint>())
+            override suspend fun getAllPainPointsSnapshot(): List<PainPoint> = emptyList()
+            override suspend fun insertPainPoints(painPoints: List<PainPoint>) {
+                saved = painPoints
             }
-            override suspend fun deleteAll() {
+            override suspend fun clearAllPainPoints() {
                 // no-op
             }
-            override suspend fun deleteById(id: Long) {
+            override suspend fun deletePainPoint(id: Long) {
                 // no-op for test
             }
-            override suspend fun deleteOlderThan(cutoffMillis: Long) { /* no-op */ }
-            override suspend fun getByLogId(logId: Long) = emptyList<PainPoint>()
+            override suspend fun deleteOldPainPoints(cutoffMillis: Long) { /* no-op */ }
+            override suspend fun getPainPointsByLogId(logId: Long) = emptyList<PainPoint>()
         }
     val dispatcher = UnconfinedTestDispatcher(testScheduler)
     kotlinx.coroutines.Dispatchers.setMain(dispatcher)
     try {
-            val vm = PainTrackerViewModel(fakeDao)
+            val vm = PainTrackerViewModel(fakeRepository, null)
             vm.addPainPointNormalized(androidx.compose.ui.geometry.Offset(0.3f, 0.4f))
             val result = vm.savePainPoints()
-            // should return a non-null navigation route string when DAO provided
+            // should return a non-null navigation route string when repository provided
             assertNotNull(result)
         } finally {
             kotlinx.coroutines.Dispatchers.resetMain()

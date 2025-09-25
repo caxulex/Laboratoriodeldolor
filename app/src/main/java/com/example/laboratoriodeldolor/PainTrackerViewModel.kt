@@ -43,8 +43,8 @@ fun detectBodyAreas(points: List<Offset>): Set<BodyArea> {
  */
 
 class PainTrackerViewModel(
-    private val painPointDao: PainPointDao? = null,
-    private val painLogDao: PainLogDao? = null
+    private val painPointRepository: com.example.laboratoriodeldolor.repository.PainPointRepository? = null,
+    private val painLogRepository: com.example.laboratoriodeldolor.repository.PainLogRepository? = null
 ) : ViewModel() {
     // Stored coordinates are normalized (x = 0..1, y = 0..1)
     // Separate lists for front and back views so users can mark independently.
@@ -54,8 +54,8 @@ class PainTrackerViewModel(
     private val _backPainPoints = MutableStateFlow<List<LocalPainPoint>>(emptyList())
     val backPainPoints: StateFlow<List<LocalPainPoint>> = _backPainPoints
 
-    // Expose stored DB points as Flow if DAO provided (optional)
-    val painPointsFromDb: Flow<List<PainPoint>>? = painPointDao?.getAll()
+    // Expose stored DB points as Flow if repository provided (optional)
+    val painPointsFromDb: Flow<List<PainPoint>>? = painPointRepository?.getAllPainPoints()
 
     // Expose which areas currently have pain points (set of BodyArea)
     private val _selectedAreas = MutableStateFlow<Set<BodyArea>>(emptySet())
@@ -78,9 +78,9 @@ class PainTrackerViewModel(
      * Delete all persisted pain points.
      */
     fun deleteAllPersisted() {
-        val dao = painPointDao ?: return
+        val repository = painPointRepository ?: return
         viewModelScope.launch {
-            try { dao.deleteAll() } catch (e: Exception) { println("deleteAllPersisted failed: ${'$'}e") }
+            try { repository.clearAllPainPoints() } catch (e: Exception) { println("deleteAllPersisted failed: ${'$'}e") }
         }
     }
 
@@ -88,9 +88,9 @@ class PainTrackerViewModel(
      * Delete a persisted pain point by its database id.
      */
     fun deletePersistedById(id: Long) {
-        val dao = painPointDao ?: return
+        val repository = painPointRepository ?: return
         viewModelScope.launch {
-            try { dao.deleteById(id) } catch (e: Exception) { println("deletePersistedById failed: ${'$'}e") }
+            try { repository.deletePainPoint(id) } catch (e: Exception) { println("deletePersistedById failed: ${'$'}e") }
         }
     }
 
@@ -138,7 +138,7 @@ class PainTrackerViewModel(
      * This is a suspend function so callers can await completion before navigating.
      */
     suspend fun savePainPoints(): String? {
-        val dao = painPointDao ?: return null
+        val repository = painPointRepository ?: return null
 
         // Save points from both front and back lists with correct view tags
         val frontToSave = _frontPainPoints.value.map { lp -> PainPoint(x = lp.xNorm, y = lp.yNorm, view = "front", intensity = lp.intensity) }
@@ -148,12 +148,12 @@ class PainTrackerViewModel(
         return try {
             // Run DB operations on IO
             val toSaveWithLog = withContext(Dispatchers.IO) {
-                val logId = try { painLogDao?.insertLog(PainLog()) ?: 0L } catch (_: Exception) { 0L }
+                val logId = try { painLogRepository?.insertPainLog(PainLog()) ?: 0L } catch (_: Exception) { 0L }
                 toSave.map { it.copy(logId = logId) }
             }
 
             withContext(Dispatchers.IO) {
-                dao.insertAll(toSaveWithLog)
+                repository.insertPainPoints(toSaveWithLog)
             }
 
             // After persisting, recompute areas from the in-memory lists

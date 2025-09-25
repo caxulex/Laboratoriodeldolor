@@ -140,7 +140,7 @@ class MainActivity : ComponentActivity() {
                         NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(innerPadding)) {
                         // Check-in flow
                         composable(Screen.CheckinMood.route) {
-                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
+                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).moodRepository, (application as MoodApplication).exerciseRepository, (application as MoodApplication).preferencesRepository))
                             MoodCheckInScreen(moodViewModel,
                                 onNext = { navController.navigate(Screen.CheckinPain.route) },
                                 onSkip = {
@@ -162,8 +162,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Screen.CheckinPain.route) {
-                            val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
-                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
+                            val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).painPointRepository, (application as MoodApplication).painLogRepository))
+                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).moodRepository, (application as MoodApplication).exerciseRepository, (application as MoodApplication).preferencesRepository))
                             PainCheckInScreen(painTrackerViewModel, onFinish = {
                                 // user saved pain -> prioritize PAIN module
                                 moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.PAIN)
@@ -184,7 +184,7 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable(Screen.Diario.route) {
-                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).database.moodDao(), (application as MoodApplication).database.exerciseDao(), (application as MoodApplication).preferencesRepository))
+                            val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).moodRepository, (application as MoodApplication).exerciseRepository, (application as MoodApplication).preferencesRepository))
                             DailyMoodScreen(
                                 viewModel = moodViewModel,
                                 onNavigateToPainTracker = { navController.navigate(Screen.Dolor.route) },
@@ -229,7 +229,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable(Screen.Dolor.route) {
-                                val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).database.painPointDao(), (application as MoodApplication).database.painLogDao()))
+                                val painTrackerViewModel: PainTrackerViewModel = viewModel(factory = PainTrackerViewModelFactory((application as MoodApplication).painPointRepository, (application as MoodApplication).painLogRepository))
                                 // Read persisted gender preference and pass into the PainTrackerScreen
                                 val settingsVmForPain: SettingsViewModel = viewModel()
                                 val genderPref by settingsVmForPain.gender.collectAsState()

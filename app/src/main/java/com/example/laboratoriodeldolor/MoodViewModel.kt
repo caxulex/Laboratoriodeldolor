@@ -18,7 +18,11 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
-class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: ExerciseDao, private val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository? = null) : ViewModel() {
+class MoodViewModel(
+    private val moodRepository: com.example.laboratoriodeldolor.repository.MoodRepository,
+    private val exerciseRepository: com.example.laboratoriodeldolor.repository.ExerciseRepository,
+    private val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository? = null
+) : ViewModel() {
     // State is still here
     private val tag = "MoodApp"
     // Use explicit MutableState backing fields instead of delegated properties to avoid compiler delegation issues in ViewModel
@@ -32,7 +36,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
         get() = _noteText.value
         set(value) { _noteText.value = value }
 
-    val moodEntries: StateFlow<List<MoodEntry>> = moodDao.getAllEntries()
+    val moodEntries: StateFlow<List<MoodEntry>> = moodRepository.getAllMoodEntries()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -48,7 +52,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
     init {
         // Recompute streak whenever exercise logs change
         viewModelScope.launch {
-            exerciseDao.getAll().collectLatest { logs ->
+            exerciseRepository.getAllExerciseLogs().collectLatest { logs ->
                 val timestamps = logs.map { it.timestamp }
                 _streak.value = computeStreakFromLogs(timestamps)
 
@@ -99,7 +103,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
                     timestamp = System.currentTimeMillis(),
                     moodScore = MoodMapping.emojiToScore(selectedEmoji)
                 )
-                withContext(Dispatchers.IO) { moodDao.insert(newEntry) }
+                withContext(Dispatchers.IO) { moodRepository.insertMoodEntry(newEntry) }
                 Log.d(tag, "Saved mood entry at ${'$'}{newEntry.timestamp}")
             } catch (e: Exception) {
                 // Log exception so we can debug insert failures (Room, DB locked, etc.)
@@ -117,7 +121,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
         viewModelScope.launch {
                 try {
                 val now = System.currentTimeMillis()
-                withContext(Dispatchers.IO) { exerciseDao.insert(ExerciseLog(timestamp = now)) }
+                withContext(Dispatchers.IO) { exerciseRepository.insertExerciseLog(ExerciseLog(timestamp = now)) }
                 Log.d(tag, "Logged exercise at ${'$'}now")
             } catch (e: Exception) {
                 Log.e(tag, "logExerciseCompleted failed", e)
@@ -131,7 +135,7 @@ class MoodViewModel(private val moodDao: MoodDao, private val exerciseDao: Exerc
     fun undoLastExercise() {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) { exerciseDao.deleteMostRecent() }
+                withContext(Dispatchers.IO) { exerciseRepository.deleteMostRecentExerciseLog() }
                 Log.d(tag, "Deleted most recent exercise log (undo)")
             } catch (e: Exception) {
                 Log.e(tag, "undoLastExercise failed", e)

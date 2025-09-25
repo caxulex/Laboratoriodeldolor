@@ -1,6 +1,8 @@
 package com.example.laboratoriodeldolor
 
 import android.app.Application
+import com.example.laboratoriodeldolor.repository.*
+import com.example.laboratoriodeldolor.repository.impl.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,8 +13,40 @@ import kotlinx.coroutines.launch
 class MoodApplication : Application() {
     // Using lazy so the database is only created when it's first needed
     val database: AppDatabase by lazy { AppDatabase.getDatabase(this) }
+    
     // Preferences repository for lightweight persisted user choices
-    val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository by lazy { com.example.laboratoriodeldolor.data.UserPreferencesRepository(this) }
+    val preferencesRepository: com.example.laboratoriodeldolor.data.UserPreferencesRepository by lazy { 
+        com.example.laboratoriodeldolor.data.UserPreferencesRepository(this) 
+    }
+    
+    // Repository pattern implementations - provide clean abstractions over DAOs
+    val moodRepository: MoodRepository by lazy { 
+        MoodRepositoryImpl(database.moodDao()) 
+    }
+    
+    val painPointRepository: PainPointRepository by lazy { 
+        PainPointRepositoryImpl(database.painPointDao()) 
+    }
+    
+    val painLogRepository: PainLogRepository by lazy { 
+        PainLogRepositoryImpl(database.painLogDao()) 
+    }
+    
+    val exerciseRepository: ExerciseRepository by lazy { 
+        ExerciseRepositoryImpl(database.exerciseDao()) 
+    }
+    
+    val techniqueRepository: TechniqueRepository by lazy { 
+        TechniqueRepositoryImpl(database.techniqueDao()) 
+    }
+    
+    val routineRepository: RoutineRepository by lazy { 
+        RoutineRepositoryImpl(database.routineDao()) 
+    }
+    
+    val routineStepRepository: RoutineStepRepository by lazy { 
+        RoutineStepRepositoryImpl(database.routineStepDao()) 
+    }
 
     // CompletableDeferred lets activities await DB warmup without blocking the main thread
     private val _databaseReady = CompletableDeferred<Unit>()
