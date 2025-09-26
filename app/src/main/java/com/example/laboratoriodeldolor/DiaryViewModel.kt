@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 
-class DiaryViewModel(private val moodDao: MoodDao) : ViewModel() {
+class DiaryViewModel(private val moodRepository: com.example.laboratoriodeldolor.repository.MoodRepository) : ViewModel() {
 
     private val _entries = MutableStateFlow<List<MoodEntry>>(emptyList())
     val entries: StateFlow<List<MoodEntry>> = _entries
@@ -17,7 +17,7 @@ class DiaryViewModel(private val moodDao: MoodDao) : ViewModel() {
     init {
         // Collecting Flow returned by Room is safe on main, but ensure any heavy processing is on IO.
         viewModelScope.launch {
-            moodDao.getAllEntries().collectLatest { list ->
+            moodRepository.getAllMoodEntries().collectLatest { list ->
                 _entries.value = list
             }
         }
@@ -27,7 +27,7 @@ class DiaryViewModel(private val moodDao: MoodDao) : ViewModel() {
         viewModelScope.launch {
             val entry = MoodEntry(emoji = emoji, note = note, timestamp = System.currentTimeMillis(), moodScore = MoodMapping.emojiToScore(emoji))
             withContext(Dispatchers.IO) {
-                moodDao.insert(entry)
+                moodRepository.insertMoodEntry(entry)
             }
         }
     }

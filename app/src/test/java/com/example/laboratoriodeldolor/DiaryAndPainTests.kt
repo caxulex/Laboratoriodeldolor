@@ -20,14 +20,14 @@ class DiaryAndPainTests {
     kotlinx.coroutines.Dispatchers.setMain(dispatcher)
         try {
             var inserted: MoodEntry? = null
-        val spyDao = object : MoodDao {
-            override suspend fun insert(moodEntry: MoodEntry) { inserted = moodEntry }
-            override fun getAllEntries() = kotlinx.coroutines.flow.flowOf(emptyList<MoodEntry>())
-            override suspend fun getRecent(limit: Int) = emptyList<MoodEntry>()
-            override suspend fun deleteOlderThan(cutoffMillis: Long) { /* no-op for unit test */ }
+        val spyRepository = object : com.example.laboratoriodeldolor.repository.MoodRepository {
+            override suspend fun insertMoodEntry(moodEntry: MoodEntry) { inserted = moodEntry }
+            override fun getAllMoodEntries() = kotlinx.coroutines.flow.flowOf(emptyList<MoodEntry>())
+            override suspend fun getRecentMoodEntries(limit: Int) = emptyList<MoodEntry>()
+            override suspend fun deleteOldMoodEntries(cutoffMillis: Long) { /* no-op for unit test */ }
         }
 
-        val vm = DiaryViewModel(spyDao)
+        val vm = DiaryViewModel(spyRepository)
         vm.saveEntry("😊", "nota de prueba")
 
         // saveEntry launches a coroutine; wait briefly by running a blocking loop

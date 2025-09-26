@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
  * can be provided. Tests can also disable auto-collection and invoke [startCollecting] manually.
  */
 class RoutinesListViewModel(
-    private val routineDao: RoutineDao,
+    private val routineRepository: com.example.laboratoriodeldolor.repository.RoutineRepository,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     // Retained for potential future use (previously part of a StateFlow.stateIn approach).
     @Suppress("unused") private val started: SharingStarted = SharingStarted.WhileSubscribed(5000),
@@ -32,7 +32,7 @@ class RoutinesListViewModel(
     val routines: StateFlow<List<Routine>> = _routines
 
     private suspend fun collectRoutines() {
-        routineDao.getAll()
+        routineRepository.getAllRoutines()
             .catch { e ->
                 _error.value = e.message ?: "db_error"
                 emit(emptyList())

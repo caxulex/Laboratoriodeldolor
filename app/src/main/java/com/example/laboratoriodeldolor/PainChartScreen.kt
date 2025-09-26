@@ -36,9 +36,9 @@ import com.example.laboratoriodeldolor.ui.AppScaffold
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PainChartScreen(
-    painDao: PainPointDao,
+    painPointRepository: com.example.laboratoriodeldolor.repository.PainPointRepository,
     onBack: () -> Unit,
-    viewModel: PainChartViewModel = viewModel(factory = PainChartViewModelFactory(painDao))
+    viewModel: PainChartViewModel = viewModel(factory = PainChartViewModelFactory(painPointRepository))
 ) {
     val uiState by viewModel.uiState.collectAsState()
     

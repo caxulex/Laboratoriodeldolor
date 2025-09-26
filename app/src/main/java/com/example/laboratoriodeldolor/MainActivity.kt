@@ -283,7 +283,7 @@ class MainActivity : ComponentActivity() {
                                 SettingsScreen(viewModel = settingsVm, onNavigateToAbout = { navController.navigate("about") })
                             }
                             composable(Screen.Diary.route) {
-                                val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).database.moodDao()))
+                                val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).moodRepository))
                                 DiaryScreen(diaryViewModel = diaryViewModel, onBack = { navController.popBackStack() })
                             }
                             composable("about") {
@@ -304,7 +304,7 @@ class MainActivity : ComponentActivity() {
                             }
                             // Recommendation screen removed - users are navigated directly to technique pages after saving pain points
                             composable(Screen.Respiracion.route) {
-                                val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).database.moodDao()))
+                                val breathWorkViewModel: BreathWorkViewModel = viewModel(factory = BreathWorkViewModelFactory((application as MoodApplication).moodRepository))
                                 BreathWorkScreen(viewModel = breathWorkViewModel, onInstruction = { id ->
                                     navController.navigate("breath_instruction/$id")
                                 })
@@ -314,10 +314,10 @@ class MainActivity : ComponentActivity() {
                                 BreathInstructionScreen(id = id, onBack = { navController.popBackStack() })
                             }
                             composable(Screen.Progress.route) {
-                                // Provide MoodDao and PainDao from application to the chart screen
+                                // Provide MoodRepository and PainPointRepository from application to the chart screen
                                 com.example.laboratoriodeldolor.MoodProgressScreen(
-                                    moodDao = (application as MoodApplication).database.moodDao(),
-                                    painDao = (application as MoodApplication).database.painPointDao(),
+                                    moodRepository = (application as MoodApplication).moodRepository,
+                                    painPointRepository = (application as MoodApplication).painPointRepository,
                                     onOpenPainChart = {
                                         navController.navigate("pain_chart")
                                     }
@@ -328,7 +328,7 @@ class MainActivity : ComponentActivity() {
                             }
                             composable("pain_chart") {
                                 // Placeholder - implemented in PainChartScreen.kt
-                                PainChartScreen(painDao = (application as MoodApplication).database.painPointDao(), onBack = { navController.popBackStack() })
+                                PainChartScreen(painPointRepository = (application as MoodApplication).painPointRepository, onBack = { navController.popBackStack() })
                             }
                             // Techniques library
                             composable("techniques") {
@@ -337,7 +337,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             composable("routines") {
-                                val routinesVm: RoutinesListViewModel = viewModel(factory = RoutinesListViewModelFactory((application as MoodApplication).database.routineDao()))
+                                val routinesVm: RoutinesListViewModel = viewModel(factory = RoutinesListViewModelFactory((application as MoodApplication).routineRepository))
                                 RoutinesListScreen(viewModel = routinesVm) { id -> navController.navigate("pain_region/$id") }
                             }
                             composable("technique/{id}") { backStack ->
@@ -349,7 +349,7 @@ class MainActivity : ComponentActivity() {
                                 PainRegionScreen(routineId = rid, routineDao = (application as MoodApplication).database.routineDao(), techniqueDao = (application as MoodApplication).database.techniqueDao(), onNavigateToTechnique = { tid -> navController.navigate("technique/$tid") })
                             }
                             composable("history") {
-                                val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).database.moodDao()))
+                                val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).moodRepository))
                                 MoodHistoryScreen(viewModel = moodHistoryViewModel)
                             }
                             // Recommendation summary screen shown after saving pain points
@@ -357,11 +357,11 @@ class MainActivity : ComponentActivity() {
                                 val app = (application as MoodApplication)
                                 val recVm: RecommendationViewModel = viewModel(
                                     factory = RecommendationViewModelFactory(
-                                        app.database.moodDao(),
-                                        app.database.painPointDao(),
-                                        app.database.routineDao(),
-                                        app.database.routineStepDao(),
-                                        app.database.techniqueDao()
+                                        app.moodRepository,
+                                        app.painPointRepository,
+                                        app.routineRepository,
+                                        app.routineStepRepository,
+                                        app.techniqueRepository
                                     )
                                 )
                                 RecommendationScreen(viewModel = recVm, onOpenTechnique = { id -> navController.navigate("technique/$id") }, onOpenTechniquesLibrary = { navController.navigate("techniques") })

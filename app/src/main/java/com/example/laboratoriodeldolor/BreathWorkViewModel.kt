@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
  * BreathWorkViewModel
  * - Fetches the most recent MoodEntry and suggests a breath-work exercise id.
  */
-class BreathWorkViewModel(private val moodDao: MoodDao) : ViewModel() {
+class BreathWorkViewModel(private val moodRepository: com.example.laboratoriodeldolor.repository.MoodRepository) : ViewModel() {
 
     private val _recommendedId = MutableStateFlow<String?>(null)
     val recommendedId: StateFlow<String?> = _recommendedId
@@ -23,7 +23,7 @@ class BreathWorkViewModel(private val moodDao: MoodDao) : ViewModel() {
 
     fun refresh() {
         viewModelScope.launch {
-            val recent = withContext(Dispatchers.IO) { moodDao.getRecent(1) }
+            val recent = withContext(Dispatchers.IO) { moodRepository.getRecentMoodEntries(1) }
             val latest = recent.firstOrNull()
             val id = when (latest?.emoji) {
                 "😞" -> "enamorado"

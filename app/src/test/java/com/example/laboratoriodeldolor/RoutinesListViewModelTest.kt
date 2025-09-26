@@ -21,14 +21,14 @@ class RoutinesListViewModelTest {
     kotlinx.coroutines.Dispatchers.setMain(dispatcher)
 
         val sample = listOf(Routine(id = 1, title = "R1", bodyRegion = "upper", summary = "s1"))
-        val fakeDao = object : RoutineDao {
-            override fun getAll(): kotlinx.coroutines.flow.Flow<List<Routine>> = flowOf(sample)
-            override suspend fun getById(id: Long) = sample.firstOrNull()
-            override suspend fun insert(routine: Routine): Long { return 1L }
-            override fun getWithSteps(id: Long): kotlinx.coroutines.flow.Flow<RoutineWithSteps?> = flowOf(null)
+        val fakeRepository = object : com.example.laboratoriodeldolor.repository.RoutineRepository {
+            override fun getAllRoutines(): kotlinx.coroutines.flow.Flow<List<Routine>> = flowOf(sample)
+            override suspend fun getRoutineById(id: Long) = sample.firstOrNull()
+            override suspend fun insertRoutine(routine: Routine): Long = 1L
+            override fun getRoutineWithSteps(id: Long): kotlinx.coroutines.flow.Flow<RoutineWithSteps?> = flowOf(null)
         }
 
-    val vm = RoutinesListViewModel(fakeDao, dispatcher = dispatcher, collectionScope = this, autoCollect = false)
+    val vm = RoutinesListViewModel(fakeRepository, dispatcher = dispatcher, collectionScope = this, autoCollect = false)
         // ensure collection starts on the test scope explicitly
     vm.startCollecting(this)
         try {
@@ -47,14 +47,14 @@ class RoutinesListViewModelTest {
     val dispatcher = StandardTestDispatcher(testScheduler)
     kotlinx.coroutines.Dispatchers.setMain(dispatcher)
 
-        val fakeDao = object : RoutineDao {
-            override fun getAll(): kotlinx.coroutines.flow.Flow<List<Routine>> = flow { throw RuntimeException("boom") }
-            override suspend fun getById(id: Long): Routine? = null
-            override suspend fun insert(routine: Routine): Long = 0L
-            override fun getWithSteps(id: Long): kotlinx.coroutines.flow.Flow<RoutineWithSteps?> = flowOf(null)
+        val fakeRepository = object : com.example.laboratoriodeldolor.repository.RoutineRepository {
+            override fun getAllRoutines(): kotlinx.coroutines.flow.Flow<List<Routine>> = flow { throw RuntimeException("boom") }
+            override suspend fun getRoutineById(id: Long): Routine? = null
+            override suspend fun insertRoutine(routine: Routine): Long = 0L
+            override fun getRoutineWithSteps(id: Long): kotlinx.coroutines.flow.Flow<RoutineWithSteps?> = flowOf(null)
         }
 
-    val vm = RoutinesListViewModel(fakeDao, dispatcher = dispatcher, collectionScope = this, autoCollect = false)
+    val vm = RoutinesListViewModel(fakeRepository, dispatcher = dispatcher, collectionScope = this, autoCollect = false)
         // start collecting in the test scope, then advance scheduler
     vm.startCollecting(this)
         try {

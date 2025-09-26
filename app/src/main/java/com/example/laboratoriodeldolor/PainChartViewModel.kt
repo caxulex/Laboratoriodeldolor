@@ -30,7 +30,7 @@ enum class TimeRange(val days: Long, val labelKey: String) {
     LAST_90_DAYS(90, "last_90_days")
 }
 
-class PainChartViewModel(private val painPointDao: PainPointDao) : ViewModel() {
+class PainChartViewModel(private val painPointRepository: com.example.laboratoriodeldolor.repository.PainPointRepository) : ViewModel() {
     
     private val _uiState = MutableStateFlow(PainChartUiState())
     val uiState: StateFlow<PainChartUiState> = _uiState
@@ -54,7 +54,7 @@ class PainChartViewModel(private val painPointDao: PainPointDao) : ViewModel() {
                 val cutoffDays = _uiState.value.selectedTimeRange.days
                 val cutoffTime = now.minusSeconds(cutoffDays * 24 * 60 * 60).toEpochMilli()
                 
-                painPointDao.getAll().collect { allPoints ->
+                painPointRepository.getAllPainPoints().collect { allPoints ->
                     // Filter points within the selected time range
                     val filteredPoints = allPoints.filter { it.timestamp >= cutoffTime }
                     

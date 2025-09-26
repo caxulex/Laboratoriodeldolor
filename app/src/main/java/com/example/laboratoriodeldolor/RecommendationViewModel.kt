@@ -18,11 +18,11 @@ import kotlinx.coroutines.flow.firstOrNull
  * It returns resource IDs inside Recommendation and the UI should call stringResource() when rendering.
  */
 class RecommendationViewModel(
-    private val moodDao: MoodDao,
-    private val painDao: PainPointDao,
-    private val routineDao: RoutineDao,
-    private val routineStepDao: RoutineStepDao,
-    private val techniqueDao: TechniqueDao
+    private val moodRepository: com.example.laboratoriodeldolor.repository.MoodRepository,
+    private val painPointRepository: com.example.laboratoriodeldolor.repository.PainPointRepository,
+    private val routineRepository: com.example.laboratoriodeldolor.repository.RoutineRepository,
+    private val routineStepRepository: com.example.laboratoriodeldolor.repository.RoutineStepRepository,
+    private val techniqueRepository: com.example.laboratoriodeldolor.repository.TechniqueRepository
 ) : ViewModel() {
 
     private val _recommendation = MutableStateFlow<Recommendation?>(null)
@@ -45,8 +45,8 @@ class RecommendationViewModel(
             val recentMoods: List<MoodEntry>
             val recentPains: List<PainPoint>
             withContext(Dispatchers.IO) {
-                recentMoods = moodDao.getRecent(14)
-                recentPains = painDao.getAllSnapshot()
+                recentMoods = moodRepository.getRecentMoodEntries(14)
+                recentPains = painPointRepository.getAllPainPointsSnapshot()
             }
 
             val rec = withContext(Dispatchers.Default) { computeRecommendation(recentMoods, recentPains) }
@@ -59,18 +59,18 @@ class RecommendationViewModel(
             // Load routines for those regions and collect referenced techniques (by id)
             val techniques = withContext(Dispatchers.IO) {
                 // Fetch all routines once, filter by bodyRegion
-                val routinesSnapshot = routineDao.getAll().firstOrNull().orEmpty()
+                val routinesSnapshot = routineRepository.getAllRoutines().firstOrNull().orEmpty()
                 val routineIds = routinesSnapshot.filter { rk -> regionKeys.contains(rk.bodyRegion) }.map { it.id }
                 val techniqueIds = mutableSetOf<Long>()
                 for (rid in routineIds) {
-                    val steps = routineStepDao.getForRoutine(rid).firstOrNull().orEmpty()
+                    val steps = routineStepRepository.getStepsForRoutine(rid).firstOrNull().orEmpty()
                     for (s in steps) {
                         val tid = s.techniqueId
                         if (tid != null) techniqueIds.add(tid)
                     }
                 }
                 // Resolve Technique records for ids, keep insertion order
-                val allTech = techniqueDao.getAll().firstOrNull().orEmpty()
+                val allTech = techniqueRepository.getAllTechniques().firstOrNull().orEmpty()
                 allTech.filter { techniqueIds.contains(it.id) }
             }
             _techniques.value = techniques

@@ -58,8 +58,8 @@ import kotlin.math.sqrt
 private enum class MoodPeriod { Weekly, Monthly, Quarterly }
 
 @Composable
-fun MoodProgressScreen(moodDao: MoodDao, painDao: PainPointDao, onOpenPainChart: () -> Unit) {
-    val allEntries by moodDao.getAllEntries().collectAsState(initial = emptyList())
+fun MoodProgressScreen(moodRepository: com.example.laboratoriodeldolor.repository.MoodRepository, painPointRepository: com.example.laboratoriodeldolor.repository.PainPointRepository, onOpenPainChart: () -> Unit) {
+    val allEntries by moodRepository.getAllMoodEntries().collectAsState(initial = emptyList())
     // Period selector: Weekly / Monthly / Quarterly
     val (period, setPeriod) = remember { androidx.compose.runtime.mutableStateOf(MoodPeriod.Weekly) }
 
@@ -445,7 +445,7 @@ fun MoodProgressScreen(moodDao: MoodDao, painDao: PainPointDao, onOpenPainChart:
         Spacer(modifier = Modifier.height(16.dp))
 
         // Group pain preview + legend + summary inside a Card so layout doesn't overlap
-        val painViewModel: PainChartViewModel = viewModel(factory = PainChartViewModelFactory(painDao))
+        val painViewModel: PainChartViewModel = viewModel(factory = PainChartViewModelFactory(painPointRepository))
         val painState by painViewModel.uiState.collectAsState()
 
         Card(modifier = Modifier.fillMaxWidth()) {

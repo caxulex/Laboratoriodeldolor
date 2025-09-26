@@ -13,14 +13,14 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.LocalDate
 
-class MoodChartViewModel(private val moodDao: MoodDao) : ViewModel() {
+class MoodChartViewModel(private val moodRepository: com.example.laboratoriodeldolor.repository.MoodRepository) : ViewModel() {
     enum class TimeFrame { WEEK, MONTH }
 
     private val _timeFrame = MutableStateFlow(TimeFrame.WEEK)
     val timeFrame: StateFlow<TimeFrame> = _timeFrame
 
     // Expose filtered entries as a StateFlow so UI can collectAsState
-    val entries = combine(moodDao.getAllEntries(), _timeFrame) { list, tf ->
+    val entries = combine(moodRepository.getAllMoodEntries(), _timeFrame) { list, tf ->
         val zone = ZoneId.systemDefault()
         val today = LocalDate.now(zone)
         val cutoff = when (tf) {
