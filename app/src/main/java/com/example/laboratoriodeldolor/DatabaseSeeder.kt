@@ -208,6 +208,16 @@ object DatabaseSeeder {
 
                         // Mark preferences as seeded
                         prefs.setHasSeededContent(true)
+                        
+                        // Initialize rehabilitation data
+                        try {
+                            val rehabRepository = com.example.laboratoriodeldolor.data.rehabilitation.RehabilitationRepository(database.rehabilitationDao())
+                            rehabRepository.initializeDefaultCategories()
+                            rehabRepository.initializeDefaultExercises()
+                        } catch (e: Exception) {
+                            // Log but don't fail the entire seeding process
+                            e.printStackTrace()
+                        }
 
                     } catch (t: Throwable) {
                         t.printStackTrace()

@@ -35,7 +35,8 @@ fun BreathWorkScreen(viewModel: BreathWorkViewModel, onInstruction: (String) -> 
     val exercises = listOf(
         "enamorado" to stringResource(id = R.string.breath_enamorado_title),
         "chilindrina" to stringResource(id = R.string.breath_chilindrina_title),
-        "cuadrado" to stringResource(id = R.string.breath_cuadrado_title)
+        "cuadrado" to stringResource(id = R.string.breath_cuadrado_title),
+        "retencion" to stringResource(id = R.string.breath_retencion_title)
     )
 
     com.example.laboratoriodeldolor.ui.AppScaffold { _ ->

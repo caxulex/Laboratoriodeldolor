@@ -34,6 +34,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Slider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Card
@@ -61,7 +62,12 @@ private fun resourcesPlural(count: Int): String {
  * Settings screen that allows the user to pick a reminder time.
  */
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, onNavigateToAbout: () -> Unit = {}) {
+fun SettingsScreen(
+    viewModel: SettingsViewModel, 
+    onNavigateToAbout: () -> Unit = {},
+    onNavigateToQClinic: () -> Unit = {},
+    onNavigateToInitialConfiguration: () -> Unit = {}
+) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val reminder by viewModel.reminderTime.collectAsState()
@@ -166,7 +172,107 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateToAbout: () -> Unit =
                     }
                 }
 
-                com.example.laboratoriodeldolor.ui.components.PrimaryButton(text = stringResource(id = R.string.about_title), onClick = { onNavigateToAbout() }, modifier = Modifier.fillMaxWidth().padding(top = 20.dp).height(48.dp))
+                // Breathing Configuration Section
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Configuración de Respiración",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                
+                // Audio configuration
+                val breathingAudioEnabled by viewModel.breathingAudioEnabled.collectAsState()
+                val breathingAudioVolume by viewModel.breathingAudioVolume.collectAsState()
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Audio de respiración",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = breathingAudioEnabled,
+                        onCheckedChange = { enabled ->
+                            scope.launch { viewModel.setBreathingAudioEnabled(enabled) }
+                        }
+                    )
+                }
+                
+                if (breathingAudioEnabled) {
+                    Column(modifier = Modifier.padding(start = 16.dp, top = 8.dp)) {
+                        Text(
+                            text = "Volumen: ${(breathingAudioVolume * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Slider(
+                            value = breathingAudioVolume,
+                            onValueChange = { volume ->
+                                scope.launch { viewModel.setBreathingAudioVolume(volume) }
+                            },
+                            valueRange = 0f..1f,
+                            steps = 9,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+                
+                // Vibration configuration
+                val breathingVibrationEnabled by viewModel.breathingVibrationEnabled.collectAsState()
+                val breathingVibrationIntensity by viewModel.breathingVibrationIntensity.collectAsState()
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Vibración de respiración",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = breathingVibrationEnabled,
+                        onCheckedChange = { enabled ->
+                            scope.launch { viewModel.setBreathingVibrationEnabled(enabled) }
+                        }
+                    )
+                }
+                
+                if (breathingVibrationEnabled) {
+                    Column(modifier = Modifier.padding(start = 16.dp, top = 8.dp)) {
+                        Text(
+                            text = "Intensidad: $breathingVibrationIntensity/5",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Slider(
+                            value = breathingVibrationIntensity.toFloat(),
+                            onValueChange = { intensity ->
+                                scope.launch { viewModel.setBreathingVibrationIntensity(intensity.toInt()) }
+                            },
+                            valueRange = 1f..5f,
+                            steps = 3,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                com.example.laboratoriodeldolor.ui.components.PrimaryButton(
+                    text = stringResource(id = R.string.qclinic_title), 
+                    onClick = { onNavigateToQClinic() }, 
+                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp).height(48.dp)
+                )
+                com.example.laboratoriodeldolor.ui.components.PrimaryButton(
+                    text = stringResource(id = R.string.initial_configuration_title), 
+                    onClick = { onNavigateToInitialConfiguration() }, 
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp).height(48.dp)
+                )
+                com.example.laboratoriodeldolor.ui.components.PrimaryButton(
+                    text = stringResource(id = R.string.about_title), 
+                    onClick = { onNavigateToAbout() }, 
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp).height(48.dp)
+                )
             }
     }
 }

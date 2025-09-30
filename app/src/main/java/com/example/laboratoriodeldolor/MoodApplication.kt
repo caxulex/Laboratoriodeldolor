@@ -3,6 +3,7 @@ package com.example.laboratoriodeldolor
 import android.app.Application
 import com.example.laboratoriodeldolor.repository.*
 import com.example.laboratoriodeldolor.repository.impl.*
+import com.example.laboratoriodeldolor.data.rehabilitation.RehabilitationRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,10 @@ class MoodApplication : Application() {
     
     val routineStepRepository: RoutineStepRepository by lazy { 
         RoutineStepRepositoryImpl(database.routineStepDao()) 
+    }
+    
+    val rehabilitationRepository: RehabilitationRepository by lazy {
+        RehabilitationRepository(database.rehabilitationDao())
     }
 
     // CompletableDeferred lets activities await DB warmup without blocking the main thread

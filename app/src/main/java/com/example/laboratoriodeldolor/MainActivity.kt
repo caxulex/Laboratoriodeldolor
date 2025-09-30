@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.compose.ui.res.stringResource
@@ -64,6 +65,11 @@ import android.graphics.BitmapFactory
 import android.content.res.Resources
 import androidx.core.view.WindowCompat
 import com.example.laboratoriodeldolor.ui.theme.LaboratorioDelDolorTheme
+import com.example.laboratoriodeldolor.ui.rehabilitation.RehabilitationScreen
+import com.example.laboratoriodeldolor.ui.rehabilitation.CategoryExercisesScreen
+import com.example.laboratoriodeldolor.ui.rehabilitation.ExerciseSessionScreen
+import com.example.laboratoriodeldolor.ui.screens.InitialConfigurationScreen
+import com.example.laboratoriodeldolor.ui.viewmodels.InitialConfigurationViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,14 +102,22 @@ class MainActivity : ComponentActivity() {
                 }
                 val navController = rememberNavController()
 
-                // Determine start destination after DB warmup and preference check. Default to checkin flow
+                // Determine start destination after DB warmup and preference check. Priority: initial config -> onboarding -> daily checkin
                 val startDestinationState = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
                 LaunchedEffect(Unit) {
                     try {
                         (application as? MoodApplication)?.awaitDatabaseReady()
                         val prefs = (application as MoodApplication).preferencesRepository
+                        
+                        // First check if initial configuration has been completed
+                        val hasCompletedInitialConfig = prefs.hasCompletedInitialConfigFlow.first()
+                        if (!hasCompletedInitialConfig) {
+                            startDestinationState.value = "initial_configuration"
+                            return@LaunchedEffect
+                        }
+                        
+                        // Then check if onboarding has been seen
                         val seen = prefs.hasSeenOnboardingFlow.first()
-                        // If onboarding not seen, show onboarding
                         if (!seen) {
                             startDestinationState.value = "onboarding"
                         } else {
@@ -138,6 +152,22 @@ class MainActivity : ComponentActivity() {
                         // Use startDestinationState if available; otherwise default to Diario while we wait to avoid flicker
                         val startDest = startDestinationState.value ?: Screen.Diario.route
                         NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(innerPadding)) {
+                        // Initial configuration screen for first-time users
+                        composable("initial_configuration") {
+                            val initialConfigViewModel: InitialConfigurationViewModel = viewModel(
+                                factory = InitialConfigurationViewModel.Factory(
+                                    (application as MoodApplication).preferencesRepository
+                                )
+                            )
+                            InitialConfigurationScreen(
+                                viewModel = initialConfigViewModel,
+                                onConfigurationComplete = {
+                                    navController.navigate(Screen.Diario.route) {
+                                        popUpTo("initial_configuration") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                         // Check-in flow
                         composable(Screen.CheckinMood.route) {
                             val moodViewModel: MoodViewModel = viewModel(factory = MoodViewModelFactory((application as MoodApplication).moodRepository, (application as MoodApplication).exerciseRepository, (application as MoodApplication).preferencesRepository))
@@ -195,6 +225,7 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToDiary = { navController.navigate("diary") },
                                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                                 onOpenPainChart = { navController.navigate("pain_chart") },
+                                onOpenMoodChart = { navController.navigate("mood_chart") },
                                 onOpenTechniquesLibrary = { navController.navigate("techniques") },
                                 onOpenExerciseHub = { navController.navigate(Screen.Exercises.route) }
                             )
@@ -226,7 +257,8 @@ class MainActivity : ComponentActivity() {
                                     onOpenPainRegion = { rid -> navController.navigate("pain_region/$rid") },
                                     onOpenPainTracker = { navController.navigate(Screen.Dolor.route) },
                                     onOpenTechniques = { navController.navigate("techniques") },
-                                    onOpenSettings = { navController.navigate(Screen.Ajustes.route) }
+                                    onOpenSettings = { navController.navigate(Screen.Ajustes.route) },
+                                    onOpenRehabilitation = { navController.navigate(Screen.Rehabilitation.route) }
                                 )
                             }
                             composable(Screen.Dolor.route) {
@@ -281,12 +313,33 @@ class MainActivity : ComponentActivity() {
                             composable(Screen.Ajustes.route) {
                                 // Use a distinct local name to avoid shadowing the top-level settingsViewModel
                                 val settingsVm: SettingsViewModel = viewModel()
-                                SettingsScreen(viewModel = settingsVm, onNavigateToAbout = { navController.navigate("about") })
+                                SettingsScreen(
+                                    viewModel = settingsVm, 
+                                    onNavigateToAbout = { navController.navigate("about") },
+                                    onNavigateToQClinic = { navController.navigate("qclinic") },
+                                    onNavigateToInitialConfiguration = { navController.navigate("initial_configuration") }
+                                )
                             }
                             composable("about") {
                                 AboutScreen(
                                     onBack = { navController.popBackStack() },
                                     onOpenPrivacy = { navController.navigate("privacy_policy") }
+                                )
+                            }
+                            composable("qclinic") {
+                                com.example.laboratoriodeldolor.ui.screens.QClinicScreen(
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable("history") {
+                                val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).moodRepository))
+                                MoodHistoryScreen(viewModel = moodHistoryViewModel)
+                            }
+                            composable("diary") {
+                                val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).moodRepository))
+                                DiaryScreen(
+                                    viewModel = diaryViewModel,
+                                    onBack = { navController.popBackStack() }
                                 )
                             }
                             composable(Screen.Exercises.route) {
@@ -323,6 +376,38 @@ class MainActivity : ComponentActivity() {
                             composable("privacy_policy") {
                                 PrivacyPolicyScreen(onBack = { navController.popBackStack() })
                             }
+                            
+                            // Rehabilitation navigation
+                            composable(Screen.Rehabilitation.route) {
+                                RehabilitationScreen(
+                                    onNavigateToCategory = { categoryId ->
+                                        navController.navigate("rehabilitation/category/$categoryId")
+                                    },
+                                    onNavigateToExercise = { exerciseId ->
+                                        navController.navigate("rehabilitation/exercise/$exerciseId")
+                                    }
+                                )
+                            }
+                            
+                            composable("rehabilitation/category/{categoryId}") { backStack ->
+                                val categoryId = backStack.arguments?.getString("categoryId") ?: ""
+                                CategoryExercisesScreen(
+                                    categoryId = categoryId,
+                                    onNavigateToExercise = { exerciseId ->
+                                        navController.navigate("rehabilitation/exercise/$exerciseId")
+                                    },
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
+                            
+                            composable("rehabilitation/exercise/{exerciseId}") { backStack ->
+                                val exerciseId = backStack.arguments?.getString("exerciseId") ?: ""
+                                ExerciseSessionScreen(
+                                    exerciseId = exerciseId,
+                                    onNavigateBack = { navController.popBackStack() },
+                                    onSessionComplete = { navController.popBackStack() }
+                                )
+                            }
                             composable("pain_chart") {
                                 // Placeholder - implemented in PainChartScreen.kt
                                 PainChartScreen(painPointRepository = (application as MoodApplication).painPointRepository, onBack = { navController.popBackStack() })
@@ -347,7 +432,18 @@ class MainActivity : ComponentActivity() {
                             }
                             composable("history") {
                                 val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).moodRepository))
-                                MoodHistoryScreen(viewModel = moodHistoryViewModel)
+                                MoodHistoryScreen(
+                                    viewModel = moodHistoryViewModel,
+                                    onOpenMoodChart = { navController.navigate("mood_chart") }
+                                )
+                            }
+                            // Mood chart visualization screen
+                            composable("mood_chart") {
+                                MoodProgressScreen(
+                                    moodRepository = (application as MoodApplication).moodRepository,
+                                    painPointRepository = (application as MoodApplication).painPointRepository,
+                                    onOpenPainChart = { navController.navigate("pain_chart") }
+                                )
                             }
                             // Diary screen for detailed journaling
                             composable("diary") {
@@ -369,7 +465,12 @@ class MainActivity : ComponentActivity() {
                                         app.techniqueRepository
                                     )
                                 )
-                                RecommendationScreen(viewModel = recVm, onOpenTechnique = { id -> navController.navigate("technique/$id") }, onOpenTechniquesLibrary = { navController.navigate("techniques") })
+                                RecommendationScreen(
+                                    viewModel = recVm, 
+                                    onOpenTechnique = { id -> navController.navigate("technique/$id") }, 
+                                    onOpenTechniquesLibrary = { navController.navigate("techniques") },
+                                    onOpenRoutine = { routineId -> navController.navigate("pain_region/$routineId") }
+                                )
                             }
                             // New specific front/back exercise screens
                             composable(Screen.FrontUpperBody.route) { FrontUpperBodyExerciseScreen(onBack = { navController.popBackStack() }) }
@@ -410,6 +511,7 @@ sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector)
     object Progress : Screen("progress", R.string.progress_title, Icons.Filled.MoreVert)
     object Ajustes : Screen("ajustes", R.string.settings_title, Icons.Filled.Settings)
     object Exercises : Screen("exercises", R.string.exercises_label, Icons.Filled.Home)
+    object Rehabilitation : Screen("rehabilitation", R.string.rehabilitation_title, Icons.Filled.FitnessCenter)
     object Techniques : Screen("techniques", R.string.techniques_label, Icons.Filled.Home)
     object Routines : Screen("routines", R.string.routines_label, Icons.Filled.Home)
 }

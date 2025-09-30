@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Laboratorio del Dolor</string>
     <string name="appbar_title">Cero Dolor App</string>
+    <string name="initial_configuration_title">Configuración inicial</string>
+    <string name="qclinic_title">QClinic</string>
     <string name="mood_tracker_title">Bienvenido a tu App CeroDolor</string>
     <string name="pain_tracker_button">Registrar Dolor</string>
     <string name="pain_tracker_title">Registra tus puntos de dolor</string>
@@ -46,6 +48,7 @@
     <string name="breath_enamorado_title">El enamorado</string>
     <string name="breath_chilindrina_title">La chilindrina</string>
     <string name="breath_cuadrado_title">El cuadrado</string>
+    <string name="breath_retencion_title">Respiración profunda con retención</string>
     <string name="breath_recommended_label">Recomendado para ti</string>
         <!-- Breath instruction bodies -->
         <string name="breath_enamorado_body">Respira profundo, inhala y suelta la exhalación por la boca imitando el sonido que hacemos cuando suspiramos, es muy importante que realices el sonido al exhalar, ya que este sonido envía información de relajación al sistema nervioso. Repite 5 veces.</string>
@@ -61,6 +64,21 @@ Sostén (4 segundos): Mantén la respiración, sin forzar, mientras cuentas ment
 Exhala (4 segundos): Exhala lenta y completamente por la boca o la nariz mientras cuentas mentalmente hasta cuatro. Siente cómo tu abdomen se contrae a medida que el aire sale de tus pulmones.
 
 Sostén (4 segundos): Mantén los pulmones vacíos, sin inhalar, mientras cuentas mentalmente hasta cuatro.</string>
+        <string name="breath_retencion_body">Esta técnica de respiración profunda con retención ayuda a oxigenar completamente el cuerpo y calmar el sistema nervioso. Es especialmente efectiva para reducir la ansiedad y mejorar la concentración. Sigue estos pasos:
+
+1. **Preparación**: Siéntate cómodamente con la espalda recta y relaja los hombros.
+
+2. **Exhalación inicial**: Expulsa todo el aire de tus pulmones completamente.
+
+3. **Inhalación profunda (6 segundos)**: Respira lenta y profundamente por la nariz, llenando primero el abdomen, luego el pecho.
+
+4. **Retención controlada (8 segundos)**: Mantén la respiración de forma relajada, sin tensión en el cuerpo.
+
+5. **Exhalación lenta (10 segundos)**: Suelta el aire gradualmente por la boca, como si estuvieras silbando suavemente.
+
+6. **Pausa natural (2 segundos)**: Permite una breve pausa antes del siguiente ciclo.
+
+Repite este ciclo 5-10 veces. Si sientes mareo, reduce los tiempos o toma un descanso.</string>
         <!-- Timer labels for box breathing -->
         <string name="box_breath_timer_title">Temporizador 4-4-4-4</string>
     <string name="box_breath_phase_duration_title">Duración por fase</string>
@@ -71,6 +89,18 @@ Sostén (4 segundos): Mantén los pulmones vacíos, sin inhalar, mientras cuenta
         <string name="phase_hold">Sostén</string>
         <string name="phase_exhale">Exhala</string>
         <string name="seconds_abbrev">%1$ds</string>
+        
+        <!-- Breathing Enhancement Settings -->
+        <string name="breathing_audio_title">Guías de Audio</string>
+        <string name="breathing_audio_description">Sonidos suaves para guiar cada fase de respiración</string>
+        <string name="breathing_vibration_title">Guías de Vibración</string>
+        <string name="breathing_vibration_description">Vibraciones sutiles para señalar cambios de fase</string>
+        <string name="breathing_audio_volume_title">Volumen de Audio</string>
+        <string name="breathing_vibration_intensity_title">Intensidad de Vibración</string>
+        <string name="breathing_intensity_low">Baja</string>
+        <string name="breathing_intensity_medium">Media</string>
+        <string name="breathing_intensity_high">Alta</string>
+        
     <string name="upper_body_exercises_title">Ejercicios para la Zona Superior</string>
     <string name="middle_body_exercises_title">Ejercicios para la Zona Media</string>
     <string name="lower_body_exercises_title">Ejercicios para la Zona Inferior</string>
@@ -206,9 +236,10 @@ Sostén (4 segundos): Mantén los pulmones vacíos, sin inhalar, mientras cuenta
     <string name="pain_point_label_format">#%1$d: %2$s</string>
 
     <!-- Chart / formatting keys used in code -->
-    <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
-    <string name="mood_chart_explanation_title">Sobre la gráfica de ánimo</string>
-    <string name="mood_chart_explanation_body">La gráfica muestra el puntaje de tu estado de ánimo en el tiempo. Usa las pestañas Semanal/Mensual/Trimestral para cambiar el periodo; Semanal/Mensual muestran el último registro por día y Trimestral agrupa por semana con promedio. Interpreta subidas como mejorías y bajadas como posibles señales de empeoramiento.</string>
+    <string name="progress_chart_desc">Bar chart showing the evolution of your mood over time.</string>
+    <string name="mood_chart_title">Mood Chart</string>
+    <string name="mood_chart_explanation_title">About the mood chart</string>
+    <string name="mood_chart_explanation_body">The chart shows your mood score over time. Use the Weekly/Monthly/Quarterly tabs to change the period; Weekly/Monthly show the last record per day and Quarterly groups by week with average. Interpret rises as improvements and falls as possible signs of deterioration.</string>
     <string name="date_format_short">dd/MM</string>
     <!-- Fallback/defaults for localized keys added in values-es -->
     <string name="about_description_short">Cero Dolor ayuda con ejercicios y técnicas para manejar el dolor.</string>
@@ -278,6 +309,27 @@ Sostén (4 segundos): Mantén los pulmones vacíos, sin inhalar, mientras cuenta
     <string name="last_7_days">Últimos 7 días</string>
     <string name="last_30_days">Últimos 30 días</string>
     <string name="last_90_days">Últimos 90 días</string>
+    
+    <!-- Rehabilitation System strings -->
+    <string name="rehabilitation_title">Rehabilitación</string>
+    <string name="rehabilitation_categories">Categorías de Ejercicios</string>
+    <string name="rehabilitation_recent_sessions">Sesiones Recientes</string>
+    <string name="rehabilitation_no_sessions">No hay sesiones registradas</string>
+    <string name="rehabilitation_start_session">Iniciar Sesión</string>
+    <string name="rehabilitation_pause_session">Pausar</string>
+    <string name="rehabilitation_resume_session">Continuar</string>
+    <string name="rehabilitation_stop_session">Detener</string>
+    <string name="rehabilitation_complete_session">Completar Sesión</string>
+    <string name="rehabilitation_session_completed">¡Sesión completada!</string>
+    <string name="rehabilitation_pain_level">Nivel de Dolor (1-10)</string>
+    <string name="rehabilitation_difficulty_rating">Dificultad del Ejercicio (1-5)</string>
+    <string name="rehabilitation_notes">Notas (opcional)</string>
+    <string name="rehabilitation_save_session">Guardar Sesión</string>
+    <string name="rehabilitation_category_exercises">Ejercicios de %1$s</string>
+    <string name="rehabilitation_exercise_duration">Duración: %1$d segundos</string>
+    <string name="rehabilitation_exercise_repetitions">Repeticiones: %1$d</string>
+    <string name="rehabilitation_exercise_difficulty">Nivel: %1$d</string>
+    <string name="rehabilitation_sessions_completed">%1$d sesiones completadas</string>
     <string name="pain_intensity_label">Intensidad del Dolor</string>
     <string name="date_axis_label">Fecha</string>
     <string name="pain_chart_suggestion">Registra puntos de dolor en el Mapa de Dolor para ver tu evolución</string>

@@ -41,7 +41,7 @@ val DEFAULT_REGIONS = listOf(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun HomeScreen(routineDao: RoutineDao, onOpenPainRegion: (Long) -> Unit, onOpenPainTracker: () -> Unit, onOpenTechniques: () -> Unit = {}, onOpenSettings: () -> Unit = {}) {
+fun HomeScreen(routineDao: RoutineDao, onOpenPainRegion: (Long) -> Unit, onOpenPainTracker: () -> Unit, onOpenTechniques: () -> Unit = {}, onOpenSettings: () -> Unit = {}, onOpenRehabilitation: () -> Unit = {}) {
     // Show a grid of regions. The mapping from region -> routineId is simplified: use the first routine that matches bodyRegion if present.
     val routines by routineDao.getAll().collectAsState(initial = emptyList())
 
@@ -71,6 +71,14 @@ fun HomeScreen(routineDao: RoutineDao, onOpenPainRegion: (Long) -> Unit, onOpenP
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(text = stringResource(id = R.string.techniques_library_title), style = MaterialTheme.typography.titleMedium)
                         Text(text = stringResource(id = R.string.techniques_library_subtitle), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+                    }
+                }
+
+                // Rehabilitation card for new exercise system
+                androidx.compose.material3.Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable { onOpenRehabilitation() }) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(text = stringResource(id = R.string.rehabilitation_title), style = MaterialTheme.typography.titleMedium)
+                        Text(text = stringResource(id = R.string.rehabilitation_categories), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
 

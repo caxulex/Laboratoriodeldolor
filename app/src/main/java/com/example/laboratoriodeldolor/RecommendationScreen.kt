@@ -24,8 +24,33 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 
+/**
+ * Map region keys to their corresponding routine IDs in the database.
+ * These IDs match the seeded routines in DatabaseSeeder in order:
+ * 1: Rostro y Cabeza (face_head)
+ * 2: Cuello y Hombros (neck_shoulders)  
+ * 3: Espalda Alta y Pecho (upper_back)
+ * 4: Espalda Baja, Caderas y Pelvis (lower_back)
+ * 5: Manos, Muñecas y Antebrazos (arms_hands)
+ * 6: Tobillos, Pies y Dedos (legs_feet)
+ * 7: Espalda Media y Abdomen (abdomen_pelvis)
+ * 8: Principios Generales (full_body)
+ */
+fun getRoutineIdForRegionKey(regionKey: String): Long {
+    return when (regionKey) {
+        "face_head" -> 1L // Rostro y Cabeza
+        "neck_shoulders" -> 2L // Cuello y Hombros  
+        "upper_back" -> 3L // Espalda Alta y Pecho
+        "lower_back" -> 4L // Espalda Baja, Caderas y Pelvis
+        "arms_hands" -> 5L // Manos, Muñecas y Antebrazos
+        "legs_feet" -> 6L // Tobillos, Pies y Dedos
+        "abdomen_pelvis" -> 7L // Espalda Media y Abdomen
+        else -> 8L // Principios Generales como fallback
+    }
+}
+
 @Composable
-fun RecommendationScreen(viewModel: RecommendationViewModel, onOpenTechnique: (Long) -> Unit = {}, onOpenTechniquesLibrary: () -> Unit = {}) {
+fun RecommendationScreen(viewModel: RecommendationViewModel, onOpenTechnique: (Long) -> Unit = {}, onOpenTechniquesLibrary: () -> Unit = {}, onOpenRoutine: (Long) -> Unit = {}) {
     val recState by viewModel.recommendation.collectAsState()
     val rec = recState
     val regionKeys by viewModel.regionKeys.collectAsState()
@@ -66,7 +91,14 @@ fun RecommendationScreen(viewModel: RecommendationViewModel, onOpenTechnique: (L
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     items(regionKeys) { rk ->
-                        androidx.compose.material3.AssistChip(onClick = { onOpenTechniquesLibrary() }, label = { Text(text = stringResource(id = regionKeyToStringRes(rk))) }, modifier = Modifier.padding(end = 8.dp, bottom = 8.dp))
+                        androidx.compose.material3.AssistChip(
+                            onClick = { 
+                                val routineId = getRoutineIdForRegionKey(rk)
+                                onOpenRoutine(routineId)
+                            }, 
+                            label = { Text(text = stringResource(id = regionKeyToStringRes(rk))) }, 
+                            modifier = Modifier.padding(end = 8.dp, bottom = 8.dp)
+                        )
                     }
                     item { Spacer(modifier = Modifier.height(12.dp)) }
                 }

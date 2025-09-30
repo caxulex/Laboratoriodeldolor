@@ -131,26 +131,22 @@ fun getDominantPainAreaDescription(painPoints: List<PainPoint>): Int {
 
 /**
  * Map a PainLocationKey to one or more Techniques Library region keys (Routine.bodyRegion).
- * These keys correspond to the routines seeded in the database and to strings:
- *  - face_head -> R.string.region_face_head
- *  - neck_shoulders -> R.string.region_neck_shoulders
- *  - upper_back -> R.string.region_upper_back
- *  - abdomen_pelvis -> R.string.region_mid_back_stomach
- *  - lower_back -> R.string.region_lower_back
- *  - arms_hands -> R.string.region_fingers_wrist_forearm
- *  - legs_feet -> R.string.region_ankles_feet_toes
+ * Following the specific recommendation logic:
+ * - Upper zones (FRONT_UPPER, BACK_UPPER) → "Rostro y Cabeza", "Cuello y Hombros", "Espalda Alta y Pecho"
+ * - Middle zones (FRONT_MIDDLE, BACK_MIDDLE) → "Manos, Muñecas y Antebrazos", "Espalda Media y Abdomen"  
+ * - Lower zones (FRONT_LOWER, BACK_LOWER) → "Espalda Baja, Caderas y Pelvis", "Tobillos, Pies y Dedos", "Espalda Media y Abdomen"
  */
 fun painLocationKeyToRegionKeys(key: PainLocationKey): List<String> {
     return when (key) {
-        // Upper body pains relate to head/neck/upper back work
+        // Upper body zones → 3 upper routines
         PainLocationKey.FRONT_UPPER -> listOf("face_head", "neck_shoulders", "upper_back")
-        PainLocationKey.BACK_UPPER -> listOf("upper_back", "neck_shoulders")
-        // Middle area ties to abdomen/pelvis and sometimes upper back support
-        PainLocationKey.FRONT_MIDDLE -> listOf("abdomen_pelvis", "upper_back")
-        PainLocationKey.BACK_MIDDLE -> listOf("upper_back", "abdomen_pelvis")
-        // Lower area maps to lumbar/pelvis and legs/feet
-        PainLocationKey.FRONT_LOWER -> listOf("lower_back", "legs_feet")
-        PainLocationKey.BACK_LOWER -> listOf("lower_back", "legs_feet")
+        PainLocationKey.BACK_UPPER -> listOf("face_head", "neck_shoulders", "upper_back")
+        // Middle body zones → 2 middle routines  
+        PainLocationKey.FRONT_MIDDLE -> listOf("arms_hands", "abdomen_pelvis")
+        PainLocationKey.BACK_MIDDLE -> listOf("arms_hands", "abdomen_pelvis")
+        // Lower body zones → 3 lower routines (including abdomen as it affects lower back)
+        PainLocationKey.FRONT_LOWER -> listOf("lower_back", "legs_feet", "abdomen_pelvis")
+        PainLocationKey.BACK_LOWER -> listOf("lower_back", "legs_feet", "abdomen_pelvis")
         PainLocationKey.UNKNOWN -> emptyList()
     }
 }

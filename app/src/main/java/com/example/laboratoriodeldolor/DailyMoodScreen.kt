@@ -47,6 +47,7 @@ fun DailyMoodScreen(
     onNavigateToBreath: () -> Unit = {},
     onNavigateToDiary: () -> Unit = {},
     onOpenPainChart: () -> Unit = {},
+    onOpenMoodChart: () -> Unit = {},
     onOpenTechniquesLibrary: () -> Unit = {},
     onOpenExerciseHub: () -> Unit = {},
     onNavigateToHome: () -> Unit = {}
@@ -163,6 +164,13 @@ fun DailyMoodScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Text(text = stringResource(id = R.string.view_pain_chart_button), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.bodyLarge)
+                    }
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { onOpenMoodChart() },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Text(text = stringResource(id = R.string.mood_chart_title), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.bodyLarge)
                     }
 
                     Card(

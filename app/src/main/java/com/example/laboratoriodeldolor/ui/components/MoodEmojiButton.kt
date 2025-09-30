@@ -55,7 +55,7 @@ fun MoodEmojiButton(
             // Use themed primary colors for selected state
                 com.example.laboratoriodeldolor.ui.components.PrimaryButton(
                 text = emoji,
-                onClick = {}, // Click handled by parent
+                onClick = onClick, // Pass the click through
                 modifier = Modifier
                     .size(touchSize)
                     .shadow(elevation = 6.dp, shape = CircleShape),
@@ -82,7 +82,7 @@ fun MoodEmojiButton(
             // Use secondary/neutral styling for unselected state
             com.example.laboratoriodeldolor.ui.components.SecondaryButton(
                 text = emoji,
-                onClick = {}, // Click handled by parent
+                onClick = onClick, // Pass the click through
                 modifier = Modifier.size(touchSize),
                 height = touchSize,
                 textStyle = MaterialTheme.typography.labelLarge

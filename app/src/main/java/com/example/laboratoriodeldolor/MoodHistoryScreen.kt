@@ -56,7 +56,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun MoodHistoryScreen(viewModel: MoodHistoryViewModel) {
+fun MoodHistoryScreen(viewModel: MoodHistoryViewModel, onOpenMoodChart: () -> Unit = {}) {
     val ctx = LocalContext.current
     val entries by viewModel.moodEntries.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -74,6 +74,17 @@ fun MoodHistoryScreen(viewModel: MoodHistoryViewModel) {
         Card(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
             Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
                 Text(text = stringResource(id = R.string.mood_history_title), style = MaterialTheme.typography.headlineSmall)
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Button to access mood chart visualization
+                com.example.laboratoriodeldolor.ui.components.PrimaryButton(
+                    text = stringResource(id = R.string.mood_chart_title),
+                    onClick = { onOpenMoodChart() },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
 
                         if (entries.isEmpty()) {
                             // Polished empty state with gentle entrance animation

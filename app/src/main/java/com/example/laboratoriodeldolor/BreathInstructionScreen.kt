@@ -40,71 +40,158 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.laboratoriodeldolor.ui.AppScaffold
+import com.example.laboratoriodeldolor.managers.BreathingAudioManager
+import com.example.laboratoriodeldolor.managers.BreathingVibrationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.DisposableEffect
 
 @Composable
 fun BreathInstructionScreen(id: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
     val haptics = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
+    
+    // Initialize audio and vibration managers
+    val audioManager = remember { BreathingAudioManager(ctx, scope) }
+    val vibrationManager = remember { BreathingVibrationManager(ctx, scope) }
+    
     val (title, body) = when (id.lowercase()) {
         "enamorado" -> stringResource(id = R.string.breath_enamorado_title) to stringResource(id = R.string.breath_enamorado_body)
         "chilindrina" -> stringResource(id = R.string.breath_chilindrina_title) to stringResource(id = R.string.breath_chilindrina_body)
         "cuadrado" -> stringResource(id = R.string.breath_cuadrado_title) to stringResource(id = R.string.breath_cuadrado_body)
+        "retencion" -> stringResource(id = R.string.breath_retencion_title) to stringResource(id = R.string.breath_retencion_body)
         else -> stringResource(id = R.string.breath_title) to stringResource(id = R.string.recent_exercises) // simple fallback
     }
 
-    // Timer state for 4-4-4-4 (only visible for "cuadrado"). Phase seconds are configurable (3–6).
+    // Timer state for both "cuadrado" (4-4-4-4) and "retencion" (6-8-10-2)
     var running by remember { mutableStateOf(false) }
-    var phaseIndex by remember { mutableStateOf(0) } // 0: Inhala, 1: Sostén, 2: Exhala, 3: Sostén
+    var phaseIndex by remember { mutableStateOf(0) }
     var secondsLeft by remember { mutableStateOf(4) }
     var phaseSeconds by remember { mutableStateOf(4) }
-    val phases = listOf(
-        stringResource(id = R.string.phase_inhale),
-        stringResource(id = R.string.phase_hold),
-        stringResource(id = R.string.phase_exhale),
-        stringResource(id = R.string.phase_hold)
-    )
-
-    // Gentle haptic each phase change (Compose haptics, no permission required)
-    LaunchedEffect(running, phaseIndex, id) {
-        if (id.lowercase() == "cuadrado" && running) {
-            try {
-                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-            } catch (_: Throwable) {
-                // no-op
-            }
+    
+    // Audio and vibration preferences
+    var audioEnabled by remember { mutableStateOf(true) }
+    var vibrationEnabled by remember { mutableStateOf(true) }
+    var audioVolume by remember { mutableStateOf(0.7f) }
+    var vibrationIntensity by remember { mutableStateOf(2) }
+    
+    val (phases, phaseDurations) = when (id.lowercase()) {
+        "cuadrado" -> {
+            val phases = listOf(
+                stringResource(id = R.string.phase_inhale),
+                stringResource(id = R.string.phase_hold),
+                stringResource(id = R.string.phase_exhale),
+                stringResource(id = R.string.phase_hold)
+            )
+            phases to listOf(4, 4, 4, 4)
+        }
+        "retencion" -> {
+            val phases = listOf(
+                stringResource(id = R.string.phase_inhale),
+                stringResource(id = R.string.phase_hold),
+                stringResource(id = R.string.phase_exhale),
+                "Pausa"
+            )
+            phases to listOf(6, 8, 10, 2)
+        }
+        else -> {
+            val phases = listOf(
+                stringResource(id = R.string.phase_inhale),
+                stringResource(id = R.string.phase_hold),
+                stringResource(id = R.string.phase_exhale),
+                stringResource(id = R.string.phase_hold)
+            )
+            phases to listOf(4, 4, 4, 4)
         }
     }
 
-    // Load preferred phase seconds from repository when entering the screen
-    LaunchedEffect(id) {
-        if (id.lowercase() == "cuadrado") {
-            val app = (ctx.applicationContext as? MoodApplication)
-            val repo = app?.preferencesRepository
-            try {
+    // Initialize managers and load preferences
+    LaunchedEffect(Unit) {
+        val app = (ctx.applicationContext as? MoodApplication)
+        val repo = app?.preferencesRepository
+        try {
+            audioEnabled = repo?.breathingAudioEnabledFlow?.firstOrNull() ?: true
+            vibrationEnabled = repo?.breathingVibrationEnabledFlow?.firstOrNull() ?: true
+            audioVolume = repo?.breathingAudioVolumeFlow?.firstOrNull() ?: 0.7f
+            vibrationIntensity = repo?.breathingVibrationIntensityFlow?.firstOrNull() ?: 2
+            
+            audioManager.initialize(audioVolume)
+            vibrationManager.updateIntensity(vibrationIntensity)
+            
+            if (id.lowercase() == "cuadrado") {
                 val s = repo?.boxPhaseSecondsFlow?.firstOrNull() ?: 4
                 phaseSeconds = s.coerceIn(3, 6)
                 secondsLeft = phaseSeconds
+            } else if (id.lowercase() == "retencion") {
+                secondsLeft = phaseDurations[0]
+            }
+        } catch (_: Throwable) {
+            phaseSeconds = 4
+            secondsLeft = if (id.lowercase() == "retencion") 6 else phaseSeconds
+        }
+    }
+    
+    // Enhanced phase transition with audio and vibration
+    LaunchedEffect(running, phaseIndex, id) {
+        if ((id.lowercase() == "cuadrado" || id.lowercase() == "retencion") && running) {
+            try {
+                // Play phase-specific sounds
+                if (audioEnabled) {
+                    when (phaseIndex) {
+                        0 -> audioManager.playInhaleSound()
+                        1 -> audioManager.playHoldSound()
+                        2 -> audioManager.playExhaleSound()
+                        3 -> audioManager.playPhaseTransitionSound()
+                    }
+                }
+                
+                // Play phase-specific vibrations
+                if (vibrationEnabled) {
+                    when (phaseIndex) {
+                        0 -> vibrationManager.vibrateForInhale()
+                        1 -> vibrationManager.vibrateForHold()
+                        2 -> vibrationManager.vibrateForExhale()
+                        3 -> vibrationManager.vibrateForPhaseTransition()
+                    }
+                }
+                
+                // Fallback haptic feedback if vibration is disabled
+                if (!vibrationEnabled) {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
             } catch (_: Throwable) {
-                phaseSeconds = 4
-                secondsLeft = phaseSeconds
+                // Fallback to basic haptic
+                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
             }
         }
     }
 
-    // Tick loop
+    // Enhanced tick loop for multiple breathing exercises
     LaunchedEffect(running, id) {
-        if (id.lowercase() != "cuadrado") return@LaunchedEffect
+        if (id.lowercase() != "cuadrado" && id.lowercase() != "retencion") return@LaunchedEffect
         while (true) {
             if (!running) { delay(100L); continue }
             delay(1000L)
             secondsLeft -= 1
             if (secondsLeft <= 0) {
-                phaseIndex = (phaseIndex + 1) % 4
-                secondsLeft = phaseSeconds
+                phaseIndex = (phaseIndex + 1) % phases.size
+                secondsLeft = if (id.lowercase() == "retencion") {
+                    phaseDurations[phaseIndex]
+                } else {
+                    phaseSeconds
+                }
             }
+        }
+    }
+    
+    // Cleanup managers when leaving screen
+    DisposableEffect(Unit) {
+        onDispose {
+            audioManager.release()
+            vibrationManager.stopVibration()
         }
     }
 

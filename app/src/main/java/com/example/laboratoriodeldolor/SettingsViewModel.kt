@@ -14,6 +14,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.catch
+import kotlin.lazy
+import com.example.laboratoriodeldolor.data.UserPreferencesRepository
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -64,6 +66,31 @@ class SettingsViewModel(
     // Persisted gender preference: true = male, false = female
     private val _gender = MutableStateFlow(getGenderEnabled())
     val gender: StateFlow<Boolean> = _gender
+
+    // Breathing audio and vibration preferences via UserPreferencesRepository
+    private val preferencesRepository: UserPreferencesRepository by lazy {
+        (getApplication() as MoodApplication).preferencesRepository
+    }
+    
+    val breathingAudioEnabled: StateFlow<Boolean> by lazy {
+        preferencesRepository.breathingAudioEnabledFlow
+            .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    }
+    
+    val breathingVibrationEnabled: StateFlow<Boolean> by lazy {
+        preferencesRepository.breathingVibrationEnabledFlow
+            .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    }
+    
+    val breathingAudioVolume: StateFlow<Float> by lazy {
+        preferencesRepository.breathingAudioVolumeFlow
+            .stateIn(viewModelScope, SharingStarted.Eagerly, 0.7f)
+    }
+    
+    val breathingVibrationIntensity: StateFlow<Int> by lazy {
+        preferencesRepository.breathingVibrationIntensityFlow
+            .stateIn(viewModelScope, SharingStarted.Eagerly, 2)
+    }
 
     // Expose a Flow-backed boolean for dark mode (default = false => Light mode)
     // Make lazy so DataStore isn't accessed during constructor in unit tests.
@@ -136,6 +163,31 @@ class SettingsViewModel(
     fun setGenderMale(isMale: Boolean) {
         prefs.edit().putBoolean(PREF_GENDER_MALE, isMale).apply()
         _gender.value = isMale
+    }
+    
+    // Breathing audio and vibration preference setters
+    fun setBreathingAudioEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setBreathingAudioEnabled(enabled)
+        }
+    }
+    
+    fun setBreathingVibrationEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setBreathingVibrationEnabled(enabled)
+        }
+    }
+    
+    fun setBreathingAudioVolume(volume: Float) {
+        viewModelScope.launch {
+            preferencesRepository.setBreathingAudioVolume(volume.coerceIn(0f, 1f))
+        }
+    }
+    
+    fun setBreathingVibrationIntensity(intensity: Int) {
+        viewModelScope.launch {
+            preferencesRepository.setBreathingVibrationIntensity(intensity.coerceIn(1, 5))
+        }
     }
 
     private fun scheduleAlarmIfNeeded(context: Context) {

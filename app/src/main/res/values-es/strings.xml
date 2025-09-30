@@ -16,6 +16,12 @@
 
     <string name="routine_no_steps">Esta rutina todavía no tiene pasos. Explora las técnicas para esta región y comienza a construir tu plan de alivio.</string>
 
+    <!-- Chart / formatting keys used in code -->
+    <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
+    <string name="mood_chart_title">Gráfico de Estado de Ánimo</string>
+    <string name="mood_chart_explanation_title">Sobre la gráfica de ánimo</string>
+    <string name="mood_chart_explanation_body">La gráfica muestra el puntaje de tu estado de ánimo en el tiempo. Usa las pestañas Semanal/Mensual/Trimestral para cambiar el periodo; Semanal/Mensual muestran el último registro por día y Trimestral agrupa por semana con promedio. Interpreta subidas como mejorías y bajadas como posibles señales de empeoramiento.</string>
+
     <string name="technique_desc_amasamientos">Usa tu mano completa para realizar &quot;pellizcos&quot; profundos, agarrando, levantando y apretando suavemente el músculo para liberar la tensión acumulada.</string>
     <string name="technique_desc_garrita">Cierra la mano en forma de puño y utiliza los nudillos (las falanges medias y proximales) para masajear las zonas de dolor con una presión firme y controlada.</string>
     <string name="technique_desc_fricciones">Con la zona entre tu dedo índice y pulgar, realiza deslizamientos rápidos y firmes sobre el área para generar calor y estimular la circulación.</string>
@@ -34,9 +40,6 @@
         <item quantity="many">Racha actual: %d días</item>
         <item quantity="other">Racha actual: %d días</item>
     </plurals>
-    <string name="progress_chart_desc">Gráfico de barras que muestra la evolución de tu estado de ánimo a lo largo del tiempo.</string>
-    <string name="mood_chart_explanation_title">Sobre la gráfica de ánimo</string>
-    <string name="mood_chart_explanation_body">La gráfica muestra tu ánimo en el tiempo. Usa Semanal/Mensual/Trimestral para cambiar el periodo; Semanal/Mensual muestran el último registro por día y Trimestral agrupa por semana con promedio. Subidas indican mejoría y bajadas pueden ser señales de empeoramiento emocional o días con más dolor.</string>
     <string name="date_format_short">dd/MM</string>
     <string name="progress_empty_state">Registra tu estado de ánimo en el diario para ver tu progreso aquí.</string>
 
