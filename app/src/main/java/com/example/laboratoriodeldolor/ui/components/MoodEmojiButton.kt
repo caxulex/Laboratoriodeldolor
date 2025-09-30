@@ -53,7 +53,7 @@ fun MoodEmojiButton(
             contentAlignment = Alignment.Center
         ) {
             // Use themed primary colors for selected state
-                PrimaryButton(
+                com.example.laboratoriodeldolor.ui.components.PrimaryButton(
                 text = emoji,
                 onClick = {}, // Click handled by parent
                 modifier = Modifier
@@ -80,7 +80,7 @@ fun MoodEmojiButton(
             contentAlignment = Alignment.Center
         ) {
             // Use secondary/neutral styling for unselected state
-            SecondaryButton(
+            com.example.laboratoriodeldolor.ui.components.SecondaryButton(
                 text = emoji,
                 onClick = {}, // Click handled by parent
                 modifier = Modifier.size(touchSize),

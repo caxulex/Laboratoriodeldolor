@@ -6,7 +6,7 @@ import org.junit.Test
 class MoodMappingTest {
     @Test
     fun emojiToScore_mapsKnownEmojis() {
-        assertEquals(1, MoodMapping.emojiToScore("�"))
+        assertEquals(1, MoodMapping.emojiToScore("😥"))
         assertEquals(2, MoodMapping.emojiToScore("😟"))
         assertEquals(3, MoodMapping.emojiToScore("😐"))
         assertEquals(4, MoodMapping.emojiToScore("🙂"))

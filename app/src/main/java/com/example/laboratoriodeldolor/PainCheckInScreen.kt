@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -63,11 +64,11 @@ fun PainCheckInScreen(painViewModel: PainTrackerViewModel, onFinish: () -> Unit,
                         // Use the same optimized painters as the main PainTracker route to avoid broken images
                         PainTrackerScreen(
                             isMale = genderPreview,
-                            // Pass nulls to let PainTrackerScreen lazily load only the currently needed painter
-                            maleFrontPainter = null,
-                            maleBackPainter = null,
-                            femaleFrontPainter = null,
-                            femaleBackPainter = null,
+                            // Use safePainter to ensure images load correctly in check-in mode
+                            maleFrontPainter = safePainter(R.drawable.boy_front),
+                            maleBackPainter = safePainter(R.drawable.boy_back),
+                            femaleFrontPainter = safePainter(R.drawable.girl_front),
+                            femaleBackPainter = safePainter(R.drawable.girl_back),
                             compact = true,
                             onPointsChanged = { pts ->
                                 // Keep the ViewModel in sync so save uses normalized points correctly

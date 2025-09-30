@@ -1,0 +1,129 @@
+# 🏥 Laboratorio del Dolor - Q-Clinic Healthcare Platform
+
+![Platform](https://img.shields.io/badge/Platform-Android-blue) ![Language](https://img.shields.io/badge/Language-Kotlin-purple) ![Framework](https://img.shields.io/badge/UI-Jetpack%20Compose-orange) ![Status](https://img.shields.io/badge/Windows%20Environment-✅%20Fixed-brightgreen) ![Integration](https://img.shields.io/badge/Q--Clinic-✅%20Complete-success)
+
+A comprehensive healthcare management mobile application that combines traditional pain and mood tracking with advanced AI-powered medical analysis through **Q-Clinic integration**.
+
+## 🚀 Overview
+
+**Laboratorio del Dolor** has evolved from a simple pain tracking app into a full-featured healthcare platform:
+
+- **Original Features**: Pain tracking, mood monitoring, exercise logging with Room database
+- **Q-Clinic Integration**: Professional healthcare management with JWT authentication  
+- **Advanced AI**: Medical transcription, PNI analysis, entity recognition, clinical risk assessment
+- **Modern Architecture**: MVVM + Repository + Clean Architecture with Jetpack Compose
+
+## ✨ Q-Clinic Healthcare Features (✅ COMPLETE)
+
+### 🔐 Secure Authentication
+- JWT-based healthcare-grade security with encrypted token storage
+- Demo credentials: doctor1 / password123
+
+### 👥 Patient Management  
+- Complete CRUD operations for patient records
+- Medical history and medication tracking
+
+### 🎙️ AI-Powered Medical Recording
+- Audio recording of medical consultations with real-time transcription
+- Multi-language support (Spanish/English)
+
+### 🧠 Advanced Medical AI Analysis
+- **PNI Analysis**: Psychoneuroimmunology scoring and stress assessment
+- **Entity Recognition**: Auto-extraction of symptoms, medications, conditions  
+- **Risk Assessment**: AI-powered clinical risk evaluation with urgency scoring
+- **Smart Recommendations**: Personalized healthcare suggestions
+
+### 📊 Healthcare Dashboard
+- Real-time system health monitoring and patient analytics
+
+## 🏗️ Technical Architecture
+
+### Stack & Technologies
+- **Platform**: Native Android (API 24+) with Kotlin 100%
+- **UI**: Jetpack Compose + Material 3 Design
+- **Architecture**: MVVM + Repository + Clean Architecture  
+- **Networking**: Retrofit + OkHttp with JWT authentication
+- **Database**: Room for local storage
+- **Security**: AndroidX Security for encrypted preferences
+
+### Q-Clinic Integration (✅ 12 Files, 107,883 bytes)
+`
+app/src/main/java/com/laboratoriodeldolor/qclinic/
+├── models/QClinicModels.kt (4,140 bytes)
+├── network/QClinicApiServices.kt (2,526 bytes)  
+├── network/QClinicNetworkClient.kt (5,087 bytes)
+├── repository/QClinicRepository.kt (7,837 bytes)
+└── ui/ (8 files with ViewModels + Compose screens)
+`
+
+## 🛠️ Development Setup
+
+### Prerequisites  
+- Android Studio (latest) + Android SDK API 24+ + Kotlin 1.8+
+- **Windows Universal C Runtime** (✅ Already configured)
+
+### Q-Clinic Backend Services
+1. **Main API**: http://localhost:8000 (auth, patients, system status)
+2. **AI Service**: http://localhost:8001 (analysis, transcription, PNI scoring)
+
+### Quick Start
+1. **Windows Environment** (✅ Issues RESOLVED!)
+   - Security exclusions configured, AAPT2 daemon fixed
+
+2. **Build Commands**:
+   `powershell
+   .\gradlew.bat clean build
+   .\gradlew.bat assembleDebug installDebug
+   `
+
+3. **Start Q-Clinic Services** (separate repo):
+   `ash
+   python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   python -m uvicorn ai_service:app --host 0.0.0.0 --port 8001 --reload  
+   `
+
+4. **Test**: Launch app → Login with doctor1/password123 → Access Q-Clinic features
+
+## 📊 Project Status
+
+### ✅ Completed (September 2025)
+- **Q-Clinic Integration**: Complete 12-file professional healthcare platform
+- **Authentication**: JWT with encrypted storage
+- **Patient Management**: Full CRUD operations
+- **AI Analysis**: PNI scoring, entity recognition, risk assessment  
+- **Windows Environment**: ✅ **FULLY RESOLVED** - AAPT2 issues fixed
+
+### 🔧 Minor Issues (Code-level, not environment)
+- Navigation imports, package paths, OkHttp compatibility updates
+
+## 🎯 Original Features (Hackathon Project - Español)
+
+**Laboratorio del Dolor**: Aplicación móvil para registrar estado de ánimo y puntos de dolor.
+
+**Características originales**:
+- Registro de ánimo en escala de 5 niveles
+- Registro de puntos de dolor sobre silueta (frente/espalda)  
+- Motor de recomendaciones basado en reglas data-driven
+- Rastreo de ejercicios con opción "Deshacer"
+- UI en Jetpack Compose con componentes reutilizables
+
+## 📚 Documentation
+
+- INTEGRATION_COMPLETE.md - Q-Clinic integration details
+- SYSTEM_VERIFICATION_COMPLETE.md - Full system verification
+- WINDOWS_ENVIRONMENT_FIXED.md - Windows setup guide
+- dd_windows_exclusions.bat - Security configuration script
+
+## 🎉 Success Story
+
+**From Simple Pain Tracker to Comprehensive Healthcare Platform**
+
+✅ Traditional Android + Jetpack Compose  
+✅ Enterprise healthcare integration (Q-Clinic)  
+✅ Advanced AI medical analysis  
+✅ Professional security systems  
+✅ Windows development environment optimization
+
+---
+**Status**: ✅ Backend Integration Complete | ✅ Windows Environment Fixed | 🔧 Code Polish in Progress  
+**Updated**: September 28, 2025

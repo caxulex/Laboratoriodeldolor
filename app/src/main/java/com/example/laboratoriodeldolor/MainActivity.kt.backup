@@ -153,8 +153,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onSaved = { emoji ->
-                                    // Use the first emoji (most negative) for breath prioritization
-                                    if (emoji == MoodOptions.FIVE_LEVEL[0]) { // 😥 (very sad)
+                                    if (emoji == "😞") {
                                         moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.BREATH)
                                     } else {
                                         moodViewModel.setDashboardPriority(MoodViewModel.DashboardPriority.DIARY)
@@ -192,7 +191,7 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToSettings = { navController.navigate(Screen.Ajustes.route) },
                                 onNavigateToHistory = { navController.navigate("history") },
                                 onNavigateToBreath = { navController.navigate(Screen.Respiracion.route) },
-                                onNavigateToDiary = { navController.navigate("diary") },
+                                onNavigateToDiary = { navController.navigate(Screen.Diary.route) },
                                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                                 onOpenPainChart = { navController.navigate("pain_chart") },
                                 onOpenTechniquesLibrary = { navController.navigate("techniques") },
@@ -283,6 +282,10 @@ class MainActivity : ComponentActivity() {
                                 val settingsVm: SettingsViewModel = viewModel()
                                 SettingsScreen(viewModel = settingsVm, onNavigateToAbout = { navController.navigate("about") })
                             }
+                            composable(Screen.Diary.route) {
+                                val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).moodRepository))
+                                DiaryScreen(diaryViewModel = diaryViewModel, onBack = { navController.popBackStack() })
+                            }
                             composable("about") {
                                 AboutScreen(
                                     onBack = { navController.popBackStack() },
@@ -349,14 +352,6 @@ class MainActivity : ComponentActivity() {
                                 val moodHistoryViewModel: MoodHistoryViewModel = viewModel(factory = MoodHistoryViewModelFactory((application as MoodApplication).moodRepository))
                                 MoodHistoryScreen(viewModel = moodHistoryViewModel)
                             }
-                            // Diary screen for detailed journaling
-                            composable("diary") {
-                                val diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory((application as MoodApplication).moodRepository))
-                                DiaryScreen(
-                                    viewModel = diaryViewModel,
-                                    onBack = { navController.popBackStack() }
-                                )
-                            }
                             // Recommendation summary screen shown after saving pain points
                             composable("recommendations") {
                                 val app = (application as MoodApplication)
@@ -390,6 +385,7 @@ sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector)
     object Home : Screen("home", R.string.home_title, Icons.Filled.Home)
     // Primary bottom navigation: Inicio, Diario, Progreso
     object Diario : Screen("diario", R.string.mood_tracker_title, Icons.Filled.Create)
+    object Diary : Screen("diary", R.string.diary_title, Icons.Filled.Create)
     // LocalHospital comes from the extended material icons pack; to avoid adding a new dependency here
     // we use a built-in icon (Home) as a placeholder. Replace with a different icon if you add
     // the material-icons-extended dependency in build.gradle.

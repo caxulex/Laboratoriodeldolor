@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    // Using KAPT temporarily until KSP version compatibility is resolved
     id("org.jetbrains.kotlin.kapt")
 }
 
@@ -160,8 +161,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-
-    // Annotation processing via KAPT
+    // Annotation processing via KAPT (KSP compatibility being resolved)
     kapt(libs.room.compiler)
 
     // Navigation, Work, DataStore, Lottie, and Chart dependencies

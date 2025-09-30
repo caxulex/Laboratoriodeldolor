@@ -26,7 +26,7 @@ class MoodViewModel(
     // State is still here
     private val tag = "MoodApp"
     // Use explicit MutableState backing fields instead of delegated properties to avoid compiler delegation issues in ViewModel
-    private val _selectedEmoji = mutableStateOf("😊")
+    private val _selectedEmoji = mutableStateOf(MoodOptions.FIVE_LEVEL[2]) // Initialize with neutral emoji from valid options
     var selectedEmoji: String
         get() = _selectedEmoji.value
         set(value) { _selectedEmoji.value = value }

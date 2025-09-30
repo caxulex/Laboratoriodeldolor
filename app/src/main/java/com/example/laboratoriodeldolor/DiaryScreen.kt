@@ -1,122 +1,221 @@
 package com.example.laboratoriodeldolor
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import com.example.laboratoriodeldolor.ui.GradientBackground
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import com.example.laboratoriodeldolor.ui.components.MoodEmojiButton
 import com.example.laboratoriodeldolor.ui.components.LottieSaveButton
-import com.example.laboratoriodeldolor.ui.theme.Dimens
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
-@Suppress("UNUSED_PARAMETER")
+/**
+ * DiaryScreen - A detailed journaling interface for mood tracking and note-taking
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiaryScreen(diaryViewModel: DiaryViewModel = viewModel(factory = DiaryViewModelFactory()), onBack: () -> Unit = {}) {
-    var note by remember { mutableStateOf("") }
-            var selectedEmoji by remember { mutableStateOf(MoodOptions.FIVE_LEVEL[2]) }
+fun DiaryScreen(
+    viewModel: DiaryViewModel,
+    onBack: () -> Unit = {}
+) {
+    val entries by viewModel.entries.collectAsState()
+    var showAddDialog by remember { mutableStateOf(false) }
+    var selectedEmoji by remember { mutableStateOf(MoodOptions.FIVE_LEVEL[2]) } // neutral
+    var noteText by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
 
-    val entries by diaryViewModel.entries.collectAsState(initial = emptyList())
-
-    com.example.laboratoriodeldolor.ui.AppScaffold { _ ->
-        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)) {
-            Text(text = stringResource(id = R.string.diary_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("screen_title"))
-            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
-
-            // Five-level emoji selector
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    val options = MoodOptions.FIVE_LEVEL
-                    options.forEachIndexed { idx, e ->
-                    val isSelected = selectedEmoji == e
-                    val desc = when (idx) {
-                        0 -> stringResource(id = R.string.emoji_desc_very_bad)
-                        1 -> stringResource(id = R.string.emoji_desc_bad)
-                        2 -> stringResource(id = R.string.emoji_desc_neutral)
-                        3 -> stringResource(id = R.string.emoji_desc_good)
-                        else -> stringResource(id = R.string.emoji_desc_very_good)
+    com.example.laboratoriodeldolor.ui.AppScaffold { innerPadding ->
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.diary_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showAddDialog = true }) {
+                            Icon(Icons.Default.Add, contentDescription = "Add entry")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
+        ) { scaffoldPadding ->
+            
+            if (entries.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(scaffoldPadding)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.diary_empty_state),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        FilledTonalButton(
+                            onClick = { showAddDialog = true }
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Add First Entry")
+                        }
                     }
-                    MoodEmojiButton(emoji = e, selected = isSelected, size = 64.dp, contentDesc = desc) {
-                        selectedEmoji = e
+                }
+            } else {
+                // Show diary entries
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(scaffoldPadding)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    items(entries) { entry ->
+                        DiaryEntryCard(entry = entry)
                     }
-                    if (idx < options.size - 1) Spacer(modifier = Modifier.width(14.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.spaceSmall))
-
-        OutlinedTextField(
-                value = note,
-                onValueChange = { note = it },
-                label = { Text(text = stringResource(id = R.string.diary_entry_hint)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-            .height(200.dp)
-            )
-
-            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
-
-            // Replace primary save Button with LottieSaveButton which plays success animation
-            LottieSaveButton(enabled = note.isNotBlank(), onSave = {
-                if (note.isNotBlank()) {
-                    diaryViewModel.saveEntry(selectedEmoji, note)
-                    note = ""
-                    selectedEmoji = "😀"
-                }
-            })
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Past entries (showing MoodEntry records)
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                items(entries) { entry ->
-                    DiaryEntryCard(entry = entry)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+            // Add new entry dialog
+            if (showAddDialog) {
+                AlertDialog(
+                    onDismissRequest = { showAddDialog = false },
+                    title = { Text(stringResource(R.string.diary_mood_prompt)) },
+                    text = {
+                        Column {
+                            // Mood selector
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                MoodOptions.FIVE_LEVEL.forEach { emoji ->
+                                    MoodEmojiButton(
+                                        emoji = emoji,
+                                        selected = selectedEmoji == emoji,
+                                        onClick = { selectedEmoji = emoji }
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // Note input
+                            OutlinedTextField(
+                                value = noteText,
+                                onValueChange = { noteText = it },
+                                label = { Text("Journal Entry") },
+                                placeholder = { Text(stringResource(R.string.diary_entry_placeholder)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                minLines = 3,
+                                maxLines = 6
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        LottieSaveButton(
+                            enabled = noteText.isNotBlank(),
+                            onSave = {
+                                scope.launch {
+                                    viewModel.saveEntry(selectedEmoji, noteText)
+                                    showAddDialog = false
+                                    noteText = ""
+                                    selectedEmoji = MoodOptions.FIVE_LEVEL[2]
+                                }
+                            }
+                        )
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showAddDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun DiaryEntryCard(entry: MoodEntry) {
-    Card(modifier = Modifier.fillMaxWidth(), colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-            Text(text = sdf.format(Date(entry.timestamp)), style = MaterialTheme.typography.bodySmall)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = entry.emoji, style = MaterialTheme.typography.headlineMedium)
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(text = entry.note, style = MaterialTheme.typography.bodyLarge)
+private fun DiaryEntryCard(entry: MoodEntry) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = entry.emoji,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                                .format(Date(entry.timestamp)),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = SimpleDateFormat("HH:mm", Locale.getDefault())
+                                .format(Date(entry.timestamp)),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            if (entry.note.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = entry.note,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     }

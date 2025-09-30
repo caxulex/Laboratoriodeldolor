@@ -64,7 +64,7 @@ fun MoodCheckInScreen(moodViewModel: MoodViewModel, onNext: () -> Unit, onSkip: 
                 )
             Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
-            // Five-level emoji selector: � 😟 😐 🙂 😄 (very bad -> very good)
+            // Five-level emoji selector: 😥 😟 😐 🙂 😄 (very bad -> very good)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 val options = MoodOptions.FIVE_LEVEL
                 options.forEachIndexed { idx, e ->
